@@ -25,7 +25,6 @@ import java.util.Properties;
 
 import static com.expedia.www.haystack.pipes.Constants.KAFKA_FROM_TOPIC;
 import static com.expedia.www.haystack.pipes.Constants.KAFKA_TO_TOPIC;
-import static com.expedia.www.haystack.pipes.Constants.KAFKA_FROM_TOPIC;
 
 public class ProtobufToJsonTransformer {
     static final String CLIENT_ID = "External";

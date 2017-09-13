@@ -13,7 +13,7 @@ Kinesis Firehose can be configured to deliver the data to
     * [Amazon Elasticsearch Service](https://aws.amazon.com/elasticsearch-service/)
     
 ## json-transformer    
-The [json-transformer](https://github.com/ExpediaDotCom/haystack-pipes/json-transformer) package is a
+The [json-transformer](https://github.com/ExpediaDotCom/haystack-pipes/tree/master/json-transformer) package is a
 lightweight service that uses [Kafka Streams](https://kafka.apache.org/documentation/streams/) to read the protobuf 
 records from Kafka, transform them to JSON, and write them to another topic in Kafka. The plugins will then consume
 from the latter topic, and then write the JSON records just consumed to their destinations.
