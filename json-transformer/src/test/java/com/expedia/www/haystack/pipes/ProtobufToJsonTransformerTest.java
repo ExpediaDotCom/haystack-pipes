@@ -1,10 +1,23 @@
+/*
+ * Copyright 2017 Expedia, Inc.
+ *
+ *       Licensed under the Apache License, Version 2.0 (the "License");
+ *       you may not use this file except in compliance with the License.
+ *       You may obtain a copy of the License at
+ *
+ *           http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *       Unless required by applicable law or agreed to in writing, software
+ *       distributed under the License is distributed on an "AS IS" BASIS,
+ *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *       See the License for the specific language governing permissions and
+ *       limitations under the License.
+ *
+ */
 package com.expedia.www.haystack.pipes;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.ProtobufToJsonTransformer.Factory;
-import com.expedia.www.haystack.pipes.ProtobufToJsonTransformer;
-import com.expedia.www.haystack.pipes.SpanJsonSerializer;
-import com.expedia.www.haystack.pipes.SystemExitUncaughtExceptionHandler;
 import com.netflix.servo.publish.PollScheduler;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serde;
@@ -23,7 +36,10 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
+import java.lang.reflect.Field;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.regex.Pattern;
 
 import static com.expedia.www.haystack.pipes.Constants.KAFKA_FROM_TOPIC;
@@ -42,6 +58,8 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProtobufToJsonTransformerTest {
+    private final static Random RANDOM = new Random();
+    private final static int PORT = RANDOM.nextInt(Short.MAX_VALUE);
     @Mock
     private Factory mockFactory;
     private Factory realFactory;
@@ -64,6 +82,7 @@ public class ProtobufToJsonTransformerTest {
 
     @Before
     public void setUp() {
+        putKafkaPortIntoEnvironmentVariables(Integer.toString(PORT));
         realFactory = ProtobufToJsonTransformer.factory;
         ProtobufToJsonTransformer.factory = mockFactory;
         realLogger = ProtobufToJsonTransformer.logger;
@@ -120,7 +139,7 @@ public class ProtobufToJsonTransformerTest {
         when(mockKStreamBuilder.earliestResetTopicsPattern()).thenReturn(emptyStringPattern);
 
         final Properties properties = getProperties();
-        properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092"); // don't go to the network
+        properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:1234"); // don't go to the network
         assertNotNull(realFactory.createKafkaStreams(mockKStreamBuilder, new StreamsConfig(properties)));
 
         verify(mockKStreamBuilder).latestResetTopicsPattern();
@@ -142,7 +161,7 @@ public class ProtobufToJsonTransformerTest {
         assertEquals(ProtobufToJsonTransformer.CLIENT_ID, properties.get(StreamsConfig.CLIENT_ID_CONFIG));
         assertEquals(ProtobufToJsonTransformer.KLASS_NAME, properties.get(ConsumerConfig.GROUP_ID_CONFIG));
         assertEquals(ProtobufToJsonTransformer.KLASS_SIMPLE_NAME, properties.get(StreamsConfig.APPLICATION_ID_CONFIG));
-        assertEquals("haystack.local:9092", properties.get(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG));
+        assertEquals("haystack.local:" + PORT, properties.get(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG));
         assertEquals(1, properties.get(StreamsConfig.REPLICATION_FACTOR_CONFIG));
         assertEquals(WallclockTimestampExtractor.class, properties.get(StreamsConfig.TIMESTAMP_EXTRACTOR_CLASS_CONFIG));
     }
@@ -150,5 +169,24 @@ public class ProtobufToJsonTransformerTest {
     @Test
     public void testDefaultConstructor() {
         new ProtobufToJsonTransformer();
+    }
+
+    private void putKafkaPortIntoEnvironmentVariables(String port) {
+        try {
+            final Map<String,String> unmodifiableEnv = System.getenv();
+            final Class<?> cl = unmodifiableEnv.getClass();
+
+            // It is not intended that environment variables be changed after the JVM starts, thus reflection
+            @SuppressWarnings("JavaReflectionMemberAccess")
+            final Field field = cl.getDeclaredField("m");
+            field.setAccessible(true);
+
+            @SuppressWarnings("unchecked")
+            final Map<String,String> modifiableEnv = (Map<String,String>) field.get(unmodifiableEnv);
+            modifiableEnv.put("HAYSTACK_KAFKA_PORT", port);
+            field.setAccessible(false);
+        } catch(Exception e) {
+            throw new RuntimeException("Unable to access writable environment variable map.");
+        }
     }
 }

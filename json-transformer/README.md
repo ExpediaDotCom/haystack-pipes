@@ -4,11 +4,13 @@ The `json-transformer` service that uses [Kafka Streams](https://kafka.apache.or
 protobuf records from Kafka, transform them to JSON, and write the transformed record to another topic in Kafka.
 The code is simple and self-explanatory and consists of the following classes:
 1. A [deserializer](https://github.com/ExpediaDotCom/haystack-pipes/blob/master/json-transformer/src/main/java/com/expedia/www/haystack/pipes/SpanProtobufDeserializer.java)
-that reads the protobuf [Span]() records from Kafka.
+that reads the [protobuf](https://en.wikipedia.org/wiki/Protocol_Buffers)
+[Span](https://github.com/ExpediaDotCom/haystack-idl/blob/master/proto/span.proto) records from Kafka.
 2. A [serializer](https://github.com/ExpediaDotCom/haystack-pipes/blob/master/json-transformer/src/main/java/com/expedia/www/haystack/pipes/SpanJsonSerializer.java)
-that writes the Span records into another Kafka topic, writing them in [JSON]().
+that writes the Span records into another Kafka topic, writing them in [JSON](https://en.wikipedia.org/wiki/JSON).
 3. A [transformer](https://github.com/ExpediaDotCom/haystack-pipes/blob/master/json-transformer/src/main/java/com/expedia/www/haystack/pipes/ProtobufToJsonTransformer.java)
-that wires the deserializer and serializer into a [Kafka Streams]() pipeline.
+that wires the deserializer and serializer into a
+[Kafka Streams](https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Streams) pipeline.
 4. An [uncaught exception handler](https://github.com/ExpediaDotCom/haystack-pipes/blob/master/json-transformer/src/main/java/com/expedia/www/haystack/pipes/SystemExitUncaughtExceptionHandler.java)
 that brings down the [JVM](https://en.wikipedia.org/wiki/Java_virtual_machine) if an exception occurs in the
 KafkaStreams code but cannot be handled by that code. Typically this involves an unusual issue (disk full, insufficient

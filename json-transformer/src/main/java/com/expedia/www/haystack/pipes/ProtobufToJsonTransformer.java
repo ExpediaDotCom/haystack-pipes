@@ -1,3 +1,19 @@
+/*
+ * Copyright 2017 Expedia, Inc.
+ *
+ *       Licensed under the Apache License, Version 2.0 (the "License");
+ *       you may not use this file except in compliance with the License.
+ *       You may obtain a copy of the License at
+ *
+ *           http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *       Unless required by applicable law or agreed to in writing, software
+ *       distributed under the License is distributed on an "AS IS" BASIS,
+ *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *       See the License for the specific language governing permissions and
+ *       limitations under the License.
+ *
+ */
 package com.expedia.www.haystack.pipes;
 
 import com.expedia.open.tracing.Span;
@@ -14,8 +30,9 @@ import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.processor.WallclockTimestampExtractor;
 import org.cfg4j.provider.ConfigurationProvider;
 import org.cfg4j.provider.ConfigurationProviderBuilder;
+import org.cfg4j.source.ConfigurationSource;
 import org.cfg4j.source.classpath.ClasspathConfigurationSource;
-import org.cfg4j.source.context.filesprovider.ConfigFilesProvider;
+import org.cfg4j.source.compose.MergeConfigurationSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,14 +46,27 @@ import static com.expedia.www.haystack.pipes.Constants.KAFKA_TO_TOPIC;
 public class ProtobufToJsonTransformer {
     static final String CLIENT_ID = "External";
     static final String STARTED_MSG = "Now started ScanStream";
+    private static final String HAYSTACK_GRAPHITE_CONFIG_PREFIX = "haystack.graphite";
+    private static final ConfigurationProvider CONFIGURATION_PROVIDER = createMergeConfigurationProvider();
 
     static Factory factory = new Factory(); // will be mocked out in unit tests
     static Logger logger = LoggerFactory.getLogger(ProtobufToJsonTransformer.class);
 
-    // TODO Add EnvironmentVariablesConfigurationSource object to handle env variables from apply-compose.sh et al
-    private static ConfigFilesProvider cfp = () -> Collections.singletonList(Paths.get("base.yaml"));
-    private static ClasspathConfigurationSource ccs = new ClasspathConfigurationSource(cfp);
-    private static ConfigurationProvider cp = new ConfigurationProviderBuilder().withConfigurationSource(ccs).build();
+    private static ConfigurationProvider createMergeConfigurationProvider() {
+        final MergeConfigurationSource configurationSource = new MergeConfigurationSource(
+                createClasspathConfigurationSource(), createEnvironmentConfigurationSource()
+        );
+        final ConfigurationProviderBuilder configurationProviderBuilder = new ConfigurationProviderBuilder();
+        return configurationProviderBuilder.withConfigurationSource(configurationSource).build();
+    }
+
+    private static ConfigurationSource createClasspathConfigurationSource() {
+        return new ClasspathConfigurationSource(() -> Collections.singletonList(Paths.get("base.yaml")));
+    }
+
+    private static ConfigurationSource createEnvironmentConfigurationSource() {
+        return new HaystackEnvironmentVariablesConfigurationSource("HAYSTACK");
+    }
 
     static final String KLASS_NAME = ProtobufToJsonTransformer.class.getName();
     static final String KLASS_SIMPLE_NAME = ProtobufToJsonTransformer.class.getSimpleName();
@@ -49,7 +79,8 @@ public class ProtobufToJsonTransformer {
     }
 
     private static void startMetricsPolling() {
-        final GraphiteConfig graphiteConfig = cp.bind("haystack.graphite", GraphiteConfig.class);
+        final GraphiteConfig graphiteConfig = CONFIGURATION_PROVIDER.bind(
+                HAYSTACK_GRAPHITE_CONFIG_PREFIX, GraphiteConfig.class);
         (new MetricPublishing()).start(graphiteConfig);
     }
 
@@ -93,12 +124,12 @@ public class ProtobufToJsonTransformer {
     }
 
     private static String getKafkaIpAnPort() {
-        final KafkaConfig kafkaConfig = cp.bind("haystack.kafka", KafkaConfig.class);
+        final KafkaConfig kafkaConfig = CONFIGURATION_PROVIDER.bind("haystack.kafka", KafkaConfig.class);
         return StrSubstitutor.replaceSystemProperties(kafkaConfig.brokers()) + ":" + kafkaConfig.port();
     }
 
     private static int getReplicationFactor() {
-        final IntermediateStreamsConfig intermediateStreamsConfig = cp.bind("haystack.pipe.streams",
+        final IntermediateStreamsConfig intermediateStreamsConfig = CONFIGURATION_PROVIDER.bind("haystack.pipe.streams",
                 IntermediateStreamsConfig.class);
         return intermediateStreamsConfig.replicationFactor();
     }
