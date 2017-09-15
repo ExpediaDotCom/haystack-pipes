@@ -44,7 +44,7 @@ import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.KAFKA_FRO
 import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.KAFKA_TO_TOPIC;
 
 public class ProtobufToJsonTransformer {
-    static final String CLIENT_ID = "External";
+    static final String CLIENT_ID = "haystack-pipes-protobuf-to-json-transformer";
     static final String STARTED_MSG = "Now started ScanStream";
     private static final String HAYSTACK_GRAPHITE_CONFIG_PREFIX = "haystack.graphite";
     private static final ConfigurationProvider CONFIGURATION_PROVIDER = createMergeConfigurationProvider();
