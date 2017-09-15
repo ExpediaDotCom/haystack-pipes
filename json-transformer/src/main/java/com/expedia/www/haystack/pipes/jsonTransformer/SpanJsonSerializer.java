@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes;
+package com.expedia.www.haystack.pipes.jsonTransformer;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.metrics.MetricObjects;
@@ -31,8 +31,8 @@ import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.expedia.www.haystack.pipes.Constants.APPLICATION;
-import static com.expedia.www.haystack.pipes.Constants.SUBSYSTEM;
+import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.APPLICATION;
+import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.SUBSYSTEM;
 
 public class SpanJsonSerializer implements Serializer<Span> {
     static final String ERROR_MSG = "Problem serializing span [%s]";

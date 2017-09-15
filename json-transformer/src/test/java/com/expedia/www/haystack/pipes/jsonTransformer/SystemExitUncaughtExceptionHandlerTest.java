@@ -14,10 +14,9 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes;
+package com.expedia.www.haystack.pipes.jsonTransformer;
 
-import com.expedia.www.haystack.pipes.SystemExitUncaughtExceptionHandler.Factory;
-import com.expedia.www.haystack.pipes.SystemExitUncaughtExceptionHandler;
+import com.expedia.www.haystack.pipes.jsonTransformer.SystemExitUncaughtExceptionHandler.Factory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,8 +25,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
-import static com.expedia.www.haystack.pipes.SystemExitUncaughtExceptionHandler.ERROR_MSG;
-import static com.expedia.www.haystack.pipes.SystemExitUncaughtExceptionHandler.SYSTEM_EXIT_STATUS;
+import static com.expedia.www.haystack.pipes.jsonTransformer.SystemExitUncaughtExceptionHandler.ERROR_MSG;
+import static com.expedia.www.haystack.pipes.jsonTransformer.SystemExitUncaughtExceptionHandler.SYSTEM_EXIT_STATUS;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;

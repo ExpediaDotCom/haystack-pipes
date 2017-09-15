@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes;
+package com.expedia.www.haystack.pipes.jsonTransformer;
 
 import com.expedia.open.tracing.Span;
 import com.google.protobuf.InvalidProtocolBufferException;

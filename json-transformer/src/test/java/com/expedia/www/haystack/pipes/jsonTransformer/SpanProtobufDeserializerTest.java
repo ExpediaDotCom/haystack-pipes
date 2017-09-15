@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes;
+package com.expedia.www.haystack.pipes.jsonTransformer;
 
 import com.expedia.open.tracing.Span;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -28,8 +28,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
-import static com.expedia.www.haystack.pipes.SpanProtobufDeserializer.ERROR_MSG;
-import static com.expedia.www.haystack.pipes.TestConstantsAndCommonCode.PROTOBUF_SPAN_BYTES;
+import static com.expedia.www.haystack.pipes.jsonTransformer.SpanProtobufDeserializer.ERROR_MSG;
+import static com.expedia.www.haystack.pipes.jsonTransformer.TestConstantsAndCommonCode.PROTOBUF_SPAN_BYTES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;

@@ -6,7 +6,7 @@
             <pattern>%d{HH:mm:ss.SSS} %level [%thread] %X{requestid} %logger{10} %msg%n</pattern>
         </encoder>
     </appender>
-    <logger name="com.expedia.www.haystack.com.expedia.www.haystack.pipes.ProtobufToJsonTransformer" additivity="false" level="INFO">
+    <logger name="com.expedia.www.haystack.com.expedia.www.haystack.pipes.jsonTransformer.ProtobufToJsonTransformer" additivity="false" level="INFO">
         <appender-ref ref="STDOUT" /><!-- Display start up message without flooding logs with other info messages -->
     </logger>
     <logger name="com.netflix.servo.publish.graphite.GraphiteMetricObserver" additivity="false" level="INFO">
