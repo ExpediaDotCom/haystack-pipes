@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes;
+package com.expedia.www.haystack.pipes.jsonTransformer;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.metrics.GraphiteConfig;
@@ -40,8 +40,8 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Properties;
 
-import static com.expedia.www.haystack.pipes.Constants.KAFKA_FROM_TOPIC;
-import static com.expedia.www.haystack.pipes.Constants.KAFKA_TO_TOPIC;
+import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.KAFKA_FROM_TOPIC;
+import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.KAFKA_TO_TOPIC;
 
 public class ProtobufToJsonTransformer {
     static final String CLIENT_ID = "External";

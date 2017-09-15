@@ -14,10 +14,10 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes;
+package com.expedia.www.haystack.pipes.jsonTransformer;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.pipes.ProtobufToJsonTransformer.Factory;
+import com.expedia.www.haystack.pipes.jsonTransformer.ProtobufToJsonTransformer.Factory;
 import com.netflix.servo.publish.PollScheduler;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serde;
@@ -42,10 +42,10 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.regex.Pattern;
 
-import static com.expedia.www.haystack.pipes.Constants.KAFKA_FROM_TOPIC;
-import static com.expedia.www.haystack.pipes.Constants.KAFKA_TO_TOPIC;
-import static com.expedia.www.haystack.pipes.ProtobufToJsonTransformer.STARTED_MSG;
-import static com.expedia.www.haystack.pipes.ProtobufToJsonTransformer.getProperties;
+import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.KAFKA_FROM_TOPIC;
+import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.KAFKA_TO_TOPIC;
+import static com.expedia.www.haystack.pipes.jsonTransformer.ProtobufToJsonTransformer.STARTED_MSG;
+import static com.expedia.www.haystack.pipes.jsonTransformer.ProtobufToJsonTransformer.getProperties;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
