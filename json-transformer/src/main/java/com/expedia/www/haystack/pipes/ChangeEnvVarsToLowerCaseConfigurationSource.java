@@ -29,18 +29,18 @@ import java.util.Properties;
  * {@link ConfigurationSource} providing all environment variables under the specified {@link Environment}
  * namespaced prefix
  */
-public class HaystackEnvironmentVariablesConfigurationSource extends EnvironmentVariablesConfigurationSource {
+public class ChangeEnvVarsToLowerCaseConfigurationSource extends EnvironmentVariablesConfigurationSource {
 
     private final String prefixOfStringsToConvertToLowerCase;
 
     /**
-     * Constructs a new HaystackEnvironmentVariablesConfigurationSource object that will convert environment variable
+     * Constructs a new ChangeEnvVarsToLowerCaseConfigurationSource object that will convert environment variable
      * keys (not their values) to lower case if they start with the specified prefix. Since environment variables are
      * by convention upper case, the prefix will probably be upper case as well, but this is not required.
      *
      * @param prefixOfStringsToConvertToLowerCase indicates what environment variables should be changed to lower case.
      */
-    HaystackEnvironmentVariablesConfigurationSource(String prefixOfStringsToConvertToLowerCase) {
+    ChangeEnvVarsToLowerCaseConfigurationSource(String prefixOfStringsToConvertToLowerCase) {
         this.prefixOfStringsToConvertToLowerCase = prefixOfStringsToConvertToLowerCase;
     }
 
@@ -64,6 +64,6 @@ public class HaystackEnvironmentVariablesConfigurationSource extends Environment
 
     @Override
     public String toString() {
-        return "HaystackEnvironmentVariablesConfigurationSource{}";
+        return "ChangeEnvVarsToLowerCaseConfigurationSource{}";
     }
 }

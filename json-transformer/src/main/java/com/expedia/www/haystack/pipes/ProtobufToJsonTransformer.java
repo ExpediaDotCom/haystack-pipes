@@ -65,7 +65,7 @@ public class ProtobufToJsonTransformer {
     }
 
     private static ConfigurationSource createEnvironmentConfigurationSource() {
-        return new HaystackEnvironmentVariablesConfigurationSource("HAYSTACK");
+        return new ChangeEnvVarsToLowerCaseConfigurationSource("HAYSTACK");
     }
 
     static final String KLASS_NAME = ProtobufToJsonTransformer.class.getName();
