@@ -42,10 +42,10 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.regex.Pattern;
 
-import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.KAFKA_FROM_TOPIC;
-import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.KAFKA_TO_TOPIC;
 import static com.expedia.www.haystack.pipes.jsonTransformer.ProtobufToJsonTransformer.STARTED_MSG;
+import static com.expedia.www.haystack.pipes.jsonTransformer.ProtobufToJsonTransformer.getFromTopic;
 import static com.expedia.www.haystack.pipes.jsonTransformer.ProtobufToJsonTransformer.getProperties;
+import static com.expedia.www.haystack.pipes.jsonTransformer.ProtobufToJsonTransformer.getToTopic;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
@@ -58,8 +58,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProtobufToJsonTransformerTest {
-    private final static Random RANDOM = new Random();
-    private final static int PORT = RANDOM.nextInt(Short.MAX_VALUE);
+    private final static int PORT = 9092;
     @Mock
     private Factory mockFactory;
     private Factory realFactory;
@@ -80,6 +79,8 @@ public class ProtobufToJsonTransformerTest {
     @Mock
     private SystemExitUncaughtExceptionHandler mockSystemExitUncaughtExceptionHandler;
 
+    private ProtobufToJsonTransformer protobufToJsonTransformer;
+
     @Before
     public void setUp() {
         putKafkaPortIntoEnvironmentVariables(Integer.toString(PORT));
@@ -87,6 +88,7 @@ public class ProtobufToJsonTransformerTest {
         ProtobufToJsonTransformer.factory = mockFactory;
         realLogger = ProtobufToJsonTransformer.logger;
         ProtobufToJsonTransformer.logger = mockLogger;
+        protobufToJsonTransformer = new ProtobufToJsonTransformer();
     }
 
     @After
@@ -112,14 +114,14 @@ public class ProtobufToJsonTransformerTest {
         when(mockFactory.createSystemExitUncaughtExceptionHandler())
                 .thenReturn(mockSystemExitUncaughtExceptionHandler);
 
-        ProtobufToJsonTransformer.main(null);
+        protobufToJsonTransformer.main();
 
         // The Serde objects are stateless, so verifying on any() is sufficient. The combination of Java generics and
         // method overloading means that sometimes you have to include generic information in any() and sometimes not.
         verify(mockFactory).createKStreamBuilder();
-        verify(mockKStreamBuilder).stream(Matchers.any(), Matchers.<Serde<Span>>any(), eq(KAFKA_FROM_TOPIC));
+        verify(mockKStreamBuilder).stream(Matchers.any(), Matchers.<Serde<Span>>any(), eq(getFromTopic()));
         verify(mockKStreamStringSpan).mapValues(Matchers.any());
-        verify(mockKStreamStringSpanJsonSerializer).to(Matchers.any(), Matchers.any(), eq(KAFKA_TO_TOPIC));
+        verify(mockKStreamStringSpanJsonSerializer).to(Matchers.any(), Matchers.any(), eq(getToTopic()));
         verify(mockFactory).createKafkaStreams(eq(mockKStreamBuilder), eq(new StreamsConfig(getProperties())));
         verify(mockFactory).createSystemExitUncaughtExceptionHandler();
         verify(mockKafkaStreams).start();

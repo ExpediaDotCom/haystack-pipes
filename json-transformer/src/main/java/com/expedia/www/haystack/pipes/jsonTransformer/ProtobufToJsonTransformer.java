@@ -40,9 +40,6 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Properties;
 
-import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.KAFKA_FROM_TOPIC;
-import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.KAFKA_TO_TOPIC;
-
 public class ProtobufToJsonTransformer {
     static final String CLIENT_ID = "haystack-pipes-protobuf-to-json-transformer";
     static final String STARTED_MSG = "Now started ScanStream";
@@ -73,7 +70,7 @@ public class ProtobufToJsonTransformer {
 
     private static final StreamsConfig STREAMS_CONFIG = new StreamsConfig(getProperties());
 
-    public static void main(String[] args) {
+    void main() {
         startMetricsPolling();
         createAndStartStream();
     }
@@ -93,8 +90,8 @@ public class ProtobufToJsonTransformer {
     private static void buildStreamTopology(KStreamBuilder kStreamBuilder) {
         final Serde<Span> spanSerde = getSpanSerde();
         final Serde<String> stringSerde = Serdes.String();
-        final KStream<String, Span> stream = kStreamBuilder.stream(stringSerde, spanSerde, KAFKA_FROM_TOPIC);
-        stream.mapValues(span -> Span.newBuilder(span).build()).to(stringSerde, spanSerde, KAFKA_TO_TOPIC);
+        final KStream<String, Span> stream = kStreamBuilder.stream(stringSerde, spanSerde, getFromTopic());
+        stream.mapValues(span -> Span.newBuilder(span).build()).to(stringSerde, spanSerde, getToTopic());
     }
 
     private static void startKafkaStreams(KStreamBuilder kStreamBuilder) {
@@ -124,8 +121,20 @@ public class ProtobufToJsonTransformer {
     }
 
     private static String getKafkaIpAnPort() {
-        final KafkaConfig kafkaConfig = CONFIGURATION_PROVIDER.bind("haystack.kafka", KafkaConfig.class);
+        final KafkaConfig kafkaConfig = getKafkaConfig();
         return StrSubstitutor.replaceSystemProperties(kafkaConfig.brokers()) + ":" + kafkaConfig.port();
+    }
+    
+    static String getFromTopic() {
+        return getKafkaConfig().fromTopic();
+    }
+
+    static String getToTopic() {
+        return getKafkaConfig().toTopic();
+    }
+
+    private static KafkaConfig getKafkaConfig() {
+        return CONFIGURATION_PROVIDER.bind("haystack.kafka", KafkaConfig.class);
     }
 
     private static int getReplicationFactor() {

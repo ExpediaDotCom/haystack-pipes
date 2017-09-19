@@ -2,6 +2,8 @@ haystack:
   kafka:
      brokers: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
      port: 9092 # default Kafka port, rarely overridden, but can be overridden by env variable
+     fromTopic: "proto-spans"
+     toTopic: "json-spans"
   pipe:
     streams:
       replicationFactor: 1
