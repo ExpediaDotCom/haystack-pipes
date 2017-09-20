@@ -20,4 +20,8 @@ public interface KafkaConfig {
     String brokers();
 
     int port();
+
+    String fromTopic();
+
+    String toTopic();
 }

@@ -12,24 +12,33 @@
     <url>http://maven.apache.org</url>
 
     <properties>
+        <start-class>com.expedia.www.haystack.pipes.jsonTransformer.IsActiveController</start-class>
+        <!-- Versions -->
+        <cfg4j-core-version>4.4.1</cfg4j-core-version>
+        <commons-text-version>1.1</commons-text-version>
+        <haystack-metrics-version>0.1</haystack-metrics-version>
+        <jacoco-maven-plugin-version>0.7.9</jacoco-maven-plugin-version>
         <java-version>1.8</java-version>
-        <slf4j-version>1.7.25</slf4j-version>
+        <junit-version>4.12</junit-version>
         <kafka-version>0.10.2.1</kafka-version>
         <logback-version>1.2.3</logback-version>
-        <protobuf-java-util-version>3.3.1</protobuf-java-util-version>
-        <jacoco-maven-plugin-version>0.7.9</jacoco-maven-plugin-version>
-        <junit-version>4.12</junit-version>
-        <haystack-metrics-version>0.1</haystack-metrics-version>
         <maven-compiler-plugin-version>3.6.1</maven-compiler-plugin-version>
         <maven-jar-plugin-version>3.0.2</maven-jar-plugin-version>
         <mockito-version>1.9.5</mockito-version>
-        <protoc-jar-maven-version>3.3.0.1</protoc-jar-maven-version>
-        <zookeeper-version>3.4.9</zookeeper-version>
-        <cfg4j-core-version>4.4.1</cfg4j-core-version>
-        <commons-text-version>1.1</commons-text-version>
         <servo-version>0.12.17</servo-version>
+        <spring-boot-version>1.5.7.RELEASE</spring-boot-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <protobuf-java-util-version>3.3.1</protobuf-java-util-version>
+        <protoc-jar-maven-version>3.3.0.1</protoc-jar-maven-version>
+        <slf4j-version>1.7.25</slf4j-version>
+        <zookeeper-version>3.4.9</zookeeper-version>
     </properties>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>1.5.7.RELEASE</version> <!-- should match spring-boot-version in <properties> above -->
+    </parent>
 
     <dependencies>
         <dependency>
@@ -116,6 +125,19 @@
             <artifactId>haystack-metrics</artifactId>
             <version>${haystack-metrics-version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-parent</artifactId>
+            <version>${spring-boot-version}</version>
+            <type>pom</type>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>${spring-boot-version}</version>
+        </dependency>
 
         <!-- Test dependencies -->
         <!-- https://mvnrepository.com/artifact/junit/junit -->
@@ -133,6 +155,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -190,6 +213,11 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot-version}</version>
             </plugin>
         </plugins>
     </build>
