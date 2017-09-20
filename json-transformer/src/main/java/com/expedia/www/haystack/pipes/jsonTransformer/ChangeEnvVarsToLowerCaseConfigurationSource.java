@@ -27,26 +27,36 @@ import java.util.Properties;
 
 /**
  * {@link ConfigurationSource} providing all environment variables under the specified {@link Environment}
- * namespaced prefix
+ * namespaced prefix. Unfortunately cfg4j's EnvironmentVariablesConfigurationSource replaces _ with . in the environment
+ * variable keys, but does not convert the upper case keys (by convention environment variable keys are in upper case
+ * but this rule is not always followed) to lower case, which is necessary to permit Haystack's configuration system,
+ * which uses environment variables, to work properly. Others have suggested this behavior would be "correct": see
+ * https://github.com/cfg4j/cfg4j/issues/207.
  */
-public class ChangeEnvVarsToLowerCaseConfigurationSource extends EnvironmentVariablesConfigurationSource {
+public class ChangeEnvVarsToLowerCaseConfigurationSource implements ConfigurationSource {
 
     private final String prefixOfStringsToConvertToLowerCase;
+    private final EnvironmentVariablesConfigurationSource environmentVariablesConfigurationSource;
 
     /**
      * Constructs a new ChangeEnvVarsToLowerCaseConfigurationSource object that will convert environment variable
      * keys (not their values) to lower case if they start with the specified prefix. Since environment variables are
      * by convention upper case, the prefix will probably be upper case as well, but this is not required.
      *
-     * @param prefixOfStringsToConvertToLowerCase indicates what environment variables should be changed to lower case.
+     * @param prefixOfStringsToConvertToLowerCase     indicates which environment variables should be lower cased.
+     * @param environmentVariablesConfigurationSource does the work (except for lower case conversion) via delegation.
      */
-    ChangeEnvVarsToLowerCaseConfigurationSource(String prefixOfStringsToConvertToLowerCase) {
+    ChangeEnvVarsToLowerCaseConfigurationSource(
+            String prefixOfStringsToConvertToLowerCase,
+            EnvironmentVariablesConfigurationSource environmentVariablesConfigurationSource) {
         this.prefixOfStringsToConvertToLowerCase = prefixOfStringsToConvertToLowerCase;
+        environmentVariablesConfigurationSource.init();
+        this.environmentVariablesConfigurationSource = environmentVariablesConfigurationSource;
     }
 
     @Override
     public Properties getConfiguration(Environment environment) {
-        final Properties properties = super.getConfiguration(environment);
+        final Properties properties = environmentVariablesConfigurationSource.getConfiguration(environment);
         final Iterator<Map.Entry<Object, Object>> iterator = properties.entrySet().iterator();
         final Map<String, Object> toAdd = new HashMap<>();
         while (iterator.hasNext()) {
@@ -63,7 +73,18 @@ public class ChangeEnvVarsToLowerCaseConfigurationSource extends EnvironmentVari
     }
 
     @Override
+    public void init() {
+        environmentVariablesConfigurationSource.init();
+    }
+
+    @Override
     public String toString() {
         return "ChangeEnvVarsToLowerCaseConfigurationSource{}";
     }
+
+    @Override
+    public void reload() {
+        environmentVariablesConfigurationSource.reload();
+    }
+
 }

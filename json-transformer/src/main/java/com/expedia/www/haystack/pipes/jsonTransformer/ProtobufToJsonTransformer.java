@@ -33,6 +33,7 @@ import org.cfg4j.provider.ConfigurationProviderBuilder;
 import org.cfg4j.source.ConfigurationSource;
 import org.cfg4j.source.classpath.ClasspathConfigurationSource;
 import org.cfg4j.source.compose.MergeConfigurationSource;
+import org.cfg4j.source.system.EnvironmentVariablesConfigurationSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +63,9 @@ public class ProtobufToJsonTransformer {
     }
 
     private static ConfigurationSource createEnvironmentConfigurationSource() {
-        return new ChangeEnvVarsToLowerCaseConfigurationSource("HAYSTACK");
+        final EnvironmentVariablesConfigurationSource environmentVariablesConfigurationSource =
+                new EnvironmentVariablesConfigurationSource();
+        return new ChangeEnvVarsToLowerCaseConfigurationSource("HAYSTACK", environmentVariablesConfigurationSource);
     }
 
     static final String KLASS_NAME = ProtobufToJsonTransformer.class.getName();
@@ -70,6 +73,10 @@ public class ProtobufToJsonTransformer {
 
     private static final StreamsConfig STREAMS_CONFIG = new StreamsConfig(getProperties());
 
+    /**
+     * main() is an instance method because it is called by the static void IsActiveController.main(String [] args);
+     * making it an instance method facilitates unit testing.
+     */
     void main() {
         startMetricsPolling();
         createAndStartStream();

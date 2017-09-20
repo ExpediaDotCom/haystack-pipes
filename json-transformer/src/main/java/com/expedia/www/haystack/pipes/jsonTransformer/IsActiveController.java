@@ -13,10 +13,8 @@ public class IsActiveController extends SpringBootServletInitializer {
     static Factory factory = new Factory();
 
     public static void main(String[] args) {
-        final ProtobufToJsonTransformer protobufToJsonTransformer = factory.createProtobufToJsonTransformer();
-        protobufToJsonTransformer.main();
-        final SpringApplication springApplication = factory.createSpringApplication();
-        springApplication.run(args);
+        factory.createProtobufToJsonTransformer().main();
+        factory.createSpringApplication().run(args);
     }
 
     static class Factory {
@@ -25,8 +23,7 @@ public class IsActiveController extends SpringBootServletInitializer {
         }
 
         SpringApplication createSpringApplication() {
-            final Object[] sources = {IsActiveController.class};
-            return new SpringApplication(sources);
+            return new SpringApplication(IsActiveController.class);
         }
     }
 }

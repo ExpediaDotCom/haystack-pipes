@@ -17,7 +17,6 @@
 package com.expedia.www.haystack.pipes.jsonTransformer;
 
 import com.expedia.www.haystack.pipes.jsonTransformer.IsActiveController.Factory;
-import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,9 +40,6 @@ public class IsActiveControllerTest {
     private Factory realFactory;
 
     @Mock
-    private KStreamBuilder mockKStreamBuilder;
-
-    @Mock
     private ProtobufToJsonTransformer mockProtobufToJsonTransformer;
 
     @Mock
@@ -58,7 +54,7 @@ public class IsActiveControllerTest {
     @After
     public void tearDown() {
         IsActiveController.factory = realFactory;
-        verifyNoMoreInteractions(mockFactory, mockKStreamBuilder, mockProtobufToJsonTransformer, mockSpringApplication);
+        verifyNoMoreInteractions(mockFactory, mockProtobufToJsonTransformer, mockSpringApplication);
     }
 
     @Test
@@ -77,7 +73,7 @@ public class IsActiveControllerTest {
 
     @Test
     public void testDefaultConstructor() {
-        new IsActiveControllerTest();
+        new IsActiveController();
     }
 
     @Test
@@ -90,7 +86,6 @@ public class IsActiveControllerTest {
         final SpringApplication springApplication = realFactory.createSpringApplication();
 
         final Set<Object> sources = springApplication.getSources();
-
         assertEquals(Collections.singleton(IsActiveController.class), sources);
     }
 }
