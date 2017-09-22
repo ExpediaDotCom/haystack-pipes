@@ -29,6 +29,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
 import static com.expedia.www.haystack.pipes.jsonTransformer.SpanProtobufDeserializer.ERROR_MSG;
+import static com.expedia.www.haystack.pipes.jsonTransformer.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static com.expedia.www.haystack.pipes.jsonTransformer.TestConstantsAndCommonCode.PROTOBUF_SPAN_BYTES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -76,8 +77,7 @@ public class SpanProtobufDeserializerTest {
 
         final Span actual = spanProtobufDeserializer.deserialize(null, PROTOBUF_SPAN_BYTES);
 
-        final Span expected = TestConstantsAndCommonCode.createFullyPopulatedSpan();
-        assertEquals(expected, actual);
+        assertEquals(FULLY_POPULATED_SPAN, actual);
         verifyCounters(0L, PROTOBUF_SPAN_BYTES.length);
         verifyTimerAndStopwatch();
     }

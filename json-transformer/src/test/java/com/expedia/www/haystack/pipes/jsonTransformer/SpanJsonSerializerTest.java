@@ -16,7 +16,6 @@
  */
 package com.expedia.www.haystack.pipes.jsonTransformer;
 
-import com.expedia.open.tracing.Span;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat.Printer;
@@ -30,6 +29,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
+import static com.expedia.www.haystack.pipes.jsonTransformer.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.verify;
@@ -50,12 +50,10 @@ public class SpanJsonSerializerTest {
     @Mock
     private Stopwatch mockStopwatch;
 
-    private Span span = null;
     private SpanJsonSerializer spanJsonSerializer;
 
     @Before
     public void setUp() throws InvalidProtocolBufferException {
-        span = TestConstantsAndCommonCode.createFullyPopulatedSpan();
         spanJsonSerializer = new SpanJsonSerializer();
         realLogger = SpanJsonSerializer.logger;
         SpanJsonSerializer.logger = mockLogger;
@@ -77,7 +75,7 @@ public class SpanJsonSerializerTest {
     public void testSerializeFullyPopulated() throws Descriptors.DescriptorValidationException {
         when(mockTimer.start()).thenReturn(mockStopwatch);
 
-        final byte[] byteArray = spanJsonSerializer.serialize(null, span);
+        final byte[] byteArray = spanJsonSerializer.serialize(null, FULLY_POPULATED_SPAN);
 
         final String string = new String(byteArray);
         assertEquals(TestConstantsAndCommonCode.JSON_SPAN_STRING, string);
@@ -89,15 +87,15 @@ public class SpanJsonSerializerTest {
     public void testSerializeExceptionCase() throws InvalidProtocolBufferException {
         when(mockTimer.start()).thenReturn(mockStopwatch);
         final InvalidProtocolBufferException exception = new InvalidProtocolBufferException("Test");
-        when(mockPrinter.print(span)).thenThrow(exception);
+        when(mockPrinter.print(FULLY_POPULATED_SPAN)).thenThrow(exception);
 
         final Printer printer = injectMockPrinter();
-        final byte[] shouldBeNull = spanJsonSerializer.serialize(null, span);
+        final byte[] shouldBeNull = spanJsonSerializer.serialize(null, FULLY_POPULATED_SPAN);
         SpanJsonSerializer.printer = printer;
 
         assertNull(shouldBeNull);
-        verify(mockPrinter).print(span);
-        verify(mockLogger).error(SpanJsonSerializer.ERROR_MSG, span, exception);
+        verify(mockPrinter).print(FULLY_POPULATED_SPAN);
+        verify(mockLogger).error(SpanJsonSerializer.ERROR_MSG, FULLY_POPULATED_SPAN, exception);
         verifyCounters(1, 1, 0);
         verifyTimerAndStopwatch();
     }
