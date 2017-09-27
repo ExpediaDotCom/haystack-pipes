@@ -58,7 +58,8 @@ public class ChangeEnvVarsToLowerCaseConfigurationSource implements Configuratio
     public Properties getConfiguration(Environment environment) {
         final Properties properties = environmentVariablesConfigurationSource.getConfiguration(environment);
         final Iterator<Map.Entry<Object, Object>> iterator = properties.entrySet().iterator();
-        final Map<String, Object> toAdd = new HashMap<>();
+        @SuppressWarnings("Convert2Diamond") // TODO figure out how to make IntelliJ happy (complains about 1.5)
+        final Map<String, Object> toAdd = new HashMap<String, Object>();
         while (iterator.hasNext()) {
             final Map.Entry<Object, Object> next = iterator.next();
             final String key = (String) next.getKey();
