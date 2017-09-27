@@ -24,10 +24,20 @@ from the latter topic, and then write the JSON records just consumed to their de
 
 ## Building
 
-####
-Since this repo contains haystack-idl as the submodule, run the following command from the directory into which you
-cloned the [haystack-pipes package](https://github.com/ExpediaDotCom/haystack-pipes):
-* git clone --recursive git@github.com:ExpediaDotCom/haystack-traces.git .
+#### Cloning
+##### From scratch
+Since this repo contains haystack-idl as a submodule, a recursive clone of the
+[haystack-pipes package](https://github.com/ExpediaDotCom/haystack-pipes) is required:
+
+```git clone --recursive git@github.com:ExpediaDotCom/haystack-pipes.git .```
+
+##### From existing directory
+If you have already cloned the the [haystack-pipes package](https://github.com/ExpediaDotCom/haystack-pipes) (perhaps
+with an IDE that did not clone recursively as the command above instructs), or if you want to pick up a newer version of
+the [haystack-idl package](https://github.com/ExpediaDotCom/haystack-idl), run the following from your haystack-pipes
+directory:
+
+```git submodule update --init --recursive```
 
 #### Prerequisites: 
 
@@ -39,11 +49,13 @@ cloned the [haystack-pipes package](https://github.com/ExpediaDotCom/haystack-pi
 
 ##### Full build
 For a full build, including unit tests and Docker image build, run:
+
 ```
 make all
 ```
 ##### Individual package build
 In place of <package name> below, put the name of the package you want to build (e.g. json-transformer)
+
 ```
 cd <package name>
 mvn clean package # to run the unit tests and build the jar file
