@@ -11,7 +11,7 @@ build: clean
 all: clean json-transformer
 
 json-transformer:
-	mvn package -pl haystack-pipes-json-transformer -am
+	mvn package -pl json-transformer -am
 
 # build all and release
 release: all
