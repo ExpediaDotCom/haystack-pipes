@@ -1,3 +1,5 @@
+[Build Status](https://travis-ci.org/ExpediaDotCom/haystack-pipes)
+
 # haystack-pipes
 Packages to send ("pipe") Haystack data to external sinks (like AWS Firehose)
 
@@ -12,10 +14,39 @@ Kinesis Firehose can be configured to deliver the data to
     * [Amazon Redshift](https://aws.amazon.com/redshift/)
     * [Amazon Elasticsearch Service](https://aws.amazon.com/elasticsearch-service/)
     
-## json-transformer    
+#### json-transformer    
 The [json-transformer](https://github.com/ExpediaDotCom/haystack-pipes/tree/master/json-transformer) package is a
 lightweight service that uses [Kafka Streams](https://kafka.apache.org/documentation/streams/) to read the protobuf 
 records from Kafka, transform them to JSON, and write them to another topic in Kafka. The plugins will then consume
 from the latter topic, and then write the JSON records just consumed to their destinations.
 
-## firehose-writer
+#### firehose-writer
+
+## Building
+
+####
+Since this repo contains haystack-idl as the submodule, run the following command from the directory into which you
+cloned the [haystack-pipes package](https://github.com/ExpediaDotCom/haystack-pipes):
+* git clone --recursive git@github.com:ExpediaDotCom/haystack-traces.git .
+
+#### Prerequisites: 
+
+* Java 1.8
+* Maven 3.3.9 or higher
+* Docker 1.13 or higher
+
+#### Build
+
+##### Full build
+For a full build, including unit tests and Docker image build, run:
+```
+make all
+```
+##### Individual package build
+In place of <package name> below, put the name of the package you want to build (e.g. json-transformer)
+```
+cd <package name>
+mvn clean package # to run the unit tests and build the jar file
+make docker-image # to build the Docker image
+```
+When the build runs on Travis, it will upload the Docker image to Docker Hub.
