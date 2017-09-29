@@ -1,0 +1,15 @@
+haystack:
+  kafka:
+     brokers: "haystack.kafka.brokers"
+     port: 65534
+     fromTopic: "haystack.kafka.fromTopic"
+     toTopic: "haystack.kafka.toTopic"
+  pipe:
+    streams:
+      replicationFactor: 2147483645
+  graphite:
+     prefix: "haystack.graphite.prefix"
+     address: "haystack.graphite.address"
+     port: 65535
+     pollIntervalSeconds: 2147483646
+     queueSize: 2147483647

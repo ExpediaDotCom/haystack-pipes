@@ -13,7 +13,7 @@ import java.util.Collections;
 public class Configuration {
     public static final String HAYSTACK_GRAPHITE_CONFIG_PREFIX = "haystack.graphite";
 
-    public static ConfigurationProvider createMergeConfigurationProvider() {
+    public ConfigurationProvider createMergeConfigurationProvider() {
         final MergeConfigurationSource configurationSource = new MergeConfigurationSource(
                 createClasspathConfigurationSource(), createEnvironmentConfigurationSource()
         );
@@ -21,11 +21,11 @@ public class Configuration {
         return configurationProviderBuilder.withConfigurationSource(configurationSource).build();
     }
 
-    private static ConfigurationSource createClasspathConfigurationSource() {
+    private ConfigurationSource createClasspathConfigurationSource() {
         return new ClasspathConfigurationSource(() -> Collections.singletonList(Paths.get("base.yaml")));
     }
 
-    private static ConfigurationSource createEnvironmentConfigurationSource() {
+    private ConfigurationSource createEnvironmentConfigurationSource() {
         final EnvironmentVariablesConfigurationSource environmentVariablesConfigurationSource =
                 new EnvironmentVariablesConfigurationSource();
         return new ChangeEnvVarsToLowerCaseConfigurationSource("HAYSTACK", environmentVariablesConfigurationSource);

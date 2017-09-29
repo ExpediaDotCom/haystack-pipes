@@ -35,15 +35,14 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
-import static com.expedia.www.haystack.pipes.commons.Configuration.createMergeConfigurationProvider;
-
 public class ProtobufToJsonTransformer {
     static final String CLIENT_ID = "haystack-pipes-protobuf-to-json-transformer";
     static final String STARTED_MSG = "Now started ScanStream";
-    private static final ConfigurationProvider CONFIGURATION_PROVIDER = createMergeConfigurationProvider();
 
     static Factory factory = new Factory(); // will be mocked out in unit tests
     static Logger logger = LoggerFactory.getLogger(ProtobufToJsonTransformer.class);
+    private static final Configuration CONFIGURATION = new Configuration();
+    private static final ConfigurationProvider CONFIGURATION_PROVIDER = CONFIGURATION.createMergeConfigurationProvider();
 
     static final String KLASS_NAME = ProtobufToJsonTransformer.class.getName();
     static final String KLASS_SIMPLE_NAME = ProtobufToJsonTransformer.class.getSimpleName();
