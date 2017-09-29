@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.expedia.www</groupId>
+    <artifactId>haystack-pipes-kafka-producer</artifactId>
+    <packaging>jar</packaging>
+    <version>1.0-SNAPSHOT</version>
+
+    <name>haystack-pipes-kafka-producer</name>
+    <url>http://maven.apache.org</url>
+
+    <properties>
+        <start-class>com.expedia.www.haystack.pipes.kafkaProducer.JsonToKafkaProducer</start-class>
+        <!-- Versions -->
+        <haystack-pipes-commons-version>1.0-SNAPSHOT</haystack-pipes-commons-version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.expedia.www</groupId>
+            <artifactId>haystack-pipes-commons</artifactId>
+            <version>${haystack-pipes-commons-version}</version>
+        </dependency>
+    </dependencies>
+</project>

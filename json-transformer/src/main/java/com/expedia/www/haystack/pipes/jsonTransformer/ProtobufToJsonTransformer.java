@@ -19,6 +19,7 @@ package com.expedia.www.haystack.pipes.jsonTransformer;
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.metrics.GraphiteConfig;
 import com.expedia.www.haystack.metrics.MetricPublishing;
+import com.expedia.www.haystack.pipes.commons.Configuration;
 import org.apache.commons.text.StrSubstitutor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serde;
@@ -29,44 +30,20 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.processor.WallclockTimestampExtractor;
 import org.cfg4j.provider.ConfigurationProvider;
-import org.cfg4j.provider.ConfigurationProviderBuilder;
-import org.cfg4j.source.ConfigurationSource;
-import org.cfg4j.source.classpath.ClasspathConfigurationSource;
-import org.cfg4j.source.compose.MergeConfigurationSource;
-import org.cfg4j.source.system.EnvironmentVariablesConfigurationSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.Properties;
+
+import static com.expedia.www.haystack.pipes.commons.Configuration.createMergeConfigurationProvider;
 
 public class ProtobufToJsonTransformer {
     static final String CLIENT_ID = "haystack-pipes-protobuf-to-json-transformer";
     static final String STARTED_MSG = "Now started ScanStream";
-    private static final String HAYSTACK_GRAPHITE_CONFIG_PREFIX = "haystack.graphite";
     private static final ConfigurationProvider CONFIGURATION_PROVIDER = createMergeConfigurationProvider();
 
     static Factory factory = new Factory(); // will be mocked out in unit tests
     static Logger logger = LoggerFactory.getLogger(ProtobufToJsonTransformer.class);
-
-    private static ConfigurationProvider createMergeConfigurationProvider() {
-        final MergeConfigurationSource configurationSource = new MergeConfigurationSource(
-                createClasspathConfigurationSource(), createEnvironmentConfigurationSource()
-        );
-        final ConfigurationProviderBuilder configurationProviderBuilder = new ConfigurationProviderBuilder();
-        return configurationProviderBuilder.withConfigurationSource(configurationSource).build();
-    }
-
-    private static ConfigurationSource createClasspathConfigurationSource() {
-        return new ClasspathConfigurationSource(() -> Collections.singletonList(Paths.get("base.yaml")));
-    }
-
-    private static ConfigurationSource createEnvironmentConfigurationSource() {
-        final EnvironmentVariablesConfigurationSource environmentVariablesConfigurationSource =
-                new EnvironmentVariablesConfigurationSource();
-        return new ChangeEnvVarsToLowerCaseConfigurationSource("HAYSTACK", environmentVariablesConfigurationSource);
-    }
 
     static final String KLASS_NAME = ProtobufToJsonTransformer.class.getName();
     static final String KLASS_SIMPLE_NAME = ProtobufToJsonTransformer.class.getSimpleName();
@@ -84,7 +61,7 @@ public class ProtobufToJsonTransformer {
 
     private static void startMetricsPolling() {
         final GraphiteConfig graphiteConfig = CONFIGURATION_PROVIDER.bind(
-                HAYSTACK_GRAPHITE_CONFIG_PREFIX, GraphiteConfig.class);
+                Configuration.HAYSTACK_GRAPHITE_CONFIG_PREFIX, GraphiteConfig.class);
         (new MetricPublishing()).start(graphiteConfig);
     }
 

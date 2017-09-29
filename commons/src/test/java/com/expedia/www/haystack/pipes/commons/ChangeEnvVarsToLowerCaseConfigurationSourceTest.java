@@ -1,13 +1,15 @@
-package com.expedia.www.haystack.pipes.jsonTransformer;
+package com.expedia.www.haystack.pipes.commons;
 
+import org.cfg4j.source.context.environment.Environment;
 import org.cfg4j.source.context.environment.ImmutableEnvironment;
 import org.cfg4j.source.system.EnvironmentVariablesConfigurationSource;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.cfg4j.source.context.environment.Environment;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,10 +19,6 @@ import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ChangeEnvVarsToLowerCaseConfigurationSourceTest {
@@ -31,7 +29,7 @@ public class ChangeEnvVarsToLowerCaseConfigurationSourceTest {
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockEnvironmentVariablesConfigurationSource);
+        Mockito.verifyNoMoreInteractions(mockEnvironmentVariablesConfigurationSource);
     }
 
     @Test
@@ -42,12 +40,12 @@ public class ChangeEnvVarsToLowerCaseConfigurationSourceTest {
                 new ChangeEnvVarsToLowerCaseConfigurationSource(ppes.prefix, mockEnvironmentVariablesConfigurationSource);
         final Properties copyOfCf4jProperties = new Properties();
         copyOfCf4jProperties.putAll(ppes.properties);
-        when(mockEnvironmentVariablesConfigurationSource.getConfiguration(ENVIRONMENT)).thenReturn(copyOfCf4jProperties);
+        Mockito.when(mockEnvironmentVariablesConfigurationSource.getConfiguration(ENVIRONMENT)).thenReturn(copyOfCf4jProperties);
 
         final Properties configuration = classUnderTest.getConfiguration(ENVIRONMENT);
 
-        verify(mockEnvironmentVariablesConfigurationSource).getConfiguration(ENVIRONMENT);
-        verify(mockEnvironmentVariablesConfigurationSource).init();
+        Mockito.verify(mockEnvironmentVariablesConfigurationSource).getConfiguration(ENVIRONMENT);
+        Mockito.verify(mockEnvironmentVariablesConfigurationSource).init();
         assertSourceAndDestinationSizesAreEqual(ppes, configuration);
         assertUpperCaseKeyIsMissingFromDestination(ppes, configuration);
         assertSourceAndDestinationValuesAreEqual(ppes, configuration);
@@ -109,7 +107,7 @@ public class ChangeEnvVarsToLowerCaseConfigurationSourceTest {
                         getPropertiesFromCfg4jEnvironmentVariablesConfigurationSource(), matcher.group(), key);
             }
         }
-        fail("An environment variable containing upper case letters could not be found");
+        Assert.fail("An environment variable containing upper case letters could not be found");
         return null;
     }
 }

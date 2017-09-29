@@ -15,6 +15,8 @@
     </properties>
 
     <modules>
+        <module>commons</module>
         <module>json-transformer</module>
+        <module>kafka-producer</module>
     </modules>
 </project>
