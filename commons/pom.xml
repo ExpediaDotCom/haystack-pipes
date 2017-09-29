@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <parent>
+        <artifactId>haystack-pipes</artifactId>
+        <groupId>com.expedia.www</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>haystack-pipes-commons</artifactId>
+
+    <properties>
+        <!-- Versions -->
+        <cfg4j-core-version>4.4.1</cfg4j-core-version>
+        <junit-version>4.12</junit-version>
+        <mockito-version>1.9.5</mockito-version>
+    </properties>
+
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.cfg4j/cfg4j-core -->
+        <dependency>
+            <groupId>org.cfg4j</groupId>
+            <artifactId>cfg4j-core</artifactId>
+            <version>${cfg4j-core-version}</version>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <!-- https://mvnrepository.com/artifact/junit/junit -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit-version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.mockito/mockito-all -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>${mockito-version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>
