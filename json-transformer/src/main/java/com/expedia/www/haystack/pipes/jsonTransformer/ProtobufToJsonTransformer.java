@@ -17,9 +17,8 @@
 package com.expedia.www.haystack.pipes.jsonTransformer;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.metrics.GraphiteConfig;
-import com.expedia.www.haystack.metrics.MetricPublishing;
 import com.expedia.www.haystack.pipes.commons.Configuration;
+import com.expedia.www.haystack.pipes.commons.Metrics;
 import org.apache.commons.text.StrSubstitutor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serde;
@@ -43,6 +42,7 @@ public class ProtobufToJsonTransformer {
     static Logger logger = LoggerFactory.getLogger(ProtobufToJsonTransformer.class);
     private static final Configuration CONFIGURATION = new Configuration();
     private static final ConfigurationProvider CONFIGURATION_PROVIDER = CONFIGURATION.createMergeConfigurationProvider();
+    private static final Metrics METRICS = new Metrics();
 
     static final String KLASS_NAME = ProtobufToJsonTransformer.class.getName();
     static final String KLASS_SIMPLE_NAME = ProtobufToJsonTransformer.class.getSimpleName();
@@ -54,14 +54,8 @@ public class ProtobufToJsonTransformer {
      * making it an instance method facilitates unit testing.
      */
     void main() {
-        startMetricsPolling();
+        METRICS.startMetricsPolling();
         createAndStartStream();
-    }
-
-    private static void startMetricsPolling() {
-        final GraphiteConfig graphiteConfig = CONFIGURATION_PROVIDER.bind(
-                Configuration.HAYSTACK_GRAPHITE_CONFIG_PREFIX, GraphiteConfig.class);
-        (new MetricPublishing()).start(graphiteConfig);
     }
 
     private static void createAndStartStream() {

@@ -11,7 +11,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 
 public class Configuration {
-    public static final String HAYSTACK_GRAPHITE_CONFIG_PREFIX = "haystack.graphite";
+    static final String HAYSTACK_GRAPHITE_CONFIG_PREFIX = "haystack.graphite";
 
     public ConfigurationProvider createMergeConfigurationProvider() {
         final MergeConfigurationSource configurationSource = new MergeConfigurationSource(
