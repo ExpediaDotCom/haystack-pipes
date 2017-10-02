@@ -1,14 +1,12 @@
-.PHONY: all json-transformer release
-
 PWD := $(shell pwd)
+
+all: clean build
 
 clean:
 	mvn clean
 
 build: clean
 	mvn package
-
-all: clean json-transformer
 
 json-transformer:
 	mvn package -pl json-transformer -am

@@ -1,5 +1,3 @@
-.PHONY: release
-
 export DOCKER_ORG := expediadotcom
 export DOCKER_IMAGE_NAME := haystack-pipes-json-transformer
 
