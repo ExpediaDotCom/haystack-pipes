@@ -17,6 +17,7 @@
 package com.expedia.www.haystack.pipes.jsonTransformer;
 
 import com.expedia.open.tracing.Span;
+import com.expedia.www.haystack.pipes.commons.SystemExitUncaughtExceptionHandler;
 import com.expedia.www.haystack.pipes.jsonTransformer.ProtobufToJsonTransformer.Factory;
 import com.netflix.servo.publish.PollScheduler;
 import org.apache.kafka.clients.consumer.ConsumerConfig;

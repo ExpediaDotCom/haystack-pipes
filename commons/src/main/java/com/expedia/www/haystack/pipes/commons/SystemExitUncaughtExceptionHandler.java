@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.jsonTransformer;
+package com.expedia.www.haystack.pipes.commons;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

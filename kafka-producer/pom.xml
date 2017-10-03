@@ -16,6 +16,7 @@
         <start-class>com.expedia.www.haystack.pipes.kafkaProducer.JsonToKafkaProducer</start-class>
         <!-- Versions -->
         <haystack-pipes-commons-version>1.0-SNAPSHOT</haystack-pipes-commons-version>
+        <kafka-version>0.10.2.1</kafka-version>
     </properties>
 
     <dependencies>
@@ -23,6 +24,11 @@
             <groupId>com.expedia.www</groupId>
             <artifactId>haystack-pipes-commons</artifactId>
             <version>${haystack-pipes-commons-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-streams</artifactId>
+            <version>${kafka-version}</version>
         </dependency>
     </dependencies>
 </project>

@@ -18,8 +18,10 @@ package com.expedia.www.haystack.pipes.jsonTransformer;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.Configuration;
+import com.expedia.www.haystack.pipes.commons.IntermediateStreamsConfig;
+import com.expedia.www.haystack.pipes.commons.KafkaConfig;
 import com.expedia.www.haystack.pipes.commons.Metrics;
-import org.apache.commons.text.StrSubstitutor;
+import com.expedia.www.haystack.pipes.commons.SystemExitUncaughtExceptionHandler;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -99,7 +101,7 @@ public class ProtobufToJsonTransformer {
 
     private static String getKafkaIpAnPort() {
         final KafkaConfig kafkaConfig = getKafkaConfig();
-        return StrSubstitutor.replaceSystemProperties(kafkaConfig.brokers()) + ":" + kafkaConfig.port();
+        return kafkaConfig.brokers() + ":" + kafkaConfig.port();
     }
     
     static String getFromTopic() {
@@ -111,7 +113,7 @@ public class ProtobufToJsonTransformer {
     }
 
     private static KafkaConfig getKafkaConfig() {
-        return CONFIGURATION_PROVIDER.bind("haystack.kafka", KafkaConfig.class);
+        return CONFIGURATION_PROVIDER.bind(Configuration.HAYSTACK_KAFKA_CONFIG_PREFIX, KafkaConfig.class);
     }
 
     private static int getReplicationFactor() {

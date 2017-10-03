@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.jsonTransformer;
+package com.expedia.www.haystack.pipes.commons;
 
 public interface KafkaConfig {
     String brokers();
