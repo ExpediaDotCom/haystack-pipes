@@ -2,10 +2,12 @@
 
 # haystack-pipes
 Packages to send ("pipe") Haystack data to external sinks (like AWS Firehose)
+![High Level Block Diagram](https://github.com/ExpediaDotCom/haystack-pipes/blob/master/documents/diagrams/haystack_pipes.png)
 
 The haystack-pipes unit delivers a human-friendly version of Haystack messages to zero or more "durable" locations for 
 more permanent storage. Current "plug`in" candidates for such storage include:
-1. [Amazon Kinesis Firehose](https://aws.amazon.com/kinesis/firehose/) is an AWS service that facilitates loading 
+1. [Kafka Producer](https://github.com/ExpediaDotCom/haystack-pipes/tree/master/kafka-producer)
+2. [Amazon Kinesis Firehose](https://aws.amazon.com/kinesis/firehose/) is an AWS service that facilitates loading 
 streaming data into AWS. Note that its 
 [PutRecordBatch API](http://docs.aws.amazon.com/firehose/latest/APIReference/API_PutRecordBatch.html) accepts up to
 500 records, with a maximum size of 4 MB for each put request. The plug in will batch the records appropriately.
@@ -19,6 +21,8 @@ The [json-transformer](https://github.com/ExpediaDotCom/haystack-pipes/tree/mast
 lightweight service that uses [Kafka Streams](https://kafka.apache.org/documentation/streams/) to read the protobuf 
 records from Kafka, transform them to JSON, and write them to another topic in Kafka. The plugins will then consume
 from the latter topic, and then write the JSON records just consumed to their destinations.
+
+#### kafka-producer
 
 #### firehose-writer
 
