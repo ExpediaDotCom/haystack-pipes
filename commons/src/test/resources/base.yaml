@@ -1,6 +1,6 @@
 haystack:
   kafka:
-     brokers: "haystack.kafka.brokers"
+     brokers: "localhost"
      port: 65534
      fromTopic: "haystack.kafka.fromTopic"
      toTopic: "haystack.kafka.toTopic"

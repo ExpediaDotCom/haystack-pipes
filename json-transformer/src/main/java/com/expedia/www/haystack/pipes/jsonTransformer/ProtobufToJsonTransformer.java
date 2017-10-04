@@ -17,69 +17,47 @@
 package com.expedia.www.haystack.pipes.jsonTransformer;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.pipes.commons.Configuration;
-import com.expedia.www.haystack.pipes.commons.IntermediateStreamsConfig;
-import com.expedia.www.haystack.pipes.commons.KafkaConfig;
+import com.expedia.www.haystack.pipes.commons.KafkaConfigurationProvider;
+import com.expedia.www.haystack.pipes.commons.KafkaStreamBuilder;
+import com.expedia.www.haystack.pipes.commons.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.Metrics;
-import com.expedia.www.haystack.pipes.commons.SystemExitUncaughtExceptionHandler;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.streams.KafkaStreams;
-import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
-import org.apache.kafka.streams.processor.WallclockTimestampExtractor;
-import org.cfg4j.provider.ConfigurationProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.Properties;
-
-public class ProtobufToJsonTransformer {
+public class ProtobufToJsonTransformer implements KafkaStreamBuilder {
     static final String CLIENT_ID = "haystack-pipes-protobuf-to-json-transformer";
-    static final String STARTED_MSG = "Now started ScanStream";
+    static Metrics metrics = new Metrics();
 
-    static Factory factory = new Factory(); // will be mocked out in unit tests
-    static Logger logger = LoggerFactory.getLogger(ProtobufToJsonTransformer.class);
-    private static final Configuration CONFIGURATION = new Configuration();
-    private static final ConfigurationProvider CONFIGURATION_PROVIDER = CONFIGURATION.createMergeConfigurationProvider();
-    private static final Metrics METRICS = new Metrics();
+    private static final KafkaConfigurationProvider KAFKA_CONFIGURATION_PROVIDER = new KafkaConfigurationProvider();
 
-    static final String KLASS_NAME = ProtobufToJsonTransformer.class.getName();
-    static final String KLASS_SIMPLE_NAME = ProtobufToJsonTransformer.class.getSimpleName();
+    final KafkaStreamStarter kafkaStreamStarter;
 
-    private static final StreamsConfig STREAMS_CONFIG = new StreamsConfig(getProperties());
+    ProtobufToJsonTransformer() {
+        this(new KafkaStreamStarter(ProtobufToJsonTransformer.class, CLIENT_ID));
+    }
+
+    ProtobufToJsonTransformer(KafkaStreamStarter kafkaStreamStarter) {
+        this.kafkaStreamStarter = kafkaStreamStarter;
+    }
 
     /**
      * main() is an instance method because it is called by the static void IsActiveController.main(String [] args);
      * making it an instance method facilitates unit testing.
      */
     void main() {
-        METRICS.startMetricsPolling();
-        createAndStartStream();
+        metrics.startMetricsPolling();
+        kafkaStreamStarter.createAndStartStream(this);
     }
 
-    private static void createAndStartStream() {
-        final KStreamBuilder kStreamBuilder = factory.createKStreamBuilder();
-        buildStreamTopology(kStreamBuilder);
-        startKafkaStreams(kStreamBuilder);
-    }
-
-    private static void buildStreamTopology(KStreamBuilder kStreamBuilder) {
+    public void buildStreamTopology(KStreamBuilder kStreamBuilder) {
         final Serde<Span> spanSerde = getSpanSerde();
         final Serde<String> stringSerde = Serdes.String();
-        final KStream<String, Span> stream = kStreamBuilder.stream(stringSerde, spanSerde, getFromTopic());
-        stream.mapValues(span -> Span.newBuilder(span).build()).to(stringSerde, spanSerde, getToTopic());
-    }
-
-    private static void startKafkaStreams(KStreamBuilder kStreamBuilder) {
-        final KafkaStreams kafkaStreams = factory.createKafkaStreams(kStreamBuilder, STREAMS_CONFIG);
-        final SystemExitUncaughtExceptionHandler closeThenRestartUncaughtExceptionHandler
-                = factory.createSystemExitUncaughtExceptionHandler();
-        kafkaStreams.setUncaughtExceptionHandler(closeThenRestartUncaughtExceptionHandler);
-        kafkaStreams.start();
-        logger.info(STARTED_MSG);
+        final KStream<String, Span> stream = kStreamBuilder.stream(
+                stringSerde, spanSerde, KAFKA_CONFIGURATION_PROVIDER.fromTopic());
+        stream.mapValues(span -> Span.newBuilder(span).build()).to(
+                stringSerde, spanSerde, KAFKA_CONFIGURATION_PROVIDER.toTopic());
     }
 
     private static Serde<Span> getSpanSerde() {
@@ -88,51 +66,4 @@ public class ProtobufToJsonTransformer {
         return Serdes.serdeFrom(spanJsonSerializer, protobufDeserializer);
     }
 
-    static Properties getProperties() {
-        final Properties props = new Properties();
-        props.put(StreamsConfig.CLIENT_ID_CONFIG, CLIENT_ID);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, KLASS_NAME);
-        props.put(StreamsConfig.APPLICATION_ID_CONFIG, KLASS_SIMPLE_NAME);
-        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, getKafkaIpAnPort());
-        props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, getReplicationFactor());
-        props.put(StreamsConfig.TIMESTAMP_EXTRACTOR_CLASS_CONFIG, WallclockTimestampExtractor.class);
-        return props;
-    }
-
-    private static String getKafkaIpAnPort() {
-        final KafkaConfig kafkaConfig = getKafkaConfig();
-        return kafkaConfig.brokers() + ":" + kafkaConfig.port();
-    }
-    
-    static String getFromTopic() {
-        return getKafkaConfig().fromTopic();
-    }
-
-    static String getToTopic() {
-        return getKafkaConfig().toTopic();
-    }
-
-    private static KafkaConfig getKafkaConfig() {
-        return CONFIGURATION_PROVIDER.bind(Configuration.HAYSTACK_KAFKA_CONFIG_PREFIX, KafkaConfig.class);
-    }
-
-    private static int getReplicationFactor() {
-        final IntermediateStreamsConfig intermediateStreamsConfig = CONFIGURATION_PROVIDER.bind("haystack.pipe.streams",
-                IntermediateStreamsConfig.class);
-        return intermediateStreamsConfig.replicationFactor();
-    }
-
-    static class Factory {
-        KStreamBuilder createKStreamBuilder() {
-            return new KStreamBuilder();
-        }
-
-        KafkaStreams createKafkaStreams(KStreamBuilder kStreamBuilder, StreamsConfig streamsConfig) {
-            return new KafkaStreams(kStreamBuilder, streamsConfig);
-        }
-
-        SystemExitUncaughtExceptionHandler createSystemExitUncaughtExceptionHandler() {
-            return new SystemExitUncaughtExceptionHandler();
-        }
-    }
 }
