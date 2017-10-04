@@ -21,7 +21,7 @@ public class ConfigurationTest {
     private final static String HAYSTACK_GRAPHITE_POLL_INTERVAL_SECONDS = "haystack.graphite.pollIntervalSeconds";
     private final static String HAYSTACK_GRAPHITE_QUEUE_SIZE = "haystack.graphite.queueSize";
     private final static Object[][] TEST_DATA = {
-            { HAYSTACK_KAFKA_BROKERS, HAYSTACK_KAFKA_BROKERS },
+            { HAYSTACK_KAFKA_BROKERS, "localhost" },
             { HAYSTACK_KAFKA_FROM_TOPIC, HAYSTACK_KAFKA_FROM_TOPIC },
             { HAYSTACK_KAFKA_PORT, 65534 },
             { HAYSTACK_KAFKA_TO_TOPIC, HAYSTACK_KAFKA_TO_TOPIC },

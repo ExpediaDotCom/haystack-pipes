@@ -10,11 +10,12 @@ import org.cfg4j.source.system.EnvironmentVariablesConfigurationSource;
 import java.nio.file.Paths;
 import java.util.Collections;
 
-public class Configuration {
+class Configuration {
     static final String HAYSTACK_GRAPHITE_CONFIG_PREFIX = "haystack.graphite";
-    public static final String HAYSTACK_KAFKA_CONFIG_PREFIX = "haystack.kafka";
+    static final String HAYSTACK_PIPE_STREAMS = "haystack.pipe.streams";
+    static final String HAYSTACK_KAFKA_CONFIG_PREFIX = "haystack.kafka";
 
-    public ConfigurationProvider createMergeConfigurationProvider() {
+    ConfigurationProvider createMergeConfigurationProvider() {
         final MergeConfigurationSource configurationSource = new MergeConfigurationSource(
                 createClasspathConfigurationSource(), createEnvironmentConfigurationSource()
         );

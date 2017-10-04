@@ -1,104 +1,66 @@
+/*
+ * Copyright 2017 Expedia, Inc.
+ *
+ *       Licensed under the Apache License, Version 2.0 (the "License");
+ *       you may not use this file except in compliance with the License.
+ *       You may obtain a copy of the License at
+ *
+ *           http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *       Unless required by applicable law or agreed to in writing, software
+ *       distributed under the License is distributed on an "AS IS" BASIS,
+ *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *       See the License for the specific language governing permissions and
+ *       limitations under the License.
+ *
+ */
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
-import com.expedia.www.haystack.pipes.commons.Configuration;
-import com.expedia.www.haystack.pipes.commons.IntermediateStreamsConfig;
-import com.expedia.www.haystack.pipes.commons.KafkaConfig;
-import com.expedia.www.haystack.pipes.commons.SystemExitUncaughtExceptionHandler;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
+import com.expedia.www.haystack.pipes.commons.KafkaConfigurationProvider;
+import com.expedia.www.haystack.pipes.commons.KafkaStreamBuilder;
+import com.expedia.www.haystack.pipes.commons.KafkaStreamStarter;
+import com.expedia.www.haystack.pipes.commons.Metrics;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.streams.KafkaStreams;
-import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.ForeachAction;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
-import org.apache.kafka.streams.processor.WallclockTimestampExtractor;
-import org.cfg4j.provider.ConfigurationProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.Properties;
-
-public class JsonToKafkaProducer {
+public class JsonToKafkaProducer implements KafkaStreamBuilder {
     static final String CLIENT_ID = "haystack-pipes-json-to-kafka-producer";
-    static final String STARTED_MSG = "Now started Producer stream to send JSON spans to external Kafka";
-    private static final Configuration CONFIGURATION = new Configuration();
-    private static final ConfigurationProvider CONFIGURATION_PROVIDER = CONFIGURATION.createMergeConfigurationProvider();
-    private static final StreamsConfig STREAMS_CONFIG = new StreamsConfig(getProperties());
-    static Factory factory = new Factory(); // will be mocked out in unit tests
-    static Logger logger = LoggerFactory.getLogger(JsonToKafkaProducer.class);
-    static final String KLASS_NAME = JsonToKafkaProducer.class.getName();
-    static final String KLASS_SIMPLE_NAME = JsonToKafkaProducer.class.getSimpleName();
+    static Metrics metrics = new Metrics();
+
+    private static final KafkaConfigurationProvider KAFKA_CONFIGURATION_PROVIDER = new KafkaConfigurationProvider();
+    static JsonToKafkaProducer instance = new JsonToKafkaProducer();
+    static Factory factory = new Factory();
+
+    final KafkaStreamStarter kafkaStreamStarter;
+
+    JsonToKafkaProducer() {
+        this(new KafkaStreamStarter(JsonToKafkaProducer.class, CLIENT_ID));
+    }
+
+    JsonToKafkaProducer(KafkaStreamStarter kafkaStreamStarter) {
+        this.kafkaStreamStarter = kafkaStreamStarter;
+    }
 
     public static void main(String[] args) {
-        createAndStartStream();
+        metrics.startMetricsPolling();
+        instance.kafkaStreamStarter.createAndStartStream(instance);
     }
 
-    private static void createAndStartStream() {
-        final KStreamBuilder kStreamBuilder = factory.createKStreamBuilder();
-        buildStreamTopology(kStreamBuilder);
-        startKafkaStreams(kStreamBuilder);
-    }
-
-    private static void buildStreamTopology(KStreamBuilder kStreamBuilder) {
+    public void buildStreamTopology(KStreamBuilder kStreamBuilder) {
         final Serde<String> stringSerde = Serdes.String();
-        final KStream<String, String> stream = kStreamBuilder.stream(stringSerde, stringSerde, getFromTopic());
-        final ForeachAction<String, String> produceIntoExternalKafkaAction = new ProduceIntoExternalKafkaAction();
+        final KStream<String, String> stream = kStreamBuilder.stream(
+                stringSerde, stringSerde, KAFKA_CONFIGURATION_PROVIDER.fromTopic());
+        final ForeachAction<String, String> produceIntoExternalKafkaAction =
+                factory.createProduceIntoExternalKafkaAction();
         stream.foreach(produceIntoExternalKafkaAction);
     }
 
-    private static String getKafkaIpAnPort() {
-        final KafkaConfig kafkaConfig = getKafkaConfig();
-        return kafkaConfig.brokers() + ":" + kafkaConfig.port();
-    }
-
-    private static void startKafkaStreams(KStreamBuilder kStreamBuilder) {
-        final KafkaStreams kafkaStreams = factory.createKafkaStreams(kStreamBuilder, STREAMS_CONFIG);
-        final SystemExitUncaughtExceptionHandler closeThenRestartUncaughtExceptionHandler
-                = factory.createSystemExitUncaughtExceptionHandler();
-        kafkaStreams.setUncaughtExceptionHandler(closeThenRestartUncaughtExceptionHandler);
-        kafkaStreams.start();
-        logger.info(STARTED_MSG);
-    }
-
-    static Properties getProperties() {
-        final Properties props = new Properties();
-        props.put(StreamsConfig.CLIENT_ID_CONFIG, CLIENT_ID);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, KLASS_NAME);
-        props.put(StreamsConfig.APPLICATION_ID_CONFIG, KLASS_SIMPLE_NAME);
-        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, getKafkaIpAnPort());
-        props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, getReplicationFactor());
-        props.put(StreamsConfig.TIMESTAMP_EXTRACTOR_CLASS_CONFIG, WallclockTimestampExtractor.class);
-        return props;
-    }
-
-
-    static String getFromTopic() {
-        return getKafkaConfig().fromTopic();
-    }
-
-    private static KafkaConfig getKafkaConfig() {
-        return CONFIGURATION_PROVIDER.bind(Configuration.HAYSTACK_KAFKA_CONFIG_PREFIX, KafkaConfig.class);
-    }
-
-    private static int getReplicationFactor() {
-        final IntermediateStreamsConfig intermediateStreamsConfig = CONFIGURATION_PROVIDER.bind("haystack.pipe.streams",
-                IntermediateStreamsConfig.class);
-        return intermediateStreamsConfig.replicationFactor();
-    }
-
     static class Factory {
-        KStreamBuilder createKStreamBuilder() {
-            return new KStreamBuilder();
+        ProduceIntoExternalKafkaAction createProduceIntoExternalKafkaAction() {
+            return new ProduceIntoExternalKafkaAction();
         }
-
-        KafkaStreams createKafkaStreams(KStreamBuilder kStreamBuilder, StreamsConfig streamsConfig) {
-            return new KafkaStreams(kStreamBuilder, streamsConfig);
-        }
-
-        SystemExitUncaughtExceptionHandler createSystemExitUncaughtExceptionHandler() {
-            return new SystemExitUncaughtExceptionHandler();
-        }
-
     }
 }
