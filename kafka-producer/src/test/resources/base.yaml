@@ -1,0 +1,23 @@
+haystack:
+  kafka:
+     brokers: "localhost"
+     port: 9092
+     fromTopic: "json-spans"
+     toTopic: ""
+  pipe:
+    streams:
+      replicationFactor: 1
+  graphite:
+     prefix: "haystack"
+     address: "localhost"
+     port: 2003
+     pollIntervalSeconds: 60
+     queueSize: 10
+  externalKafka:
+    brokers: "localhost"
+    port: 9092
+    toTopic: "externalKafkaTopic"
+    acks: "0"
+    batchSize: 16384
+    lingerMs: 5
+    bufferMemory: 1048576
