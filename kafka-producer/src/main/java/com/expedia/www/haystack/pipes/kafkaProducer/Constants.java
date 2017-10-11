@@ -14,8 +14,8 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.jsonTransformer;
+package com.expedia.www.haystack.pipes.kafkaProducer;
 
 public interface Constants {
-    String APPLICATION = "haystack-pipes-json-transformer";
+    String APPLICATION = "haystack-pipes-kafka-producer";
 }

@@ -31,20 +31,20 @@ import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.APPLICATION;
-import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.SUBSYSTEM;
 
 public class SpanJsonSerializer implements Serializer<Span> {
     static final String ERROR_MSG = "Problem serializing span [%s]";
     static Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
     static Logger logger = LoggerFactory.getLogger(SpanJsonSerializer.class);
-    private static final String KLASS_NAME = SpanJsonSerializer.class.getSimpleName();
+    private static final String CLASS_NAME = SpanJsonSerializer.class.getSimpleName();
 
     private static final MetricObjects METRIC_OBJECTS = new MetricObjects();
-    static final Counter REQUEST = METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION, KLASS_NAME, "REQUEST");
-    static final Counter ERROR = METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION, KLASS_NAME, "ERROR");
-    static final Counter BYTES_IN = METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION, KLASS_NAME, "BYTES_IN");
-    static Timer JSON_SERIALIZATION = METRIC_OBJECTS.createAndRegisterBasicTimer(SUBSYSTEM, KLASS_NAME, APPLICATION,
+    static final Counter REQUEST = METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "REQUEST");
+    static final Counter ERROR = METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "ERROR");
+    static final Counter BYTES_IN = METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "BYTES_IN");
+    static Timer JSON_SERIALIZATION = METRIC_OBJECTS.createAndRegisterBasicTimer(SUBSYSTEM, CLASS_NAME, APPLICATION,
             "JSON_SERIALIZATION", TimeUnit.MICROSECONDS);
 
     @Override

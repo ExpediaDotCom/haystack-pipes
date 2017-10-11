@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.APPLICATION;
-import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.SUBSYSTEM;
+import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 
 public class SpanProtobufDeserializer implements Deserializer<Span> {
     static final String ERROR_MSG = "Problem deserializing span [%s]";
