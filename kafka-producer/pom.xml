@@ -16,10 +16,12 @@
         <start-class>com.expedia.www.haystack.pipes.kafkaProducer.JsonToKafkaProducer</start-class>
         <!-- Versions -->
         <junit-version>4.12</junit-version>
+        <haystack-metrics-version>0.1</haystack-metrics-version>
         <haystack-pipes-commons-version>1.0-SNAPSHOT</haystack-pipes-commons-version>
         <jacoco-maven-plugin-version>0.7.9</jacoco-maven-plugin-version>
         <java-version>1.8</java-version>
         <kafka-version>0.10.2.1</kafka-version>
+        <logback-version>1.2.3</logback-version>
         <maven-compiler-plugin-version>3.6.1</maven-compiler-plugin-version>
         <maven-jar-plugin-version>3.0.2</maven-jar-plugin-version>
         <mockito-version>1.9.5</mockito-version>
@@ -35,6 +37,23 @@
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-streams</artifactId>
             <version>${kafka-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.expedia.www</groupId>
+            <artifactId>haystack-metrics</artifactId>
+            <version>${haystack-metrics-version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback-version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-core -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>${logback-version}</version>
         </dependency>
 
         <!-- Test dependencies -->
