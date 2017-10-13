@@ -15,9 +15,9 @@ haystack:
      queueSize: 10
   externalKafka:
     brokers: "localhost"
-    port: 9092
+    port: 9093
     toTopic: "externalKafkaTopic"
     acks: "0"
-    batchSize: 16384
-    lingerMs: 5
-    bufferMemory: 1048576
+    batchSize: 8192
+    lingerMs: 4
+    bufferMemory: 1024

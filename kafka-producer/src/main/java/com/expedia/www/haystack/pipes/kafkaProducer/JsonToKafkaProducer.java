@@ -49,6 +49,7 @@ public class JsonToKafkaProducer implements KafkaStreamBuilder {
         instance.kafkaStreamStarter.createAndStartStream(instance);
     }
 
+    @Override
     public void buildStreamTopology(KStreamBuilder kStreamBuilder) {
         final Serde<String> stringSerde = Serdes.String();
         final KStream<String, String> stream = kStreamBuilder.stream(
