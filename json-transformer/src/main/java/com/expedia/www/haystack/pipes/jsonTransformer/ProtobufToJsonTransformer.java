@@ -51,6 +51,7 @@ public class ProtobufToJsonTransformer implements KafkaStreamBuilder {
         kafkaStreamStarter.createAndStartStream(this);
     }
 
+    @Override
     public void buildStreamTopology(KStreamBuilder kStreamBuilder) {
         final Serde<Span> spanSerde = getSpanSerde();
         final Serde<String> stringSerde = Serdes.String();

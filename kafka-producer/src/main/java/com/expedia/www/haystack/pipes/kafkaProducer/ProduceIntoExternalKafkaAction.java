@@ -47,9 +47,10 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Str
     static final String DEBUG_MSG = "Sent JSON [%s] to Kafka topic [%s]";
     static final Counter REQUEST = METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "REQUEST");
     static final Counter ERROR = METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "ERROR");
-    static final Timer KAFKA_PRODUCER_POST = METRIC_OBJECTS.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, CLASS_NAME,
+    static Timer KAFKA_PRODUCER_POST = METRIC_OBJECTS.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, CLASS_NAME,
             "KAFKA_PRODUCER_POST", TimeUnit.MICROSECONDS);
     static Logger logger = LoggerFactory.getLogger(ProduceIntoExternalKafkaAction.class);
+    static Factory factory = new Factory();
 
     static KafkaProducer<String, String> kafkaProducer = new KafkaProducer<>(getConfigurationMap());
 
@@ -57,10 +58,12 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Str
         REQUEST.increment();
         final Stopwatch stopwatch = KAFKA_PRODUCER_POST.start();
         try {
-            final ProducerRecord<String, String> producerRecord = new ProducerRecord<>(TOPIC, key, value);
+            final ProducerRecord<String, String> producerRecord = factory.createProducerRecord(key, value);
             final Future<RecordMetadata> recordMetadataFuture = kafkaProducer.send(producerRecord);
             final RecordMetadata recordMetadata = recordMetadataFuture.get();
-            logger.debug(String.format(DEBUG_MSG, value, recordMetadata.partition()));
+            if(logger.isDebugEnabled()) {
+                logger.debug(String.format(DEBUG_MSG, value, recordMetadata.partition()));
+            }
         } catch (Exception exception) {
             ERROR.increment();
             logger.error(ERROR_MSG, value, exception);
@@ -82,4 +85,9 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Str
         return map;
     }
 
+    static class Factory {
+        ProducerRecord<String, String> createProducerRecord(String key, String value) {
+            return new ProducerRecord<>(TOPIC, key, value);
+        }
+    }
 }

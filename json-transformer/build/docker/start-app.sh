@@ -1,6 +1,6 @@
 #!/bin/bash
 
-[ -z "$JAVA_XMS" ] && JAVA_XMS=1024m
+[ -z "$JAVA_XMS" ] && JAVA_XMS=128m
 [ -z "$JAVA_XMX" ] && JAVA_XMX=1024m
 
 set -e
