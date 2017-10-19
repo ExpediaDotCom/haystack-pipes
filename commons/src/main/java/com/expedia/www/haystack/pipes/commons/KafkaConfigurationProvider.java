@@ -24,12 +24,12 @@ public class KafkaConfigurationProvider implements KafkaConfig {
     }
 
     @Override
-    public String fromTopic() {
-        return kafkaConfig.fromTopic();
+    public String fromtopic() {
+        return kafkaConfig.fromtopic();
     }
 
     @Override
-    public String toTopic() {
-        return kafkaConfig.toTopic();
+    public String totopic() {
+        return kafkaConfig.totopic();
     }
 }

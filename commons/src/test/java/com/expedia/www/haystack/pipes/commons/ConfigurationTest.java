@@ -11,15 +11,15 @@ import static org.junit.Assert.assertEquals;
 
 public class ConfigurationTest {
     private final static String HAYSTACK_KAFKA_BROKERS = "haystack.kafka.brokers";
-    private final static String HAYSTACK_KAFKA_FROM_TOPIC = "haystack.kafka.fromTopic";
+    private final static String HAYSTACK_KAFKA_FROM_TOPIC = "haystack.kafka.fromtopic";
     private final static String HAYSTACK_KAFKA_PORT = "haystack.kafka.port";
-    private final static String HAYSTACK_KAFKA_TO_TOPIC = "haystack.kafka.toTopic";
-    private final static String HAYSTACK_PIPE_STREAMS_REPLICATION_FACTOR = "haystack.pipe.streams.replicationFactor";
+    private final static String HAYSTACK_KAFKA_TO_TOPIC = "haystack.kafka.totopic";
+    private final static String HAYSTACK_PIPE_STREAMS_REPLICATION_FACTOR = "haystack.pipe.streams.replicationfactor";
     private final static String HAYSTACK_GRAPHITE_PREFIX = "haystack.graphite.prefix";
     private final static String HAYSTACK_GRAPHITE_ADDRESS = "haystack.graphite.address";
     private final static String HAYSTACK_GRAPHITE_PORT = "haystack.graphite.port";
-    private final static String HAYSTACK_GRAPHITE_POLL_INTERVAL_SECONDS = "haystack.graphite.pollIntervalSeconds";
-    private final static String HAYSTACK_GRAPHITE_QUEUE_SIZE = "haystack.graphite.queueSize";
+    private final static String HAYSTACK_GRAPHITE_POLL_INTERVAL_SECONDS = "haystack.graphite.pollintervalseconds";
+    private final static String HAYSTACK_GRAPHITE_QUEUE_SIZE = "haystack.graphite.queuesize";
     private final static Object[][] TEST_DATA = {
             { HAYSTACK_KAFKA_BROKERS, "localhost" },
             { HAYSTACK_KAFKA_FROM_TOPIC, HAYSTACK_KAFKA_FROM_TOPIC },

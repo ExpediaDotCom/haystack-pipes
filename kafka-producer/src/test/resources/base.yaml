@@ -2,17 +2,17 @@ haystack:
   kafka:
      brokers: "localhost"
      port: 9092
-     fromTopic: "json-spans"
-     toTopic: ""
+     fromtopic: "json-spans"
+     totopic: ""
   pipe:
     streams:
-      replicationFactor: 1
+      replicationfactor: 1
   graphite:
      prefix: "haystack"
      address: "localhost"
      port: 2003
-     pollIntervalSeconds: 60
-     queueSize: 10
+     pollintervalseconds: 60
+     queuesize: 10
   externalkafka:
     brokers: "localhost"
     port: 9093

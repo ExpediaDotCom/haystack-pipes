@@ -2,22 +2,22 @@ haystack:
   kafka:
      brokers: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
      port: 9092 # default Kafka port, rarely overridden, but can be overridden by env variable
-     fromTopic: "json-spans"
-     toTopic: "" # toTopic is not used but must be specified as empty for shared YAML parsing to work
+     fromtopic: "json-spans"
+     totopic: "" # not used but must be specified as empty for shared YAML parsing to work
   pipe:
     streams:
-      replicationFactor: 1
+      replicationfactor: 1
   graphite:
      prefix: "haystack"
      address: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
      port: 2003 # default Graphite port, rarely overridden, but can be overridden by env variable
-     pollIntervalSeconds: 60
-     queueSize: 10
+     pollintervalseconds: 60
+     queuesize: 10
   externalKafka:
     brokers: "haystack.local" # will point to external Kafka in typical usage
     port: 9092
-    toTopic: "externalKafkaTopic"
+    totopic: "externalKafkaTopic"
     acks: "0"
     batchSize: 16384
-    lingerMs: 5
+    lingerms: 5
     bufferMemory: 1048576 # 1 Megabyte

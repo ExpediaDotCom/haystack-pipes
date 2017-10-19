@@ -25,11 +25,11 @@ public class KafkaConfigurationProviderTest {
     
     @Test
     public void testFromTopic() {
-        assertEquals("haystack.kafka.fromTopic", kafkaConfigurationProvider.fromTopic());
+        assertEquals("haystack.kafka.fromtopic", kafkaConfigurationProvider.fromtopic());
     }
     
     @Test
     public void testToTopic() {
-        assertEquals("haystack.kafka.toTopic", kafkaConfigurationProvider.toTopic());
+        assertEquals("haystack.kafka.totopic", kafkaConfigurationProvider.totopic());
     }
 }

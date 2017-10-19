@@ -56,9 +56,9 @@ public class ProtobufToJsonTransformer implements KafkaStreamBuilder {
         final Serde<Span> spanSerde = getSpanSerde();
         final Serde<String> stringSerde = Serdes.String();
         final KStream<String, Span> stream = kStreamBuilder.stream(
-                stringSerde, spanSerde, KAFKA_CONFIGURATION_PROVIDER.fromTopic());
+                stringSerde, spanSerde, KAFKA_CONFIGURATION_PROVIDER.fromtopic());
         stream.mapValues(span -> Span.newBuilder(span).build()).to(
-                stringSerde, spanSerde, KAFKA_CONFIGURATION_PROVIDER.toTopic());
+                stringSerde, spanSerde, KAFKA_CONFIGURATION_PROVIDER.totopic());
     }
 
     private static Serde<Span> getSpanSerde() {
