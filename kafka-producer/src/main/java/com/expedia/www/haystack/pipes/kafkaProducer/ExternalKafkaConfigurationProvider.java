@@ -22,12 +22,10 @@ import org.cfg4j.provider.ConfigurationProvider;
 import static com.expedia.www.haystack.pipes.commons.Configuration.HAYSTACK_EXTERNAL_KAFKA_CONFIG_PREFIX;
 
 public class ExternalKafkaConfigurationProvider implements ExternalKafkaConfig {
-    private final ExternalKafkaConfig externalKafkaConfig;
+    private ExternalKafkaConfig externalKafkaConfig;
 
     ExternalKafkaConfigurationProvider() {
-        final Configuration configuration = new Configuration();
-        final ConfigurationProvider configurationProvider = configuration.createMergeConfigurationProvider();
-        externalKafkaConfig = configurationProvider.bind(HAYSTACK_EXTERNAL_KAFKA_CONFIG_PREFIX, ExternalKafkaConfig.class);
+        reload();
     }
 
     @Override
@@ -41,8 +39,8 @@ public class ExternalKafkaConfigurationProvider implements ExternalKafkaConfig {
     }
 
     @Override
-    public String toTopic() {
-        return externalKafkaConfig.toTopic();
+    public String totopic() {
+        return externalKafkaConfig.totopic();
     }
 
     @Override
@@ -51,17 +49,28 @@ public class ExternalKafkaConfigurationProvider implements ExternalKafkaConfig {
     }
 
     @Override
-    public int batchSize() {
-        return externalKafkaConfig.batchSize();
+    public int batchsize() {
+        return externalKafkaConfig.batchsize();
     }
 
     @Override
-    public int lingerMs() {
-        return externalKafkaConfig.lingerMs();
+    public int lingerms() {
+        return externalKafkaConfig.lingerms();
     }
 
     @Override
-    public int bufferMemory() {
-        return externalKafkaConfig.bufferMemory();
+    public int buffermemory() {
+        return externalKafkaConfig.buffermemory();
+    }
+
+    @Override
+    public boolean waitforresponse() {
+        return externalKafkaConfig.waitforresponse();
+    }
+
+    void reload() {
+        final Configuration configuration = new Configuration();
+        final ConfigurationProvider configurationProvider = configuration.createMergeConfigurationProvider();
+        externalKafkaConfig = configurationProvider.bind(HAYSTACK_EXTERNAL_KAFKA_CONFIG_PREFIX, ExternalKafkaConfig.class);
     }
 }

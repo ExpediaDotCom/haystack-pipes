@@ -39,8 +39,8 @@ import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
 
 public class ProduceIntoExternalKafkaAction implements ForeachAction<String, String> {
-    private static final ExternalKafkaConfigurationProvider EKCP = new ExternalKafkaConfigurationProvider();
-    private static final String TOPIC = EKCP.toTopic();
+    static final ExternalKafkaConfigurationProvider EKCP = new ExternalKafkaConfigurationProvider();
+    private static final String TOPIC = EKCP.totopic();
     private static final String CLASS_NAME = ProduceIntoExternalKafkaAction.class.getSimpleName();
     private static final MetricObjects METRIC_OBJECTS = new MetricObjects();
     static final String ERROR_MSG = "Problem posting JSON [%s] to Kafka";
@@ -60,9 +60,11 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Str
         try {
             final ProducerRecord<String, String> producerRecord = factory.createProducerRecord(key, value);
             final Future<RecordMetadata> recordMetadataFuture = kafkaProducer.send(producerRecord);
-            final RecordMetadata recordMetadata = recordMetadataFuture.get();
-            if(logger.isDebugEnabled()) {
-                logger.debug(String.format(DEBUG_MSG, value, recordMetadata.partition()));
+            if(EKCP.waitforresponse()) {
+                final RecordMetadata recordMetadata = recordMetadataFuture.get();
+                if(logger.isDebugEnabled()) {
+                    logger.debug(String.format(DEBUG_MSG, value, recordMetadata.partition()));
+                }
             }
         } catch (Exception exception) {
             ERROR.increment();
@@ -77,9 +79,9 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Str
         map.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, EKCP.brokers() + ":" + EKCP.port());
         map.put(ProducerConfig.ACKS_CONFIG, EKCP.acks());
         map.put(ProducerConfig.RETRIES_CONFIG, 0);
-        map.put(ProducerConfig.BATCH_SIZE_CONFIG, EKCP.batchSize());
-        map.put(ProducerConfig.LINGER_MS_CONFIG, EKCP.lingerMs());
-        map.put(ProducerConfig.BUFFER_MEMORY_CONFIG, EKCP.bufferMemory());
+        map.put(ProducerConfig.BATCH_SIZE_CONFIG, EKCP.batchsize());
+        map.put(ProducerConfig.LINGER_MS_CONFIG, EKCP.lingerms());
+        map.put(ProducerConfig.BUFFER_MEMORY_CONFIG, EKCP.buffermemory());
         map.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         map.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         return map;

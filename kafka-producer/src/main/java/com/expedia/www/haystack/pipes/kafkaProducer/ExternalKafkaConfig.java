@@ -21,19 +21,24 @@ package com.expedia.www.haystack.pipes.kafkaProducer;
  * For details on this configurations, see Kafka documentation, e.g.
  * http://kafka.apache.org/documentation.html#producerconfigs,
  * https://kafka.apache.org/0102/javadoc/index.html?org/apache/kafka/clients/producer/KafkaProducer.html, etc.
+ * All method names must be lower case and must not include underscores, because the cf4j framework that manages
+ * configuration changes configurations specified by environment variables from upper to lower case and replaces
+ * underscores by periods.
  */
 public interface ExternalKafkaConfig {
     String brokers();
 
     int port();
 
-    String toTopic();
+    String totopic();
 
     String acks(); // "-1": all replicas; "0": don't wait; "1": leader writes to its local log; "all": same as "-1"
 
-    int batchSize();
+    int batchsize();
 
-    int lingerMs();
+    int lingerms();
 
-    int bufferMemory();
+    int buffermemory();
+
+    boolean waitforresponse();
 }

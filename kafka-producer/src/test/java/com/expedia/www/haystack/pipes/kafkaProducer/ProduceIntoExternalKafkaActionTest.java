@@ -32,6 +32,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
+import java.lang.reflect.Field;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -145,36 +147,55 @@ public class ProduceIntoExternalKafkaActionTest {
     }
 
     @Test
-    public void testApplySuccessDebugEnabled() throws ExecutionException, InterruptedException {
-        whensForTestApplySuccess(true);
+    public void testApplySuccessDoNotWaitForResponse() throws ExecutionException, InterruptedException {
+        whensForTestApplySuccess(false, false);
 
         produceIntoExternalKafkaAction.apply(KEY, VALUE);
 
+        putWaitForResponseIntoEnvironmentVariables(true); // so that other tests won't see a false
         verifyCounters(0);
-        verifiesForTestApplySuccess(true);
+        verifiesForTestApplySuccess(false, true);
     }
 
     @Test
-    public void testApplySuccessDebugDisabled() throws ExecutionException, InterruptedException {
-        whensForTestApplySuccess(false);
+    public void testApplySuccessWaitForResponseDebugEnabled() throws ExecutionException, InterruptedException {
+        whensForTestApplySuccess(true, true);
 
         produceIntoExternalKafkaAction.apply(KEY, VALUE);
 
         verifyCounters(0);
-        verifiesForTestApplySuccess(false);
+        verifiesForTestApplySuccess(true, true);
     }
 
-    private void whensForTestApplySuccess(boolean isDebugEnabled) throws InterruptedException, ExecutionException {
+    @Test
+    public void testApplySuccessWaitForResponseDebugDisabled() throws ExecutionException, InterruptedException {
+        whensForTestApplySuccess(true, false);
+
+        produceIntoExternalKafkaAction.apply(KEY, VALUE);
+
+        verifyCounters(0);
+        verifiesForTestApplySuccess(true, false);
+    }
+
+    private void whensForTestApplySuccess(boolean waitForResponse, boolean isDebugEnabled)
+            throws InterruptedException, ExecutionException {
         whensForTestApply();
-        when(mockLogger.isDebugEnabled()).thenReturn(isDebugEnabled);
-        when(mockRecordMetadataFuture.get()).thenReturn(RECORD_METADATA);
+        if(waitForResponse) {
+            when(mockLogger.isDebugEnabled()).thenReturn(isDebugEnabled);
+            when(mockRecordMetadataFuture.get()).thenReturn(RECORD_METADATA);
+        } else {
+            putWaitForResponseIntoEnvironmentVariables(false);
+        }
     }
 
-    private void verifiesForTestApplySuccess(boolean isDebugEnabled) throws InterruptedException, ExecutionException {
-        verifiesForTestApply();
-        verify(mockLogger).isDebugEnabled();
-        if(isDebugEnabled) {
-            verify(mockLogger).debug(String.format(DEBUG_MSG, VALUE, PARTITION));
+    private void verifiesForTestApplySuccess(boolean waitForResponse, boolean isDebugEnabled)
+            throws InterruptedException, ExecutionException {
+        verifiesForTestApply(waitForResponse);
+        if(waitForResponse) {
+            verify(mockLogger).isDebugEnabled();
+            if (isDebugEnabled) {
+                verify(mockLogger).debug(String.format(DEBUG_MSG, VALUE, PARTITION));
+            }
         }
     }
 
@@ -187,7 +208,7 @@ public class ProduceIntoExternalKafkaActionTest {
         produceIntoExternalKafkaAction.apply(KEY, VALUE);
 
         verifyCounters(1);
-        verifiesForTestApply();
+        verifiesForTestApply(true);
         verify(mockLogger).error(ERROR_MSG, VALUE, executionException);
     }
 
@@ -197,11 +218,13 @@ public class ProduceIntoExternalKafkaActionTest {
         when(mockKafkaProducer.send(Matchers.any())).thenReturn(mockRecordMetadataFuture);
     }
 
-    private void verifiesForTestApply() throws InterruptedException, ExecutionException {
+    private void verifiesForTestApply(boolean waitForResponse) throws InterruptedException, ExecutionException {
         verify(mockTimer).start();
         verify(mockFactory).createProducerRecord(KEY, VALUE);
         verify(mockKafkaProducer).send(mockProducerRecord);
-        verify(mockRecordMetadataFuture).get();
+        if(waitForResponse) {
+            verify(mockRecordMetadataFuture).get();
+        }
         verify(mockStopwatch).stop();
     }
 
@@ -218,4 +241,23 @@ public class ProduceIntoExternalKafkaActionTest {
         assertEquals(VALUE, producerRecord.value());
     }
 
+    private void putWaitForResponseIntoEnvironmentVariables(boolean waitForResponse) {
+        try {
+            final Map<String,String> unmodifiableEnv = System.getenv();
+            final Class<?> cl = unmodifiableEnv.getClass();
+
+            // It is not intended that environment variables be changed after the JVM starts, thus reflection
+            @SuppressWarnings("JavaReflectionMemberAccess")
+            final Field field = cl.getDeclaredField("m");
+            field.setAccessible(true);
+
+            @SuppressWarnings("unchecked")
+            final Map<String,String> modifiableEnv = (Map<String,String>) field.get(unmodifiableEnv);
+            modifiableEnv.put("HAYSTACK_EXTERNALKAFKA_WAITFORRESPONSE", Boolean.toString(waitForResponse));
+            field.setAccessible(false);
+            ProduceIntoExternalKafkaAction.EKCP.reload();
+        } catch(Exception e) {
+            throw new RuntimeException("Unable to access writable environment variable map.");
+        }
+    }
 }
