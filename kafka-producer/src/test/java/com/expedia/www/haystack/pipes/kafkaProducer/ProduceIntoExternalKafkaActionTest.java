@@ -152,6 +152,7 @@ public class ProduceIntoExternalKafkaActionTest {
 
         produceIntoExternalKafkaAction.apply(KEY, VALUE);
 
+        putWaitForResponseIntoEnvironmentVariables(true); // so that other tests won't see a false
         verifyCounters(0);
         verifiesForTestApplySuccess(false, true);
     }
@@ -183,7 +184,7 @@ public class ProduceIntoExternalKafkaActionTest {
             when(mockLogger.isDebugEnabled()).thenReturn(isDebugEnabled);
             when(mockRecordMetadataFuture.get()).thenReturn(RECORD_METADATA);
         } else {
-            putWaitForResponseFalseIntoEnvironmentVariables();
+            putWaitForResponseIntoEnvironmentVariables(false);
         }
     }
 
@@ -240,7 +241,7 @@ public class ProduceIntoExternalKafkaActionTest {
         assertEquals(VALUE, producerRecord.value());
     }
 
-    private void putWaitForResponseFalseIntoEnvironmentVariables() {
+    private void putWaitForResponseIntoEnvironmentVariables(boolean waitForResponse) {
         try {
             final Map<String,String> unmodifiableEnv = System.getenv();
             final Class<?> cl = unmodifiableEnv.getClass();
@@ -252,7 +253,7 @@ public class ProduceIntoExternalKafkaActionTest {
 
             @SuppressWarnings("unchecked")
             final Map<String,String> modifiableEnv = (Map<String,String>) field.get(unmodifiableEnv);
-            modifiableEnv.put("HAYSTACK_EXTERNALKAFKA_WAITFORRESPONSE", Boolean.FALSE.toString());
+            modifiableEnv.put("HAYSTACK_EXTERNALKAFKA_WAITFORRESPONSE", Boolean.toString(waitForResponse));
             field.setAccessible(false);
             ProduceIntoExternalKafkaAction.EKCP.reload();
         } catch(Exception e) {
