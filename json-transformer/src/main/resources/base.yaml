@@ -2,14 +2,14 @@ haystack:
   kafka:
      brokers: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
      port: 9092 # default Kafka port, rarely overridden, but can be overridden by env variable
-     fromTopic: "proto-spans"
-     toTopic: "json-spans"
+     fromtopic: "proto-spans"
+     totopic: "json-spans"
   pipe:
     streams:
-      replicationFactor: 1
+      replicationfactor: 1
   graphite:
      prefix: "haystack"
      address: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
      port: 2003 # default Graphite port, rarely overridden, but can be overridden by env variable
-     pollIntervalSeconds: 60
-     queueSize: 10
+     pollintervalseconds: 60
+     queuesize: 10

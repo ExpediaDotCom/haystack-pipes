@@ -60,9 +60,9 @@ public class KafkaStreamStarter {
     }
 
     private int getReplicationFactor() {
-        final IntermediateStreamsConfig intermediateStreamsConfig = CONFIGURATION_PROVIDER.bind(Configuration.HAYSTACK_PIPE_STREAMS,
-                IntermediateStreamsConfig.class);
-        return intermediateStreamsConfig.replicationFactor();
+        final IntermediateStreamsConfig intermediateStreamsConfig = CONFIGURATION_PROVIDER.bind(
+                Configuration.HAYSTACK_PIPE_STREAMS, IntermediateStreamsConfig.class);
+        return intermediateStreamsConfig.replicationfactor();
     }
 
     private static KafkaConfig getKafkaConfig() {

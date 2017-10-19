@@ -53,7 +53,7 @@ public class JsonToKafkaProducer implements KafkaStreamBuilder {
     public void buildStreamTopology(KStreamBuilder kStreamBuilder) {
         final Serde<String> stringSerde = Serdes.String();
         final KStream<String, String> stream = kStreamBuilder.stream(
-                stringSerde, stringSerde, KAFKA_CONFIGURATION_PROVIDER.fromTopic());
+                stringSerde, stringSerde, KAFKA_CONFIGURATION_PROVIDER.fromtopic());
         final ForeachAction<String, String> produceIntoExternalKafkaAction =
                 factory.createProduceIntoExternalKafkaAction();
         stream.foreach(produceIntoExternalKafkaAction);

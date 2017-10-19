@@ -70,4 +70,16 @@ public class ExternalKafkaConfigurationProviderTest {
         assertTrue(externalKafkaConfigurationProvider.waitforresponse());
     }
 
+    @Test
+    public void testReload() {
+        externalKafkaConfigurationProvider.reload();
+        testBrokers();
+        testPort();
+        testToTopic();
+        testAcks();
+        testBatchSize();
+        testLingerMs();
+        testBufferMemory();
+        testWaitForResponse();
+    }
 }

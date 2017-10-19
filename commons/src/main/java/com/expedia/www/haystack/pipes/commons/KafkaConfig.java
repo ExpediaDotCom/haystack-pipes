@@ -21,7 +21,7 @@ public interface KafkaConfig {
 
     int port();
 
-    String fromTopic();
+    String fromtopic();
 
-    String toTopic();
+    String totopic();
 }

@@ -17,5 +17,5 @@
 package com.expedia.www.haystack.pipes.commons;
 
 public interface IntermediateStreamsConfig {
-    int replicationFactor();
+    int replicationfactor();
 }
