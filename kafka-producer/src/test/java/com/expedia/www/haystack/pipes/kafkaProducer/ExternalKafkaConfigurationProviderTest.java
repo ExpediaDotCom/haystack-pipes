@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ExternalKafkaConfigurationProviderTest {
     private ExternalKafkaConfigurationProvider externalKafkaConfigurationProvider;
@@ -41,7 +42,7 @@ public class ExternalKafkaConfigurationProviderTest {
 
     @Test
     public void testToTopic() {
-        assertEquals("externalKafkaTopic", externalKafkaConfigurationProvider.toTopic());
+        assertEquals("externalKafkaTopic", externalKafkaConfigurationProvider.totopic());
     }
 
     @Test
@@ -51,17 +52,22 @@ public class ExternalKafkaConfigurationProviderTest {
 
     @Test
     public void testBatchSize() {
-        assertEquals(8192, externalKafkaConfigurationProvider.batchSize());
+        assertEquals(8192, externalKafkaConfigurationProvider.batchsize());
     }
 
     @Test
     public void testLingerMs() {
-        assertEquals(4, externalKafkaConfigurationProvider.lingerMs());
+        assertEquals(4, externalKafkaConfigurationProvider.lingerms());
     }
 
     @Test
     public void testBufferMemory() {
-        assertEquals(1024, externalKafkaConfigurationProvider.bufferMemory());
+        assertEquals(1024, externalKafkaConfigurationProvider.buffermemory());
+    }
+
+    @Test
+    public void testWaitForResponse() {
+        assertTrue(externalKafkaConfigurationProvider.waitforresponse());
     }
 
 }

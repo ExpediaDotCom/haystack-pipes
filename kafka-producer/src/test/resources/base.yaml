@@ -13,11 +13,12 @@ haystack:
      port: 2003
      pollIntervalSeconds: 60
      queueSize: 10
-  externalKafka:
+  externalkafka:
     brokers: "localhost"
     port: 9093
-    toTopic: "externalKafkaTopic"
+    totopic: "externalKafkaTopic"
     acks: "0"
-    batchSize: 8192
-    lingerMs: 4
-    bufferMemory: 1024
+    batchsize: 8192
+    lingerms: 4
+    buffermemory: 1024
+    waitforresponse: true
