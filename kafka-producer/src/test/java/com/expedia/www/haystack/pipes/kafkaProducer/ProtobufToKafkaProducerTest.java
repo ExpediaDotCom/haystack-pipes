@@ -29,7 +29,7 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static com.expedia.www.haystack.pipes.kafkaProducer.JsonToKafkaProducer.CLIENT_ID;
+import static com.expedia.www.haystack.pipes.kafkaProducer.ProtobufToKafkaProducer.CLIENT_ID;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -38,13 +38,13 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class JsonToKafkaProducerTest {
+public class ProtobufToKafkaProducerTest {
     @Mock
     private Metrics mockMetrics;
     private Metrics realMetrics;
     @Mock
-    private JsonToKafkaProducer.Factory mockFactory;
-    private JsonToKafkaProducer.Factory realFactory;
+    private ProtobufToKafkaProducer.Factory mockFactory;
+    private ProtobufToKafkaProducer.Factory realFactory;
 
     @Mock
     private KStreamBuilder mockKStreamBuilder;
@@ -55,43 +55,43 @@ public class JsonToKafkaProducerTest {
     @Mock
     private ProduceIntoExternalKafkaAction mockProduceIntoExternalKafkaAction;
 
-    private JsonToKafkaProducer jsonToKafkaProducer;
+    private ProtobufToKafkaProducer protobufToKafkaProducer;
 
     @Before
     public void setUp() {
-        realMetrics = JsonToKafkaProducer.metrics;
-        JsonToKafkaProducer.metrics = mockMetrics;
-        realFactory = JsonToKafkaProducer.factory;
-        JsonToKafkaProducer.factory = mockFactory;
-        jsonToKafkaProducer = new JsonToKafkaProducer(mockKafkaStreamStarter);
+        realMetrics = ProtobufToKafkaProducer.metrics;
+        ProtobufToKafkaProducer.metrics = mockMetrics;
+        realFactory = ProtobufToKafkaProducer.factory;
+        ProtobufToKafkaProducer.factory = mockFactory;
+        protobufToKafkaProducer = new ProtobufToKafkaProducer(mockKafkaStreamStarter);
     }
 
     @After
     public void tearDown() {
-        JsonToKafkaProducer.metrics = realMetrics;
-        JsonToKafkaProducer.factory = realFactory;
+        ProtobufToKafkaProducer.metrics = realMetrics;
+        ProtobufToKafkaProducer.factory = realFactory;
         verifyNoMoreInteractions(mockMetrics, mockKStreamBuilder, mockKStream, mockKafkaStreamStarter,
                 mockProduceIntoExternalKafkaAction);
     }
 
     @Test
     public void testDefaultConstructor() {
-        jsonToKafkaProducer = new JsonToKafkaProducer();
+        protobufToKafkaProducer = new ProtobufToKafkaProducer();
 
-        assertEquals(CLIENT_ID, jsonToKafkaProducer.kafkaStreamStarter.clientId);
-        assertEquals(JsonToKafkaProducer.class, jsonToKafkaProducer.kafkaStreamStarter.containingClass);
+        assertEquals(CLIENT_ID, protobufToKafkaProducer.kafkaStreamStarter.clientId);
+        assertEquals(ProtobufToKafkaProducer.class, protobufToKafkaProducer.kafkaStreamStarter.containingClass);
     }
 
     @Test
     public void testMain() {
-        final JsonToKafkaProducer instanceLoadedByClassLoader = JsonToKafkaProducer.instance;
-        JsonToKafkaProducer.instance = jsonToKafkaProducer;
+        final ProtobufToKafkaProducer instanceLoadedByClassLoader = ProtobufToKafkaProducer.instance;
+        ProtobufToKafkaProducer.instance = protobufToKafkaProducer;
 
-        JsonToKafkaProducer.main(null);
+        ProtobufToKafkaProducer.main(null);
 
         verify(mockMetrics).startMetricsPolling();
-        verify(mockKafkaStreamStarter).createAndStartStream(jsonToKafkaProducer);
-        JsonToKafkaProducer.instance = instanceLoadedByClassLoader;
+        verify(mockKafkaStreamStarter).createAndStartStream(protobufToKafkaProducer);
+        ProtobufToKafkaProducer.instance = instanceLoadedByClassLoader;
     }
 
 
@@ -101,7 +101,7 @@ public class JsonToKafkaProducerTest {
                 .thenReturn(mockKStream);
         when(mockFactory.createProduceIntoExternalKafkaAction()).thenReturn(mockProduceIntoExternalKafkaAction);
 
-        jsonToKafkaProducer.buildStreamTopology(mockKStreamBuilder);
+        protobufToKafkaProducer.buildStreamTopology(mockKStreamBuilder);
 
         verify(mockKStreamBuilder).stream(Matchers.<Serde<String>>any(), Matchers.<Serde<String>>any(), eq("json-spans"));
         verify(mockFactory).createProduceIntoExternalKafkaAction();
