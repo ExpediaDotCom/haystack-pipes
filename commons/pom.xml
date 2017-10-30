@@ -22,6 +22,7 @@
         <kafka-version>0.10.2.1</kafka-version>
         <maven-compiler-plugin-version>3.6.1</maven-compiler-plugin-version>
         <mockito-version>1.9.5</mockito-version>
+        <protoc-jar-maven-version>3.3.0.1</protoc-jar-maven-version>
     </properties>
 
     <dependencies>
@@ -69,6 +70,28 @@
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.github.os72</groupId>
+                <artifactId>protoc-jar-maven-plugin</artifactId>
+                <version>${protoc-jar-maven-version}</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <includeDirectories>
+                                <include>../haystack-idl/proto</include>
+                            </includeDirectories>
+                            <inputDirectories>
+                                <include>../haystack-idl/proto</include>
+                            </inputDirectories>
+                            <outputDirectory>target/generated-sources</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
