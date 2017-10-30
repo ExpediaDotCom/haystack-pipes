@@ -26,21 +26,21 @@ import org.apache.kafka.streams.kstream.ForeachAction;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 
-public class JsonToKafkaProducer implements KafkaStreamBuilder {
+public class ProtobufToKafkaProducer implements KafkaStreamBuilder {
     static final String CLIENT_ID = "haystack-pipes-json-to-kafka-producer";
     static Metrics metrics = new Metrics();
 
     private static final KafkaConfigurationProvider KAFKA_CONFIGURATION_PROVIDER = new KafkaConfigurationProvider();
-    static JsonToKafkaProducer instance = new JsonToKafkaProducer();
+    static ProtobufToKafkaProducer instance = new ProtobufToKafkaProducer();
     static Factory factory = new Factory();
 
     final KafkaStreamStarter kafkaStreamStarter;
 
-    JsonToKafkaProducer() {
-        this(new KafkaStreamStarter(JsonToKafkaProducer.class, CLIENT_ID));
+    ProtobufToKafkaProducer() {
+        this(new KafkaStreamStarter(ProtobufToKafkaProducer.class, CLIENT_ID));
     }
 
-    JsonToKafkaProducer(KafkaStreamStarter kafkaStreamStarter) {
+    ProtobufToKafkaProducer(KafkaStreamStarter kafkaStreamStarter) {
         this.kafkaStreamStarter = kafkaStreamStarter;
     }
 
