@@ -14,11 +14,13 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.jsonTransformer;
+package com.expedia.www.haystack.pipes.commons;
 
+import com.expedia.www.haystack.pipes.commons.SerializerDeserializerBase.Factory;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat.Printer;
+import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.monitor.Timer;
 import org.junit.After;
@@ -29,7 +31,13 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
-import static com.expedia.www.haystack.pipes.jsonTransformer.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
+import static com.expedia.www.haystack.pipes.commons.SerializerDeserializerBase.BYTES_IN_COUNTERS;
+import static com.expedia.www.haystack.pipes.commons.SerializerDeserializerBase.BYTES_IN_COUNTER_NAME;
+import static com.expedia.www.haystack.pipes.commons.SerializerDeserializerBase.REQUESTS_COUNTERS;
+import static com.expedia.www.haystack.pipes.commons.SerializerDeserializerBase.REQUEST_COUNTER_NAME;
+import static com.expedia.www.haystack.pipes.commons.SpanJsonSerializer.JSON_SERIALIZATION_TIMERS;
+import static com.expedia.www.haystack.pipes.commons.SpanJsonSerializer.JSON_SERIALIZATION_TIMER_NAME;
+import static com.expedia.www.haystack.pipes.commons.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.verify;
@@ -38,7 +46,12 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SpanJsonSerializerTest {
+    private final static String APPLICATION_NAME = SpanJsonSerializerTest.class.getSimpleName();
+    private final static String CLASS_NAME = SpanJsonSerializer.class.getSimpleName();
 
+    @Mock
+    private Factory mockFactory;
+    private Factory realFactory;
     @Mock
     private Printer mockPrinter;
     @Mock
@@ -46,29 +59,41 @@ public class SpanJsonSerializerTest {
     private Logger realLogger;
     @Mock
     private Timer mockTimer;
-    private Timer realTimer;
     @Mock
     private Stopwatch mockStopwatch;
+    @Mock
+    private Counter mockRequestCounter;
+    @Mock
+    private Counter mockBytesInCounter;
 
     private SpanJsonSerializer spanJsonSerializer;
 
     @Before
     public void setUp() throws InvalidProtocolBufferException {
-        spanJsonSerializer = new SpanJsonSerializer();
         realLogger = SpanJsonSerializer.logger;
         SpanJsonSerializer.logger = mockLogger;
-        realTimer = SpanJsonSerializer.JSON_SERIALIZATION;
-        SpanJsonSerializer.JSON_SERIALIZATION = mockTimer;
+        realFactory = SerializerDeserializerBase.factory;
+        SerializerDeserializerBase.factory = mockFactory;
+        when(mockFactory.createCounter(APPLICATION_NAME, CLASS_NAME, REQUEST_COUNTER_NAME)).thenReturn(mockRequestCounter);
+        when(mockFactory.createCounter(APPLICATION_NAME, CLASS_NAME, BYTES_IN_COUNTER_NAME)).thenReturn(mockBytesInCounter);
+        when(mockFactory.createTimer(APPLICATION_NAME, CLASS_NAME, JSON_SERIALIZATION_TIMER_NAME)).thenReturn(mockTimer);
+        spanJsonSerializer = new SpanJsonSerializer(APPLICATION_NAME);
     }
 
     @After
     public void tearDown() {
         SpanJsonSerializer.logger = realLogger;
-        SpanJsonSerializer.JSON_SERIALIZATION = realTimer;
-        SpanJsonSerializer.ERROR.increment(-((long) SpanJsonSerializer.ERROR.getValue()));
-        SpanJsonSerializer.REQUEST.increment(-((long) SpanJsonSerializer.REQUEST.getValue()));
-        SpanJsonSerializer.BYTES_IN.increment(-((long) SpanJsonSerializer.BYTES_IN.getValue()));
-        verifyNoMoreInteractions(mockPrinter, mockLogger, mockTimer, mockStopwatch);
+        SerializerDeserializerBase.factory = realFactory;
+
+        verify(mockFactory).createCounter(APPLICATION_NAME, CLASS_NAME, REQUEST_COUNTER_NAME);
+        verify(mockFactory).createCounter(APPLICATION_NAME, CLASS_NAME, BYTES_IN_COUNTER_NAME);
+        verify(mockFactory).createTimer(APPLICATION_NAME, CLASS_NAME, JSON_SERIALIZATION_TIMER_NAME);
+
+        verifyNoMoreInteractions(mockFactory, mockPrinter, mockLogger, mockTimer, mockStopwatch,
+                mockRequestCounter, mockBytesInCounter);
+        REQUESTS_COUNTERS.clear();
+        BYTES_IN_COUNTERS.clear();
+        JSON_SERIALIZATION_TIMERS.clear();
     }
 
     @Test
@@ -79,7 +104,8 @@ public class SpanJsonSerializerTest {
 
         final String string = new String(byteArray);
         assertEquals(TestConstantsAndCommonCode.JSON_SPAN_STRING, string);
-        verifyCounters(0L, 1, byteArray.length);
+        verify(mockRequestCounter).increment();
+        verify(mockBytesInCounter).increment(byteArray.length);
         verifyTimerAndStopwatch();
     }
 
@@ -96,7 +122,7 @@ public class SpanJsonSerializerTest {
         assertNull(shouldBeNull);
         verify(mockPrinter).print(FULLY_POPULATED_SPAN);
         verify(mockLogger).error(SpanJsonSerializer.ERROR_MSG, FULLY_POPULATED_SPAN, exception);
-        verifyCounters(1, 1, 0);
+        verify(mockRequestCounter).increment();
         verifyTimerAndStopwatch();
     }
 
@@ -105,7 +131,6 @@ public class SpanJsonSerializerTest {
         final Printer printer = injectMockPrinter();
         spanJsonSerializer.configure(null, true);
         SpanJsonSerializer.printer = printer;
-        verifyCounters(0, 0, 0);
     }
 
     @Test
@@ -113,19 +138,12 @@ public class SpanJsonSerializerTest {
         final Printer printer = injectMockPrinter();
         spanJsonSerializer.close();
         SpanJsonSerializer.printer = printer;
-        verifyCounters(0, 0, 0);
     }
 
     private Printer injectMockPrinter() {
         final Printer printer = SpanJsonSerializer.printer;
         SpanJsonSerializer.printer = mockPrinter;
         return printer;
-    }
-
-    private void verifyCounters(long errorCount, long requestCount, long bytesIn) {
-        assertEquals(errorCount, SpanJsonSerializer.ERROR.getValue());
-        assertEquals(requestCount, SpanJsonSerializer.REQUEST.getValue());
-        assertEquals(bytesIn, SpanJsonSerializer.BYTES_IN.getValue());
     }
 
     private void verifyTimerAndStopwatch() {

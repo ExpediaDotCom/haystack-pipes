@@ -14,10 +14,11 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.jsonTransformer;
+package com.expedia.www.haystack.pipes.commons;
 
 import com.expedia.open.tracing.Span;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.monitor.Timer;
 import org.junit.After;
@@ -28,9 +29,14 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
-import static com.expedia.www.haystack.pipes.jsonTransformer.SpanProtobufDeserializer.ERROR_MSG;
-import static com.expedia.www.haystack.pipes.jsonTransformer.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
-import static com.expedia.www.haystack.pipes.jsonTransformer.TestConstantsAndCommonCode.PROTOBUF_SPAN_BYTES;
+import static com.expedia.www.haystack.pipes.commons.SerializerDeserializerBase.BYTES_IN_COUNTERS;
+import static com.expedia.www.haystack.pipes.commons.SerializerDeserializerBase.BYTES_IN_COUNTER_NAME;
+import static com.expedia.www.haystack.pipes.commons.SerializerDeserializerBase.REQUESTS_COUNTERS;
+import static com.expedia.www.haystack.pipes.commons.SerializerDeserializerBase.REQUEST_COUNTER_NAME;
+import static com.expedia.www.haystack.pipes.commons.SpanProtobufDeserializer.PROTOBUF_SERIALIZATION_TIMERS;
+import static com.expedia.www.haystack.pipes.commons.SpanProtobufDeserializer.PROTOBUF_SERIALIZATION_TIMER_NAME;
+import static com.expedia.www.haystack.pipes.commons.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
+import static com.expedia.www.haystack.pipes.commons.TestConstantsAndCommonCode.PROTOBUF_SPAN_BYTES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
@@ -41,34 +47,49 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SpanProtobufDeserializerTest {
+    private final static String APPLICATION_NAME = SpanProtobufDeserializerTest.class.getSimpleName();
+    private final static String CLASS_NAME = SpanProtobufDeserializer.class.getSimpleName();
+
+    @Mock
+    private SerializerDeserializerBase.Factory mockFactory;
+    private SerializerDeserializerBase.Factory realFactory;
     @Mock
     private Logger mockLogger;
     private Logger realLogger;
     @Mock
     private Timer mockTimer;
-    private Timer realTimer;
     @Mock
     private Stopwatch mockStopwatch;
+    @Mock
+    private Counter mockRequestCounter;
+    @Mock
+    private Counter mockBytesInCounter;
 
     private SpanProtobufDeserializer spanProtobufDeserializer;
 
     @Before
     public void setUp() {
-        spanProtobufDeserializer = new SpanProtobufDeserializer();
         realLogger = SpanProtobufDeserializer.logger;
         SpanProtobufDeserializer.logger = mockLogger;
-        realTimer = SpanProtobufDeserializer.PROTOBUF_DESERIALIZATION;
-        SpanProtobufDeserializer.PROTOBUF_DESERIALIZATION = mockTimer;
+        realFactory = SerializerDeserializerBase.factory;
+        SerializerDeserializerBase.factory = mockFactory;
+        when(mockFactory.createCounter(APPLICATION_NAME, CLASS_NAME, REQUEST_COUNTER_NAME)).thenReturn(mockRequestCounter);
+        when(mockFactory.createCounter(APPLICATION_NAME, CLASS_NAME, BYTES_IN_COUNTER_NAME)).thenReturn(mockBytesInCounter);
+        when(mockFactory.createTimer(APPLICATION_NAME, CLASS_NAME, PROTOBUF_SERIALIZATION_TIMER_NAME)).thenReturn(mockTimer);
+        spanProtobufDeserializer = new SpanProtobufDeserializer(APPLICATION_NAME);
     }
 
     @After
     public void tearDown() {
         SpanProtobufDeserializer.logger = realLogger;
-        SpanProtobufDeserializer.PROTOBUF_DESERIALIZATION = realTimer;
-        SpanProtobufDeserializer.ERROR.increment(-((long) SpanProtobufDeserializer.ERROR.getValue()));
-        SpanProtobufDeserializer.REQUEST.increment(-((long) SpanProtobufDeserializer.REQUEST.getValue()));
-        SpanProtobufDeserializer.BYTES_IN.increment(-((long) SpanProtobufDeserializer.BYTES_IN.getValue()));
+        SerializerDeserializerBase.factory = realFactory;
+        verify(mockFactory).createCounter(APPLICATION_NAME, CLASS_NAME, REQUEST_COUNTER_NAME);
+        verify(mockFactory).createCounter(APPLICATION_NAME, CLASS_NAME, BYTES_IN_COUNTER_NAME);
+        verify(mockFactory).createTimer(APPLICATION_NAME, CLASS_NAME, PROTOBUF_SERIALIZATION_TIMER_NAME);
         verifyNoMoreInteractions(mockLogger, mockTimer, mockStopwatch);
+        REQUESTS_COUNTERS.clear();
+        BYTES_IN_COUNTERS.clear();
+        PROTOBUF_SERIALIZATION_TIMERS.clear();
     }
 
     @Test
@@ -78,7 +99,7 @@ public class SpanProtobufDeserializerTest {
         final Span actual = spanProtobufDeserializer.deserialize(null, PROTOBUF_SPAN_BYTES);
 
         assertEquals(FULLY_POPULATED_SPAN, actual);
-        verifyCounters(0L, PROTOBUF_SPAN_BYTES.length);
+        verify(mockBytesInCounter).increment(PROTOBUF_SPAN_BYTES.length);
         verifyTimerAndStopwatch();
     }
 
@@ -87,19 +108,22 @@ public class SpanProtobufDeserializerTest {
         final Span shouldBeNull = spanProtobufDeserializer.deserialize(null, null);
 
         assertNull(shouldBeNull);
-        verifyCounters(0L, 0L);
     }
 
     @Test
     public void testDeserializeExceptionCase() {
         when(mockTimer.start()).thenReturn(mockStopwatch);
 
-        final Span shouldBeNull = spanProtobufDeserializer.deserialize(null, new byte[]{ 0x00 });
+        final Span shouldBeNull = spanProtobufDeserializer.deserialize(null, new byte[]{0x00});
 
         assertNull(shouldBeNull);
-        verify(mockLogger).error(eq(ERROR_MSG), eq("00"), any(InvalidProtocolBufferException.class));
-        verifyCounters(1, 1);
+        verify(mockLogger).error(eq(SpanProtobufDeserializer.ERROR_MSG), eq("00"), any(InvalidProtocolBufferException.class));
+        verify(mockRequestCounter).increment();
+        verify(mockBytesInCounter).increment(1);
         verifyTimerAndStopwatch();
+        REQUESTS_COUNTERS.clear();
+        BYTES_IN_COUNTERS.clear();
+        SpanProtobufDeserializer.PROTOBUF_SERIALIZATION_TIMERS.clear();
     }
 
     @Test
@@ -110,13 +134,6 @@ public class SpanProtobufDeserializerTest {
     @Test
     public void testClose() throws InvalidProtocolBufferException {
         spanProtobufDeserializer.close();
-    }
-
-
-    private void verifyCounters(long errorCount, long bytesIn) {
-        assertEquals(errorCount, SpanProtobufDeserializer.ERROR.getValue());
-        assertEquals((long) 1, SpanProtobufDeserializer.REQUEST.getValue());
-        assertEquals(bytesIn, SpanProtobufDeserializer.BYTES_IN.getValue());
     }
 
     private void verifyTimerAndStopwatch() {

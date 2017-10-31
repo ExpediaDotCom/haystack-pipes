@@ -14,13 +14,11 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.jsonTransformer;
+package com.expedia.www.haystack.pipes.commons;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.metrics.MetricObjects;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.Printer;
-import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.monitor.Timer;
 import org.apache.kafka.common.serialization.Serializer;
@@ -29,23 +27,23 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.Charset;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
 
-import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
-import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.APPLICATION;
-
-public class SpanJsonSerializer implements Serializer<Span> {
+public class SpanJsonSerializer extends SerializerDeserializerBase implements Serializer<Span> {
     static final String ERROR_MSG = "Problem serializing span [%s]";
+    static final String JSON_SERIALIZATION_TIMER_NAME = "JSON_SERIALIZATION";
     static Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
     static Logger logger = LoggerFactory.getLogger(SpanJsonSerializer.class);
-    private static final String CLASS_NAME = SpanJsonSerializer.class.getSimpleName();
 
-    private static final MetricObjects METRIC_OBJECTS = new MetricObjects();
-    static final Counter REQUEST = METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "REQUEST");
-    static final Counter ERROR = METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "ERROR");
-    static final Counter BYTES_IN = METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "BYTES_IN");
-    static Timer JSON_SERIALIZATION = METRIC_OBJECTS.createAndRegisterBasicTimer(SUBSYSTEM, CLASS_NAME, APPLICATION,
-            "JSON_SERIALIZATION", TimeUnit.MICROSECONDS);
+    static final Map<String, Timer> JSON_SERIALIZATION_TIMERS = new ConcurrentHashMap<>();
+
+    private final Timer jsonSerialization;
+    public SpanJsonSerializer(String application) {
+        super(application);
+        synchronized (this.application) {
+            jsonSerialization = getOrCreateTimer(JSON_SERIALIZATION_TIMERS, JSON_SERIALIZATION_TIMER_NAME);
+        }
+    }
 
     @Override
     public void configure(Map<String, ?> map, boolean b) {
@@ -54,14 +52,13 @@ public class SpanJsonSerializer implements Serializer<Span> {
 
     @Override
     public byte[] serialize(String key, Span span) {
-        REQUEST.increment();
-        final Stopwatch stopwatch = JSON_SERIALIZATION.start();
+        request.increment();
+        final Stopwatch stopwatch = jsonSerialization.start();
         try {
             final byte[] bytes = printer.print(span).getBytes(Charset.forName("UTF-8"));
-            BYTES_IN.increment(bytes.length);
+            bytesIn.increment(bytes.length);
             return bytes;
         } catch (Exception exception) {
-            ERROR.increment();
             logger.error(ERROR_MSG, span, exception);
         } finally {
             stopwatch.stop();

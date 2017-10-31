@@ -21,10 +21,14 @@ import com.expedia.www.haystack.pipes.commons.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.KafkaStreamBuilder;
 import com.expedia.www.haystack.pipes.commons.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.Metrics;
+import com.expedia.www.haystack.pipes.commons.SpanJsonSerializer;
+import com.expedia.www.haystack.pipes.commons.SpanProtobufDeserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
+
+import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.APPLICATION;
 
 public class ProtobufToJsonTransformer implements KafkaStreamBuilder {
     static final String CLIENT_ID = "haystack-pipes-protobuf-to-json-transformer";
@@ -62,8 +66,8 @@ public class ProtobufToJsonTransformer implements KafkaStreamBuilder {
     }
 
     private static Serde<Span> getSpanSerde() {
-        final SpanProtobufDeserializer protobufDeserializer = new SpanProtobufDeserializer();
-        final SpanJsonSerializer spanJsonSerializer = new SpanJsonSerializer();
+        final SpanProtobufDeserializer protobufDeserializer = new SpanProtobufDeserializer(APPLICATION);
+        final SpanJsonSerializer spanJsonSerializer = new SpanJsonSerializer(APPLICATION);
         return Serdes.serdeFrom(spanJsonSerializer, protobufDeserializer);
     }
 

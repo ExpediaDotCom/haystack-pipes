@@ -19,6 +19,7 @@ package com.expedia.www.haystack.pipes.jsonTransformer;
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.Metrics;
+import com.expedia.www.haystack.pipes.commons.SpanJsonSerializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
@@ -31,7 +32,6 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static com.expedia.www.haystack.pipes.jsonTransformer.ProtobufToJsonTransformer.CLIENT_ID;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -75,7 +75,7 @@ public class ProtobufToJsonTransformerTest {
     public void testDefaultConstructor() {
         protobufToJsonTransformer = new ProtobufToJsonTransformer();
 
-        assertEquals(CLIENT_ID, protobufToJsonTransformer.kafkaStreamStarter.clientId);
+        assertEquals(ProtobufToJsonTransformer.CLIENT_ID, protobufToJsonTransformer.kafkaStreamStarter.clientId);
         assertEquals(ProtobufToJsonTransformer.class, protobufToJsonTransformer.kafkaStreamStarter.containingClass);
     }
 
