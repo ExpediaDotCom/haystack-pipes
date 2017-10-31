@@ -21,14 +21,11 @@ import com.expedia.www.haystack.pipes.commons.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.KafkaStreamBuilder;
 import com.expedia.www.haystack.pipes.commons.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.Metrics;
-import com.expedia.www.haystack.pipes.commons.SpanJsonSerializer;
-import com.expedia.www.haystack.pipes.commons.SpanProtobufDeserializer;
+import com.expedia.www.haystack.pipes.commons.SpanSerdeFactory;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
-
-import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.APPLICATION;
 
 public class ProtobufToJsonTransformer implements KafkaStreamBuilder {
     static final String CLIENT_ID = "haystack-pipes-protobuf-to-json-transformer";
@@ -37,13 +34,15 @@ public class ProtobufToJsonTransformer implements KafkaStreamBuilder {
     private static final KafkaConfigurationProvider KAFKA_CONFIGURATION_PROVIDER = new KafkaConfigurationProvider();
 
     final KafkaStreamStarter kafkaStreamStarter;
+    private final SpanSerdeFactory spanSerdeFactory;
 
     ProtobufToJsonTransformer() {
-        this(new KafkaStreamStarter(ProtobufToJsonTransformer.class, CLIENT_ID));
+        this(new KafkaStreamStarter(ProtobufToJsonTransformer.class, CLIENT_ID), new SpanSerdeFactory());
     }
 
-    ProtobufToJsonTransformer(KafkaStreamStarter kafkaStreamStarter) {
+    ProtobufToJsonTransformer(KafkaStreamStarter kafkaStreamStarter, SpanSerdeFactory spanSerdeFactory) {
         this.kafkaStreamStarter = kafkaStreamStarter;
+        this.spanSerdeFactory = spanSerdeFactory;
     }
 
     /**
@@ -57,18 +56,12 @@ public class ProtobufToJsonTransformer implements KafkaStreamBuilder {
 
     @Override
     public void buildStreamTopology(KStreamBuilder kStreamBuilder) {
-        final Serde<Span> spanSerde = getSpanSerde();
+        final Serde<Span> spanSerde = spanSerdeFactory.createSpanSerde(Constants.APPLICATION);
         final Serde<String> stringSerde = Serdes.String();
         final KStream<String, Span> stream = kStreamBuilder.stream(
                 stringSerde, spanSerde, KAFKA_CONFIGURATION_PROVIDER.fromtopic());
         stream.mapValues(span -> Span.newBuilder(span).build()).to(
                 stringSerde, spanSerde, KAFKA_CONFIGURATION_PROVIDER.totopic());
-    }
-
-    private static Serde<Span> getSpanSerde() {
-        final SpanProtobufDeserializer protobufDeserializer = new SpanProtobufDeserializer(APPLICATION);
-        final SpanJsonSerializer spanJsonSerializer = new SpanJsonSerializer(APPLICATION);
-        return Serdes.serdeFrom(spanJsonSerializer, protobufDeserializer);
     }
 
 }
