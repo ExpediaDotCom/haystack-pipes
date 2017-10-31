@@ -20,6 +20,7 @@ import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.Metrics;
 import com.expedia.www.haystack.pipes.commons.SpanJsonSerializer;
+import com.expedia.www.haystack.pipes.commons.SpanSerdeFactory;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
@@ -61,7 +62,7 @@ public class ProtobufToJsonTransformerTest {
     public void setUp() {
         realMetrics = ProtobufToJsonTransformer.metrics;
         ProtobufToJsonTransformer.metrics = mockMetrics;
-        protobufToJsonTransformer = new ProtobufToJsonTransformer(mockKafkaStreamStarter);
+        protobufToJsonTransformer = new ProtobufToJsonTransformer(mockKafkaStreamStarter, new SpanSerdeFactory());
     }
 
     @After
