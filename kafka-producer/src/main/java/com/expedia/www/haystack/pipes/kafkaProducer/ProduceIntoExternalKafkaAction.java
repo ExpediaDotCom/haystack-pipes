@@ -16,7 +16,13 @@
  */
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
+import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.metrics.MetricObjects;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.protobuf.util.JsonFormat;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.monitor.Timer;
@@ -38,7 +44,7 @@ import java.util.concurrent.TimeUnit;
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
 
-public class ProduceIntoExternalKafkaAction implements ForeachAction<String, String> {
+public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Span> {
     static final ExternalKafkaConfigurationProvider EKCP = new ExternalKafkaConfigurationProvider();
     private static final String TOPIC = EKCP.totopic();
     private static final String CLASS_NAME = ProduceIntoExternalKafkaAction.class.getSimpleName();
@@ -46,7 +52,7 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Str
     static final String ERROR_MSG = "Problem posting JSON [%s] to Kafka";
     static final String DEBUG_MSG = "Sent JSON [%s] to Kafka topic [%s]";
     static final Counter REQUEST = METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "REQUEST");
-    static final Counter ERROR = METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "ERROR");
+    static JsonFormat.Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
     static Timer KAFKA_PRODUCER_POST = METRIC_OBJECTS.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, CLASS_NAME,
             "KAFKA_PRODUCER_POST", TimeUnit.MICROSECONDS);
     static Logger logger = LoggerFactory.getLogger(ProduceIntoExternalKafkaAction.class);
@@ -54,11 +60,13 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Str
 
     static KafkaProducer<String, String> kafkaProducer = new KafkaProducer<>(getConfigurationMap());
 
-    public void apply(String key, String value) {
+    public void apply(String key, Span value) {
         REQUEST.increment();
         final Stopwatch stopwatch = KAFKA_PRODUCER_POST.start();
         try {
-            final ProducerRecord<String, String> producerRecord = factory.createProducerRecord(key, value);
+            final String jsonWithOpenTracingTags = printer.print(value);
+            final String jsonWithFlattenedTags = flattenTags(jsonWithOpenTracingTags);
+            final ProducerRecord<String, String> producerRecord = factory.createProducerRecord(key, jsonWithFlattenedTags);
             final Future<RecordMetadata> recordMetadataFuture = kafkaProducer.send(producerRecord);
             if(EKCP.waitforresponse()) {
                 final RecordMetadata recordMetadata = recordMetadataFuture.get();
@@ -67,11 +75,48 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Str
                 }
             }
         } catch (Exception exception) {
-            ERROR.increment();
             logger.error(ERROR_MSG, value, exception);
         } finally {
             stopwatch.stop();
         }
+    }
+
+    private static String flattenTags(String jsonWithOpenTracingTags) {
+        final String tagsKey = "tags";
+        final JsonObject jsonObject = new Gson().fromJson(jsonWithOpenTracingTags, JsonObject.class);
+        final JsonArray jsonArray = jsonObject.getAsJsonArray(tagsKey);
+        final JsonElement openTracingTags = jsonObject.remove(tagsKey);
+        if(openTracingTags != null) {
+            final JsonObject flattenedTagMap = new JsonObject();
+            jsonObject.add(tagsKey, flattenedTagMap);
+            for (final JsonElement jsonElement : jsonArray) {
+                final JsonObject tagMap = jsonElement.getAsJsonObject();
+                final String key = tagMap.get("key").getAsString();
+                final JsonElement vStr = tagMap.get("vStr");
+                if (vStr != null) {
+                    flattenedTagMap.addProperty(key, vStr.getAsString());
+                    continue;
+                }
+                final JsonElement vLong = tagMap.get("vLong");
+                if (vLong != null) {
+                    flattenedTagMap.addProperty(key, vLong.getAsLong());
+                    continue;
+                }
+                final JsonElement vDouble = tagMap.get("vDouble");
+                if (vDouble != null) {
+                    flattenedTagMap.addProperty(key, vDouble.getAsDouble());
+                    continue;
+                }
+                final JsonElement vBool = tagMap.get("vBool");
+                if (vBool != null) {
+                    flattenedTagMap.addProperty(key, vBool.getAsBoolean());
+                    continue;
+                }
+                final JsonElement vBytes = tagMap.get("vBytes");
+                flattenedTagMap.addProperty(key, vBytes.getAsString());
+            }
+        }
+        return jsonObject.toString();
     }
 
     private static Map<String, Object> getConfigurationMap() {

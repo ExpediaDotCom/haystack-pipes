@@ -1,4 +1,4 @@
-package com.expedia.www.haystack.pipes.commons;
+package com.expedia.www.haystack.pipes.commons.kafka;
 
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 

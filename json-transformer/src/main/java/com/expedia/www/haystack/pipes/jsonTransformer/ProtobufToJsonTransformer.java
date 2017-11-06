@@ -17,11 +17,11 @@
 package com.expedia.www.haystack.pipes.jsonTransformer;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.pipes.commons.KafkaConfigurationProvider;
-import com.expedia.www.haystack.pipes.commons.KafkaStreamBuilder;
-import com.expedia.www.haystack.pipes.commons.KafkaStreamStarter;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilder;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.Metrics;
-import com.expedia.www.haystack.pipes.commons.SpanSerdeFactory;
+import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.kstream.KStream;

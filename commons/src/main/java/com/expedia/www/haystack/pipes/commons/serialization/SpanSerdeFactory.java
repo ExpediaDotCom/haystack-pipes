@@ -1,4 +1,4 @@
-package com.expedia.www.haystack.pipes.commons;
+package com.expedia.www.haystack.pipes.commons.serialization;
 
 import com.expedia.open.tracing.Span;
 import org.apache.kafka.common.serialization.Serde;

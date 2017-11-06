@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.commons;
+package com.expedia.www.haystack.pipes.commons.kafka;
 
 public interface KafkaConfig {
     String brokers();

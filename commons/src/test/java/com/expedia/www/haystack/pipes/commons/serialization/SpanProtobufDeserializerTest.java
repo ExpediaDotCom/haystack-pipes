@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.commons;
+package com.expedia.www.haystack.pipes.commons.serialization;
 
 import com.expedia.open.tracing.Span;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -29,12 +29,12 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
-import static com.expedia.www.haystack.pipes.commons.SerializerDeserializerBase.BYTES_IN_COUNTERS;
-import static com.expedia.www.haystack.pipes.commons.SerializerDeserializerBase.BYTES_IN_COUNTER_NAME;
-import static com.expedia.www.haystack.pipes.commons.SerializerDeserializerBase.REQUESTS_COUNTERS;
-import static com.expedia.www.haystack.pipes.commons.SerializerDeserializerBase.REQUEST_COUNTER_NAME;
-import static com.expedia.www.haystack.pipes.commons.SpanProtobufDeserializer.PROTOBUF_SERIALIZATION_TIMERS;
-import static com.expedia.www.haystack.pipes.commons.SpanProtobufDeserializer.PROTOBUF_SERIALIZATION_TIMER_NAME;
+import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.BYTES_IN_COUNTERS;
+import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.BYTES_IN_COUNTER_NAME;
+import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.REQUESTS_COUNTERS;
+import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.REQUEST_COUNTER_NAME;
+import static com.expedia.www.haystack.pipes.commons.serialization.SpanProtobufDeserializer.PROTOBUF_SERIALIZATION_TIMERS;
+import static com.expedia.www.haystack.pipes.commons.serialization.SpanProtobufDeserializer.PROTOBUF_SERIALIZATION_TIMER_NAME;
 import static com.expedia.www.haystack.pipes.commons.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static com.expedia.www.haystack.pipes.commons.TestConstantsAndCommonCode.PROTOBUF_SPAN_BYTES;
 import static org.junit.Assert.assertEquals;

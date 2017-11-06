@@ -1,5 +1,6 @@
-package com.expedia.www.haystack.pipes.commons;
+package com.expedia.www.haystack.pipes.commons.kafka;
 
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -25,7 +25,7 @@ import org.springframework.boot.web.support.SpringBootServletInitializer;
  * to indicate that the JVM is running.
  */
 @SpringBootApplication
-public class IsActiveController extends SpringBootServletInitializer {
+public class JsonTransformerIsActiveController extends SpringBootServletInitializer {
     static Factory factory = new Factory();
 
     public static void main(String[] args) {
@@ -39,7 +39,7 @@ public class IsActiveController extends SpringBootServletInitializer {
         }
 
         SpringApplication createSpringApplication() {
-            return new SpringApplication(IsActiveController.class);
+            return new SpringApplication(JsonTransformerIsActiveController.class);
         }
     }
 }

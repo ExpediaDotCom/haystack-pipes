@@ -104,6 +104,11 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${jacoco-maven-plugin-version}</version>
+                <configuration>
+                    <excludes>
+                        <exclude>**/com/expedia/open/tracing/**</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>

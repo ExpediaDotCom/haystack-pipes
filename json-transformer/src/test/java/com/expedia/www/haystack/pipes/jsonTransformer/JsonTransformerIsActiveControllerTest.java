@@ -16,7 +16,7 @@
  */
 package com.expedia.www.haystack.pipes.jsonTransformer;
 
-import com.expedia.www.haystack.pipes.jsonTransformer.IsActiveController.Factory;
+import com.expedia.www.haystack.pipes.jsonTransformer.JsonTransformerIsActiveController.Factory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class IsActiveControllerTest {
+public class JsonTransformerIsActiveControllerTest {
     @Mock
     private Factory mockFactory;
     private Factory realFactory;
@@ -47,13 +47,13 @@ public class IsActiveControllerTest {
 
     @Before
     public void setUp() {
-        realFactory = IsActiveController.factory;
-        IsActiveController.factory = mockFactory;
+        realFactory = JsonTransformerIsActiveController.factory;
+        JsonTransformerIsActiveController.factory = mockFactory;
     }
 
     @After
     public void tearDown() {
-        IsActiveController.factory = realFactory;
+        JsonTransformerIsActiveController.factory = realFactory;
         verifyNoMoreInteractions(mockFactory, mockProtobufToJsonTransformer, mockSpringApplication);
     }
 
@@ -63,7 +63,7 @@ public class IsActiveControllerTest {
         when(mockFactory.createSpringApplication()).thenReturn(mockSpringApplication);
 
         final String[] args = new String[0];
-        IsActiveController.main(args);
+        JsonTransformerIsActiveController.main(args);
 
         verify(mockFactory).createProtobufToJsonTransformer();
         verify(mockFactory).createSpringApplication();
@@ -73,7 +73,7 @@ public class IsActiveControllerTest {
 
     @Test
     public void testDefaultConstructor() {
-        new IsActiveController();
+        new JsonTransformerIsActiveController();
     }
 
     @Test
@@ -86,6 +86,6 @@ public class IsActiveControllerTest {
         final SpringApplication springApplication = realFactory.createSpringApplication();
 
         final Set<Object> sources = springApplication.getSources();
-        assertEquals(Collections.singleton(IsActiveController.class), sources);
+        assertEquals(Collections.singleton(JsonTransformerIsActiveController.class), sources);
     }
 }

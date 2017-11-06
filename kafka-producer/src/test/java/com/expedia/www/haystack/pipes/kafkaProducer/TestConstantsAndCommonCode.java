@@ -14,13 +14,13 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.commons;
+package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.expedia.open.tracing.Span;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 
-public class TestConstantsAndCommonCode {
+class TestConstantsAndCommonCode {
     private static final String LOGS = "[{\"timestamp\":\"234567890\",\"fields\":" +
             "[{\"key\":\"strField\",\"vStr\":\"logFieldValue\"},{\"key\":\"longField\",\"vLong\":\"4567890\"}]},"
             + "{\"timestamp\":\"234567891\",\"fields\":" +
@@ -31,7 +31,13 @@ public class TestConstantsAndCommonCode {
             "{\"key\":\"doubleKey\",\"vDouble\":9876.54321}," +
             "{\"key\":\"boolKey\",\"vBool\":true}," +
             "{\"key\":\"bytesKey\",\"vBytes\":\"AAEC/f7/\"}]}";
-    public final static String JSON_SPAN_STRING = "{\"traceId\":\"unique-trace-id\"," +
+    final static String FLATTENED_TAGS = "{"
+            + "\"strKey\":\"tagValue\","
+            + "\"longKey\":987654321,"
+            + "\"doubleKey\":9876.54321,"
+            + "\"boolKey\":true,"
+            + "\"bytesKey\":\"AAEC/f7/\"}}";
+    final static String JSON_SPAN_STRING = "{\"traceId\":\"unique-trace-id\"," +
             "\"spanId\":\"unique-span-id\"," +
             "\"parentSpanId\":\"unique-parent-span-id\"," +
             "\"serviceName\":\"unique-service-name\"," +
@@ -40,16 +46,21 @@ public class TestConstantsAndCommonCode {
             "\"duration\":\"234\"," +
             "\"logs\":" + LOGS +
             "\"tags\":" + TAGS;
-    public final static Span FULLY_POPULATED_SPAN;
-    static {
+    final static String JSON_SPAN_STRING_WITH_FLATTENED_TAGS = JSON_SPAN_STRING.replace(TAGS, FLATTENED_TAGS);
+    final static String JSON_SPAN_STRING_WITH_NO_TAGS = JSON_SPAN_STRING.replace(",\"tags\":" + TAGS, "}");
+    final static Span FULLY_POPULATED_SPAN = buildSpan(JSON_SPAN_STRING);
+    final static Span NO_TAGS_SPAN = buildSpan(JSON_SPAN_STRING_WITH_NO_TAGS);
+
+    private static Span buildSpan(String jsonSpanString) {
         final Span.Builder builder = Span.newBuilder();
         try {
-            JsonFormat.parser().merge(JSON_SPAN_STRING, builder);
+            JsonFormat.parser().merge(jsonSpanString, builder);
         } catch (InvalidProtocolBufferException e) {
             throw new RuntimeException("Failed to parse JSON", e);
         }
-        FULLY_POPULATED_SPAN = builder.build();
+        return builder.build();
     }
+
     @SuppressWarnings("ConstantConditions")
-    public final static byte[] PROTOBUF_SPAN_BYTES = FULLY_POPULATED_SPAN.toByteArray();
+    final static byte[] PROTOBUF_SPAN_BYTES = FULLY_POPULATED_SPAN.toByteArray();
 }

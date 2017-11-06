@@ -1,6 +1,9 @@
-package com.expedia.www.haystack.pipes.commons;
+package com.expedia.www.haystack.pipes.commons.kafka;
 
-import com.expedia.www.haystack.pipes.commons.KafkaStreamStarter.Factory;
+import com.expedia.www.haystack.pipes.commons.SystemExitUncaughtExceptionHandler;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilder;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.Factory;
 import com.netflix.servo.publish.PollScheduler;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.streams.KafkaStreams;
@@ -19,7 +22,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.regex.Pattern;
 
-import static com.expedia.www.haystack.pipes.commons.KafkaStreamStarter.STARTED_MSG;
+import static com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.STARTED_MSG;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.times;

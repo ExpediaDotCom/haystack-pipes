@@ -12,7 +12,7 @@
     <url>http://maven.apache.org</url>
 
     <properties>
-        <start-class>com.expedia.www.haystack.pipes.jsonTransformer.IsActiveController</start-class>
+        <start-class>com.expedia.www.haystack.pipes.jsonTransformer.JsonTransformerIsActiveController</start-class>
         <!-- Versions -->
         <cfg4j-core-version>4.4.1</cfg4j-core-version>
         <commons-text-version>1.1</commons-text-version>
