@@ -16,8 +16,10 @@
  */
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
-import com.expedia.www.haystack.pipes.commons.KafkaStreamStarter;
+import com.expedia.open.tracing.Span;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.Metrics;
+import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
@@ -49,7 +51,7 @@ public class ProtobufToKafkaProducerTest {
     @Mock
     private KStreamBuilder mockKStreamBuilder;
     @Mock
-    private KStream<String, String> mockKStream;
+    private KStream<String, Span> mockKStream;
     @Mock
     private KafkaStreamStarter mockKafkaStreamStarter;
     @Mock
@@ -63,7 +65,7 @@ public class ProtobufToKafkaProducerTest {
         ProtobufToKafkaProducer.metrics = mockMetrics;
         realFactory = ProtobufToKafkaProducer.factory;
         ProtobufToKafkaProducer.factory = mockFactory;
-        protobufToKafkaProducer = new ProtobufToKafkaProducer(mockKafkaStreamStarter);
+        protobufToKafkaProducer = new ProtobufToKafkaProducer(mockKafkaStreamStarter, new SpanSerdeFactory());
     }
 
     @After
@@ -87,7 +89,7 @@ public class ProtobufToKafkaProducerTest {
         final ProtobufToKafkaProducer instanceLoadedByClassLoader = ProtobufToKafkaProducer.instance;
         ProtobufToKafkaProducer.instance = protobufToKafkaProducer;
 
-        ProtobufToKafkaProducer.main(null);
+        protobufToKafkaProducer.main();
 
         verify(mockMetrics).startMetricsPolling();
         verify(mockKafkaStreamStarter).createAndStartStream(protobufToKafkaProducer);
@@ -97,7 +99,7 @@ public class ProtobufToKafkaProducerTest {
 
     @Test
     public void testBuildStreamTopology() {
-        when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<String>>any(), anyString()))
+        when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
                 .thenReturn(mockKStream);
         when(mockFactory.createProduceIntoExternalKafkaAction()).thenReturn(mockProduceIntoExternalKafkaAction);
 

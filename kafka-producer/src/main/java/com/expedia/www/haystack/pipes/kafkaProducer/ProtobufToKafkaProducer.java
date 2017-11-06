@@ -16,10 +16,12 @@
  */
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
-import com.expedia.www.haystack.pipes.commons.KafkaConfigurationProvider;
-import com.expedia.www.haystack.pipes.commons.KafkaStreamBuilder;
-import com.expedia.www.haystack.pipes.commons.KafkaStreamStarter;
+import com.expedia.open.tracing.Span;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilder;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.Metrics;
+import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.kstream.ForeachAction;
@@ -35,26 +37,33 @@ public class ProtobufToKafkaProducer implements KafkaStreamBuilder {
     static Factory factory = new Factory();
 
     final KafkaStreamStarter kafkaStreamStarter;
+    private final SpanSerdeFactory spanSerdeFactory;
 
     ProtobufToKafkaProducer() {
-        this(new KafkaStreamStarter(ProtobufToKafkaProducer.class, CLIENT_ID));
+        this(new KafkaStreamStarter(ProtobufToKafkaProducer.class, CLIENT_ID), new SpanSerdeFactory());
     }
 
-    ProtobufToKafkaProducer(KafkaStreamStarter kafkaStreamStarter) {
+    ProtobufToKafkaProducer(KafkaStreamStarter kafkaStreamStarter, SpanSerdeFactory spanSerdeFactory) {
         this.kafkaStreamStarter = kafkaStreamStarter;
+        this.spanSerdeFactory = spanSerdeFactory;
     }
 
-    public static void main(String[] args) {
+    /**
+     * main() is an instance method because it is called by the static void IsActiveController.main(String [] args);
+     * making it an instance method facilitates unit testing.
+     */
+    void main() {
         metrics.startMetricsPolling();
         instance.kafkaStreamStarter.createAndStartStream(instance);
     }
 
     @Override
     public void buildStreamTopology(KStreamBuilder kStreamBuilder) {
+        final Serde<Span> spanSerde = spanSerdeFactory.createSpanSerde(Constants.APPLICATION);
         final Serde<String> stringSerde = Serdes.String();
-        final KStream<String, String> stream = kStreamBuilder.stream(
-                stringSerde, stringSerde, KAFKA_CONFIGURATION_PROVIDER.fromtopic());
-        final ForeachAction<String, String> produceIntoExternalKafkaAction =
+        final KStream<String, Span> stream = kStreamBuilder.stream(
+                stringSerde, spanSerde, KAFKA_CONFIGURATION_PROVIDER.fromtopic());
+        final ForeachAction<String, Span> produceIntoExternalKafkaAction =
                 factory.createProduceIntoExternalKafkaAction();
         stream.foreach(produceIntoExternalKafkaAction);
     }

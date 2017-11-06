@@ -13,7 +13,7 @@
     <url>http://maven.apache.org</url>
 
     <properties>
-        <start-class>com.expedia.www.haystack.pipes.kafkaProducer.ProtobufToKafkaProducer</start-class>
+        <start-class>com.expedia.www.haystack.pipes.kafkaProducer.KafkaProducerIsActiveController</start-class>
         <!-- Versions -->
         <junit-version>4.12</junit-version>
         <haystack-metrics-version>0.1</haystack-metrics-version>
@@ -25,7 +25,15 @@
         <maven-compiler-plugin-version>3.6.1</maven-compiler-plugin-version>
         <maven-jar-plugin-version>3.0.2</maven-jar-plugin-version>
         <mockito-version>1.9.5</mockito-version>
+        <spring-boot-version>1.5.7.RELEASE</spring-boot-version>
     </properties>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>1.5.7.RELEASE</version> <!-- should match spring-boot-version in <properties> above -->
+        <relativePath/>
+    </parent>
 
     <dependencies>
         <dependency>
@@ -54,6 +62,19 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
             <version>${logback-version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-parent</artifactId>
+            <version>${spring-boot-version}</version>
+            <type>pom</type>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>${spring-boot-version}</version>
         </dependency>
 
         <!-- Test dependencies -->

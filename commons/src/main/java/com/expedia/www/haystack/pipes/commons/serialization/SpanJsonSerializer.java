@@ -14,31 +14,36 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.commons;
+package com.expedia.www.haystack.pipes.commons.serialization;
 
 import com.expedia.open.tracing.Span;
+import com.google.protobuf.util.JsonFormat;
+import com.google.protobuf.util.JsonFormat.Printer;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.monitor.Timer;
-import org.apache.kafka.common.serialization.Deserializer;
+import org.apache.kafka.common.serialization.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.DatatypeConverter;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class SpanProtobufDeserializer extends SerializerDeserializerBase implements Deserializer<Span> {
-    static final String ERROR_MSG = "Problem deserializing span [%s]";
-    static final String PROTOBUF_SERIALIZATION_TIMER_NAME = "PROTOBUF_DESERIALIZATION";
-    static Logger logger = LoggerFactory.getLogger(SpanProtobufDeserializer.class);
-    static final Map<String, Timer> PROTOBUF_SERIALIZATION_TIMERS = new ConcurrentHashMap<>();
+public class SpanJsonSerializer extends SerializerDeserializerBase implements Serializer<Span> {
+    static final String ERROR_MSG = "Problem serializing span [%s]";
+    static final String JSON_SERIALIZATION_TIMER_NAME = "JSON_SERIALIZATION";
+    static Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
+    static Logger logger = LoggerFactory.getLogger(SpanJsonSerializer.class);
 
-    private final Timer protobufSerializationTimer;
+    static final Map<String, Timer> JSON_SERIALIZATION_TIMERS = new ConcurrentHashMap<>();
 
-    public SpanProtobufDeserializer(String application) {
+    private final Timer jsonSerialization;
+
+    @SuppressWarnings("WeakerAccess")
+    public SpanJsonSerializer(String application) {
         super(application);
         synchronized (this.application) {
-            protobufSerializationTimer = getOrCreateTimer(PROTOBUF_SERIALIZATION_TIMERS, PROTOBUF_SERIALIZATION_TIMER_NAME);
+            jsonSerialization = getOrCreateTimer(JSON_SERIALIZATION_TIMERS, JSON_SERIALIZATION_TIMER_NAME);
         }
     }
 
@@ -48,17 +53,15 @@ public class SpanProtobufDeserializer extends SerializerDeserializerBase impleme
     }
 
     @Override
-    public Span deserialize(String key, byte[] bytes) {
+    public byte[] serialize(String key, Span span) {
         request.increment();
-        if (bytes == null) {
-            return null;
-        }
-        final Stopwatch stopwatch = protobufSerializationTimer.start();
+        final Stopwatch stopwatch = jsonSerialization.start();
         try {
+            final byte[] bytes = printer.print(span).getBytes(Charset.forName("UTF-8"));
             bytesIn.increment(bytes.length);
-            return Span.parseFrom(bytes);
+            return bytes;
         } catch (Exception exception) {
-            logger.error(ERROR_MSG, DatatypeConverter.printHexBinary(bytes), exception);
+            logger.error(ERROR_MSG, span, exception);
         } finally {
             stopwatch.stop();
         }
@@ -69,4 +72,5 @@ public class SpanProtobufDeserializer extends SerializerDeserializerBase impleme
     public void close() {
         // Nothing to do
     }
+
 }

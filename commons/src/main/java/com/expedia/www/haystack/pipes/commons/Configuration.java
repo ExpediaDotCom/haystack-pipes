@@ -12,8 +12,8 @@ import java.util.Collections;
 
 public class Configuration {
     static final String HAYSTACK_GRAPHITE_CONFIG_PREFIX = "haystack.graphite";
-    static final String HAYSTACK_PIPE_STREAMS = "haystack.pipe.streams";
-    static final String HAYSTACK_KAFKA_CONFIG_PREFIX = "haystack.kafka";
+    public static final String HAYSTACK_PIPE_STREAMS = "haystack.pipe.streams";
+    public static final String HAYSTACK_KAFKA_CONFIG_PREFIX = "haystack.kafka";
     public static final String HAYSTACK_EXTERNAL_KAFKA_CONFIG_PREFIX = "haystack.externalkafka";
 
     public ConfigurationProvider createMergeConfigurationProvider() {

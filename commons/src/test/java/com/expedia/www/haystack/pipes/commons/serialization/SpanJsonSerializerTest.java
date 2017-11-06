@@ -14,9 +14,10 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.commons;
+package com.expedia.www.haystack.pipes.commons.serialization;
 
-import com.expedia.www.haystack.pipes.commons.SerializerDeserializerBase.Factory;
+import com.expedia.www.haystack.pipes.commons.TestConstantsAndCommonCode;
+import com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.Factory;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat.Printer;
@@ -24,6 +25,7 @@ import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.monitor.Timer;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,12 +33,12 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
-import static com.expedia.www.haystack.pipes.commons.SerializerDeserializerBase.BYTES_IN_COUNTERS;
-import static com.expedia.www.haystack.pipes.commons.SerializerDeserializerBase.BYTES_IN_COUNTER_NAME;
-import static com.expedia.www.haystack.pipes.commons.SerializerDeserializerBase.REQUESTS_COUNTERS;
-import static com.expedia.www.haystack.pipes.commons.SerializerDeserializerBase.REQUEST_COUNTER_NAME;
-import static com.expedia.www.haystack.pipes.commons.SpanJsonSerializer.JSON_SERIALIZATION_TIMERS;
-import static com.expedia.www.haystack.pipes.commons.SpanJsonSerializer.JSON_SERIALIZATION_TIMER_NAME;
+import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.BYTES_IN_COUNTERS;
+import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.BYTES_IN_COUNTER_NAME;
+import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.REQUESTS_COUNTERS;
+import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.REQUEST_COUNTER_NAME;
+import static com.expedia.www.haystack.pipes.commons.serialization.SpanJsonSerializer.JSON_SERIALIZATION_TIMERS;
+import static com.expedia.www.haystack.pipes.commons.serialization.SpanJsonSerializer.JSON_SERIALIZATION_TIMER_NAME;
 import static com.expedia.www.haystack.pipes.commons.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -103,7 +105,7 @@ public class SpanJsonSerializerTest {
         final byte[] byteArray = spanJsonSerializer.serialize(null, FULLY_POPULATED_SPAN);
 
         final String string = new String(byteArray);
-        assertEquals(TestConstantsAndCommonCode.JSON_SPAN_STRING, string);
+        Assert.assertEquals(TestConstantsAndCommonCode.JSON_SPAN_STRING, string);
         verify(mockRequestCounter).increment();
         verify(mockBytesInCounter).increment(byteArray.length);
         verifyTimerAndStopwatch();

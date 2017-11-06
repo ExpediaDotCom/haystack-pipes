@@ -13,11 +13,12 @@ haystack:
      port: 2003 # default Graphite port, rarely overridden, but can be overridden by env variable
      pollintervalseconds: 60
      queuesize: 10
-  externalKafka:
+  externalkafka:
     brokers: "haystack.local" # will point to external Kafka in typical usage
     port: 9092
     totopic: "externalKafkaTopic"
     acks: "0"
-    batchSize: 16384
+    batchsize: 16384
     lingerms: 5
-    bufferMemory: 1048576 # 1 Megabyte
+    buffermemory: 1048576 # 1 Megabyte
+    waitforresponse: true

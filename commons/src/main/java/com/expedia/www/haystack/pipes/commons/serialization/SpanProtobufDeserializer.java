@@ -14,34 +14,31 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.commons;
+package com.expedia.www.haystack.pipes.commons.serialization;
 
 import com.expedia.open.tracing.Span;
-import com.google.protobuf.util.JsonFormat;
-import com.google.protobuf.util.JsonFormat.Printer;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.monitor.Timer;
-import org.apache.kafka.common.serialization.Serializer;
+import org.apache.kafka.common.serialization.Deserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.Charset;
+import javax.xml.bind.DatatypeConverter;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class SpanJsonSerializer extends SerializerDeserializerBase implements Serializer<Span> {
-    static final String ERROR_MSG = "Problem serializing span [%s]";
-    static final String JSON_SERIALIZATION_TIMER_NAME = "JSON_SERIALIZATION";
-    static Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
-    static Logger logger = LoggerFactory.getLogger(SpanJsonSerializer.class);
+public class SpanProtobufDeserializer extends SerializerDeserializerBase implements Deserializer<Span> {
+    static final String ERROR_MSG = "Problem deserializing span [%s]";
+    static final String PROTOBUF_SERIALIZATION_TIMER_NAME = "PROTOBUF_DESERIALIZATION";
+    static Logger logger = LoggerFactory.getLogger(SpanProtobufDeserializer.class);
+    static final Map<String, Timer> PROTOBUF_SERIALIZATION_TIMERS = new ConcurrentHashMap<>();
 
-    static final Map<String, Timer> JSON_SERIALIZATION_TIMERS = new ConcurrentHashMap<>();
+    private final Timer protobufSerializationTimer;
 
-    private final Timer jsonSerialization;
-    public SpanJsonSerializer(String application) {
+    public SpanProtobufDeserializer(String application) {
         super(application);
         synchronized (this.application) {
-            jsonSerialization = getOrCreateTimer(JSON_SERIALIZATION_TIMERS, JSON_SERIALIZATION_TIMER_NAME);
+            protobufSerializationTimer = getOrCreateTimer(PROTOBUF_SERIALIZATION_TIMERS, PROTOBUF_SERIALIZATION_TIMER_NAME);
         }
     }
 
@@ -51,15 +48,17 @@ public class SpanJsonSerializer extends SerializerDeserializerBase implements Se
     }
 
     @Override
-    public byte[] serialize(String key, Span span) {
+    public Span deserialize(String key, byte[] bytes) {
         request.increment();
-        final Stopwatch stopwatch = jsonSerialization.start();
+        if (bytes == null) {
+            return null;
+        }
+        final Stopwatch stopwatch = protobufSerializationTimer.start();
         try {
-            final byte[] bytes = printer.print(span).getBytes(Charset.forName("UTF-8"));
             bytesIn.increment(bytes.length);
-            return bytes;
+            return Span.parseFrom(bytes);
         } catch (Exception exception) {
-            logger.error(ERROR_MSG, span, exception);
+            logger.error(ERROR_MSG, DatatypeConverter.printHexBinary(bytes), exception);
         } finally {
             stopwatch.stop();
         }
@@ -70,5 +69,4 @@ public class SpanJsonSerializer extends SerializerDeserializerBase implements Se
     public void close() {
         // Nothing to do
     }
-
 }

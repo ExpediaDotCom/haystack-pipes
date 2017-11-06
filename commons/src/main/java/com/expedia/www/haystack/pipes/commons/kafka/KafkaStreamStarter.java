@@ -1,5 +1,8 @@
-package com.expedia.www.haystack.pipes.commons;
+package com.expedia.www.haystack.pipes.commons.kafka;
 
+import com.expedia.www.haystack.pipes.commons.Configuration;
+import com.expedia.www.haystack.pipes.commons.IntermediateStreamsConfig;
+import com.expedia.www.haystack.pipes.commons.SystemExitUncaughtExceptionHandler;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;

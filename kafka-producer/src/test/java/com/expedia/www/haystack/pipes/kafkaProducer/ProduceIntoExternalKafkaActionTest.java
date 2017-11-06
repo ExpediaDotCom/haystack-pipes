@@ -16,6 +16,7 @@
  */
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
+import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.Factory;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.monitor.Timer;
@@ -39,13 +40,16 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.DEBUG_MSG;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.ERROR;
+import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.ERROR_MSG;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.KAFKA_PRODUCER_POST;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.REQUEST;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.factory;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.kafkaProducer;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.logger;
+import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_FLATTENED_TAGS;
+import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_NO_TAGS;
+import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.NO_TAGS_SPAN;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
@@ -143,38 +147,46 @@ public class ProduceIntoExternalKafkaActionTest {
 
     private void resetCounters() {
         REQUEST.increment(-((long) REQUEST.getValue()));
-        ERROR.increment(-((long) ERROR.getValue()));
     }
 
     @Test
-    public void testApplySuccessDoNotWaitForResponse() throws ExecutionException, InterruptedException {
+    public void testApplySuccessDoNotWaitForResponseWithTags() throws ExecutionException, InterruptedException {
+        testApplySuccessDoNotWaitForResponse(FULLY_POPULATED_SPAN, JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
+    }
+
+    @Test
+    public void testApplySuccessDoNotWaitForResponseWithoutTags() throws ExecutionException, InterruptedException {
+        testApplySuccessDoNotWaitForResponse(NO_TAGS_SPAN, JSON_SPAN_STRING_WITH_NO_TAGS);
+    }
+
+    private void testApplySuccessDoNotWaitForResponse(Span span, String jsonSpanString) throws InterruptedException, ExecutionException {
         whensForTestApplySuccess(false, false);
 
-        produceIntoExternalKafkaAction.apply(KEY, VALUE);
+        produceIntoExternalKafkaAction.apply(KEY, span);
 
         putWaitForResponseIntoEnvironmentVariables(true); // so that other tests won't see a false
-        verifyCounters(0);
-        verifiesForTestApplySuccess(false, true);
+        verifyCounters();
+        verifiesForTestApplySuccess(false, true, jsonSpanString);
     }
 
     @Test
     public void testApplySuccessWaitForResponseDebugEnabled() throws ExecutionException, InterruptedException {
         whensForTestApplySuccess(true, true);
 
-        produceIntoExternalKafkaAction.apply(KEY, VALUE);
+        produceIntoExternalKafkaAction.apply(KEY, FULLY_POPULATED_SPAN);
 
-        verifyCounters(0);
-        verifiesForTestApplySuccess(true, true);
+        verifyCounters();
+        verifiesForTestApplySuccess(true, true, JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
     }
 
     @Test
     public void testApplySuccessWaitForResponseDebugDisabled() throws ExecutionException, InterruptedException {
         whensForTestApplySuccess(true, false);
 
-        produceIntoExternalKafkaAction.apply(KEY, VALUE);
+        produceIntoExternalKafkaAction.apply(KEY, FULLY_POPULATED_SPAN);
 
-        verifyCounters(0);
-        verifiesForTestApplySuccess(true, false);
+        verifyCounters();
+        verifiesForTestApplySuccess(true, false, JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
     }
 
     private void whensForTestApplySuccess(boolean waitForResponse, boolean isDebugEnabled)
@@ -188,13 +200,13 @@ public class ProduceIntoExternalKafkaActionTest {
         }
     }
 
-    private void verifiesForTestApplySuccess(boolean waitForResponse, boolean isDebugEnabled)
+    private void verifiesForTestApplySuccess(boolean waitForResponse, boolean isDebugEnabled, String jsonSpanString)
             throws InterruptedException, ExecutionException {
-        verifiesForTestApply(waitForResponse);
+        verifiesForTestApply(waitForResponse, jsonSpanString);
         if(waitForResponse) {
             verify(mockLogger).isDebugEnabled();
             if (isDebugEnabled) {
-                verify(mockLogger).debug(String.format(DEBUG_MSG, VALUE, PARTITION));
+                verify(mockLogger).debug(String.format(DEBUG_MSG, FULLY_POPULATED_SPAN, PARTITION));
             }
         }
     }
@@ -205,11 +217,11 @@ public class ProduceIntoExternalKafkaActionTest {
         whensForTestApply();
         when(mockRecordMetadataFuture.get()).thenThrow(executionException);
 
-        produceIntoExternalKafkaAction.apply(KEY, VALUE);
+        produceIntoExternalKafkaAction.apply(KEY, FULLY_POPULATED_SPAN);
 
-        verifyCounters(1);
-        verifiesForTestApply(true);
-        verify(mockLogger).error(ERROR_MSG, VALUE, executionException);
+        verifyCounters();
+        verifiesForTestApply(true, JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
+        verify(mockLogger).error(ERROR_MSG, FULLY_POPULATED_SPAN, executionException);
     }
 
     private void whensForTestApply() {
@@ -218,9 +230,9 @@ public class ProduceIntoExternalKafkaActionTest {
         when(mockKafkaProducer.send(Matchers.any())).thenReturn(mockRecordMetadataFuture);
     }
 
-    private void verifiesForTestApply(boolean waitForResponse) throws InterruptedException, ExecutionException {
+    private void verifiesForTestApply(boolean waitForResponse, String jsonSpanString) throws InterruptedException, ExecutionException {
         verify(mockTimer).start();
-        verify(mockFactory).createProducerRecord(KEY, VALUE);
+        verify(mockFactory).createProducerRecord(KEY, jsonSpanString);
         verify(mockKafkaProducer).send(mockProducerRecord);
         if(waitForResponse) {
             verify(mockRecordMetadataFuture).get();
@@ -228,9 +240,8 @@ public class ProduceIntoExternalKafkaActionTest {
         verify(mockStopwatch).stop();
     }
 
-    private void verifyCounters(long errorCount) {
+    private void verifyCounters() {
         assertEquals(1L, REQUEST.getValue());
-        assertEquals(errorCount, ERROR.getValue());
     }
 
     @Test

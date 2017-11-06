@@ -1,6 +1,9 @@
-package com.expedia.www.haystack.pipes.commons;
+package com.expedia.www.haystack.pipes.commons.serialization;
 
 import com.expedia.open.tracing.Span;
+import com.expedia.www.haystack.pipes.commons.serialization.SpanJsonSerializer;
+import com.expedia.www.haystack.pipes.commons.serialization.SpanProtobufDeserializer;
+import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
 import org.apache.kafka.common.serialization.Serde;
 import org.junit.Before;
 import org.junit.Test;
