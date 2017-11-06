@@ -33,14 +33,13 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
+import static com.expedia.www.haystack.pipes.commons.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.BYTES_IN_COUNTERS;
 import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.BYTES_IN_COUNTER_NAME;
 import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.REQUESTS_COUNTERS;
 import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.REQUEST_COUNTER_NAME;
 import static com.expedia.www.haystack.pipes.commons.serialization.SpanJsonSerializer.JSON_SERIALIZATION_TIMERS;
 import static com.expedia.www.haystack.pipes.commons.serialization.SpanJsonSerializer.JSON_SERIALIZATION_TIMER_NAME;
-import static com.expedia.www.haystack.pipes.commons.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -113,17 +112,38 @@ public class SpanJsonSerializerTest {
 
     @Test
     public void testSerializeExceptionCase() throws InvalidProtocolBufferException {
-        when(mockTimer.start()).thenReturn(mockStopwatch);
-        final InvalidProtocolBufferException exception = new InvalidProtocolBufferException("Test");
-        when(mockPrinter.print(FULLY_POPULATED_SPAN)).thenThrow(exception);
+        final Throwable exception = new InvalidProtocolBufferException("Test");
+        whensForThrowable(exception);
 
         final Printer printer = injectMockPrinter();
         final byte[] shouldBeNull = spanJsonSerializer.serialize(null, FULLY_POPULATED_SPAN);
         SpanJsonSerializer.printer = printer;
 
         assertNull(shouldBeNull);
-        verify(mockPrinter).print(FULLY_POPULATED_SPAN);
         verify(mockLogger).error(SpanJsonSerializer.ERROR_MSG, FULLY_POPULATED_SPAN, exception);
+        verifyPrintIncrementTimerAndStopwatch();
+    }
+
+    @Test(expected = OutOfMemoryError.class)
+    public void testSerializeErrorCase() throws InvalidProtocolBufferException {
+        whensForThrowable(new OutOfMemoryError());
+
+        final Printer printer = injectMockPrinter();
+        try {
+            spanJsonSerializer.serialize(null, FULLY_POPULATED_SPAN);
+        } finally {
+            SpanJsonSerializer.printer = printer;
+            verifyPrintIncrementTimerAndStopwatch();
+        }
+    }
+
+    private void whensForThrowable(Throwable outOfMemoryError) throws InvalidProtocolBufferException {
+        when(mockTimer.start()).thenReturn(mockStopwatch);
+        when(mockPrinter.print(FULLY_POPULATED_SPAN)).thenThrow(outOfMemoryError);
+    }
+
+    private void verifyPrintIncrementTimerAndStopwatch() throws InvalidProtocolBufferException {
+        verify(mockPrinter).print(FULLY_POPULATED_SPAN);
         verify(mockRequestCounter).increment();
         verifyTimerAndStopwatch();
     }

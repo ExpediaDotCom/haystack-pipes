@@ -29,18 +29,20 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
+import static com.expedia.www.haystack.pipes.commons.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
+import static com.expedia.www.haystack.pipes.commons.TestConstantsAndCommonCode.PROTOBUF_SPAN_BYTES;
 import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.BYTES_IN_COUNTERS;
 import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.BYTES_IN_COUNTER_NAME;
 import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.REQUESTS_COUNTERS;
 import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.REQUEST_COUNTER_NAME;
 import static com.expedia.www.haystack.pipes.commons.serialization.SpanProtobufDeserializer.PROTOBUF_SERIALIZATION_TIMERS;
 import static com.expedia.www.haystack.pipes.commons.serialization.SpanProtobufDeserializer.PROTOBUF_SERIALIZATION_TIMER_NAME;
-import static com.expedia.www.haystack.pipes.commons.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
-import static com.expedia.www.haystack.pipes.commons.TestConstantsAndCommonCode.PROTOBUF_SPAN_BYTES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -118,9 +120,31 @@ public class SpanProtobufDeserializerTest {
 
         assertNull(shouldBeNull);
         verify(mockLogger).error(eq(SpanProtobufDeserializer.ERROR_MSG), eq("00"), any(InvalidProtocolBufferException.class));
+        verifiesForCountersTimerAndStopwatch();
+        clearCounters();
+    }
+
+    @Test(expected = OutOfMemoryError.class)
+    public void testDeserializeErrorCase() {
+        when(mockTimer.start()).thenReturn(mockStopwatch);
+        final OutOfMemoryError outOfMemoryError = new OutOfMemoryError();
+        doThrow(outOfMemoryError).when(mockBytesInCounter).increment(anyLong());
+
+        try {
+            spanProtobufDeserializer.deserialize(null, new byte[]{0x00});
+        } finally {
+            verifiesForCountersTimerAndStopwatch();
+            clearCounters();
+        }
+    }
+
+    private void verifiesForCountersTimerAndStopwatch() {
         verify(mockRequestCounter).increment();
         verify(mockBytesInCounter).increment(1);
         verifyTimerAndStopwatch();
+    }
+
+    private void clearCounters() {
         REQUESTS_COUNTERS.clear();
         BYTES_IN_COUNTERS.clear();
         SpanProtobufDeserializer.PROTOBUF_SERIALIZATION_TIMERS.clear();

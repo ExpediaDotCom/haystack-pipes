@@ -35,6 +35,7 @@ public class SpanProtobufDeserializer extends SerializerDeserializerBase impleme
 
     private final Timer protobufSerializationTimer;
 
+    @SuppressWarnings("WeakerAccess")
     public SpanProtobufDeserializer(String application) {
         super(application);
         synchronized (this.application) {
