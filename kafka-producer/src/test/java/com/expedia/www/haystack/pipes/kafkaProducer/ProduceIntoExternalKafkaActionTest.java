@@ -213,21 +213,36 @@ public class ProduceIntoExternalKafkaActionTest {
 
     @Test
     public void testApplyExecutionException() throws ExecutionException, InterruptedException {
-        final Exception executionException = new ExecutionException("Test", null);
-        whensForTestApply();
-        when(mockRecordMetadataFuture.get()).thenThrow(executionException);
+        final Throwable executionException = new ExecutionException("Test", null);
+        whenForTestApplyAndThrow(executionException);
 
         produceIntoExternalKafkaAction.apply(KEY, FULLY_POPULATED_SPAN);
 
-        verifyCounters();
-        verifiesForTestApply(true, JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
+        verifiesForTestApplyAndThrow();
         verify(mockLogger).error(ERROR_MSG, FULLY_POPULATED_SPAN, executionException);
+    }
+
+    @Test(expected = OutOfMemoryError.class)
+    public void testApplyExecutionError() throws ExecutionException, InterruptedException {
+        whenForTestApplyAndThrow(new OutOfMemoryError());
+
+        try {
+            produceIntoExternalKafkaAction.apply(KEY, FULLY_POPULATED_SPAN);
+        } finally {
+            verifiesForTestApplyAndThrow();
+        }
+
     }
 
     private void whensForTestApply() {
         when(mockTimer.start()).thenReturn(mockStopwatch);
         when(mockFactory.createProducerRecord(anyString(), anyString())).thenReturn(mockProducerRecord);
         when(mockKafkaProducer.send(Matchers.any())).thenReturn(mockRecordMetadataFuture);
+    }
+
+    private void whenForTestApplyAndThrow(Throwable outOfMemoryError) throws InterruptedException, ExecutionException {
+        whensForTestApply();
+        when(mockRecordMetadataFuture.get()).thenThrow(outOfMemoryError);
     }
 
     private void verifiesForTestApply(boolean waitForResponse, String jsonSpanString) throws InterruptedException, ExecutionException {
@@ -238,6 +253,11 @@ public class ProduceIntoExternalKafkaActionTest {
             verify(mockRecordMetadataFuture).get();
         }
         verify(mockStopwatch).stop();
+    }
+
+    private void verifiesForTestApplyAndThrow() throws InterruptedException, ExecutionException {
+        verifyCounters();
+        verifiesForTestApply(true, JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
     }
 
     private void verifyCounters() {

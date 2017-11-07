@@ -16,7 +16,6 @@ class SerializerDeserializerBase {
     static Factory factory = new Factory();
     static final Map<String, Counter> REQUESTS_COUNTERS = new ConcurrentHashMap<>();
     static final Map<String, Counter> BYTES_IN_COUNTERS = new ConcurrentHashMap<>();
-    static MetricObjects metricObjects = new MetricObjects();
 
     final String application;
     final Counter request;
@@ -28,23 +27,29 @@ class SerializerDeserializerBase {
         bytesIn = getOrCreateCounter(BYTES_IN_COUNTERS, BYTES_IN_COUNTER_NAME);
     }
 
-    private Counter getOrCreateCounter(Map<String, Counter> counters, String counterName) {
-        if (!counters.containsKey(this.application)) {
-            final Counter newCounter = factory.createCounter(this.application, getClass().getSimpleName(), counterName);
-            counters.put(this.application, newCounter);
+    Counter getOrCreateCounter(Map<String, Counter> counters, String counterName) {
+        synchronized (application) {
+            if (!counters.containsKey(application)) {
+                final Counter newCounter = factory.createCounter(application, getClass().getSimpleName(), counterName);
+                counters.put(application, newCounter);
+            }
         }
-        return counters.get(this.application);
+        return counters.get(application);
     }
 
     Timer getOrCreateTimer(Map<String, Timer> timers, String timerName) {
-        if (!timers.containsKey(this.application)) {
-            final Timer newTimer = factory.createTimer(this.application, getClass().getSimpleName(), timerName);
-            timers.put(this.application, newTimer);
+        synchronized (application) {
+            if (!timers.containsKey(application)) {
+                final Timer newTimer = factory.createTimer(application, getClass().getSimpleName(), timerName);
+                timers.put(application, newTimer);
+            }
         }
-        return timers.get(this.application);
+        return timers.get(application);
     }
 
     static class Factory {
+        static MetricObjects metricObjects = new MetricObjects();
+
         Counter createCounter(String application, String className, String counterName) {
             return metricObjects.createAndRegisterCounter(
                     SUBSYSTEM, application, className, counterName);
