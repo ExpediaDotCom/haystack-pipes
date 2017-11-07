@@ -57,6 +57,11 @@ public class ChangeEnvVarsToLowerCaseConfigurationSource implements Configuratio
     @Override
     public Properties getConfiguration(Environment environment) {
         final Properties properties = environmentVariablesConfigurationSource.getConfiguration(environment);
+        return lowerCaseKeysThatStartWithPrefix(properties, prefixOfStringsToConvertToLowerCase);
+    }
+
+    static Properties lowerCaseKeysThatStartWithPrefix(Properties properties,
+                                                       String prefixOfStringsToConvertToLowerCase) {
         final Iterator<Map.Entry<Object, Object>> iterator = properties.entrySet().iterator();
         final Map<String, Object> toAdd = new HashMap<>();
         while (iterator.hasNext()) {
