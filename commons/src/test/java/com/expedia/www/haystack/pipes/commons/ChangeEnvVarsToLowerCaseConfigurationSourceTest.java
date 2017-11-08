@@ -18,6 +18,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.expedia.www.haystack.pipes.commons.ChangeEnvVarsToLowerCaseConfigurationSource.lowerCaseKeysThatStartWithPrefix;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.times;
@@ -143,5 +144,23 @@ public class ChangeEnvVarsToLowerCaseConfigurationSourceTest {
         changeEnvVarsToLowerCaseConfigurationSource.reload();
 
         verify(mockEnvironmentVariablesConfigurationSource).reload();
+    }
+
+    @Test
+    public void testLowerCaseKeysThatStartWithPrefix() {
+        final Properties properties = new Properties();
+        final String prefix = "FOO";
+        final String value1 = "1";
+        final String matchingKey = prefix + value1;
+        properties.put(matchingKey, value1);
+        final String value2 = "2";
+        final String nonMatchingKey = "foo";
+        properties.put(nonMatchingKey, value2);
+
+        final Properties actual = lowerCaseKeysThatStartWithPrefix(properties, prefix);
+
+        assertEquals(2, actual.size());
+        assertEquals(value1, actual.getProperty(matchingKey.toLowerCase()));
+        assertEquals(value2, actual.getProperty(nonMatchingKey));
     }
 }

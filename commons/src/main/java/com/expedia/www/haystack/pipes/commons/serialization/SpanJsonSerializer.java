@@ -42,9 +42,7 @@ public class SpanJsonSerializer extends SerializerDeserializerBase implements Se
     @SuppressWarnings("WeakerAccess")
     public SpanJsonSerializer(String application) {
         super(application);
-        synchronized (this.application) {
-            jsonSerialization = getOrCreateTimer(JSON_SERIALIZATION_TIMERS, JSON_SERIALIZATION_TIMER_NAME);
-        }
+        jsonSerialization = getOrCreateTimer(JSON_SERIALIZATION_TIMERS, JSON_SERIALIZATION_TIMER_NAME);
     }
 
     @Override

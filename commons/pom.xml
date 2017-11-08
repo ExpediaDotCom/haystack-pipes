@@ -18,6 +18,7 @@
         <cfg4j-core-version>4.4.1</cfg4j-core-version>
         <haystack-metrics-version>0.1</haystack-metrics-version>
         <jacoco-maven-plugin-version>0.7.9</jacoco-maven-plugin-version>
+        <jacoco-percentage-instruction>1.0</jacoco-percentage-instruction>
         <junit-version>4.12</junit-version>
         <kafka-version>0.10.2.1</kafka-version>
         <maven-compiler-plugin-version>3.6.1</maven-compiler-plugin-version>
@@ -111,16 +112,38 @@
                 </configuration>
                 <executions>
                     <execution>
+                        <id>jacoco-initialize</id>
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
                     </execution>
                     <execution>
-                        <id>report</id>
-                        <phase>prepare-package</phase>
+                        <id>jacoco-report</id>
+                        <phase>test</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
+                    </execution>
+                    <execution>
+                        <id>jacoco-check</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>INSTRUCTION</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>${jacoco-percentage-instruction}</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

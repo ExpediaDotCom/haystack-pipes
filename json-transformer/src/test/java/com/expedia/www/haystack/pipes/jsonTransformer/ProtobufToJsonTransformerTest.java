@@ -29,11 +29,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -88,16 +90,23 @@ public class ProtobufToJsonTransformerTest {
         verify(mockKafkaStreamStarter).createAndStartStream(protobufToJsonTransformer);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testBuildStreamTopology() {
         when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
                 .thenReturn(mockKStreamStringSpan);
         when(mockKStreamStringSpan.mapValues(Matchers.<ValueMapper<Span, SpanJsonSerializer>>any()))
                 .thenReturn(mockKStreamStringSpanJsonSerializer);
+
         protobufToJsonTransformer.buildStreamTopology(mockKStreamBuilder);
 
         verify(mockKStreamBuilder).stream(any(), Matchers.<Serde<Span>>any(), eq("proto-spans"));
-        verify(mockKStreamStringSpan).mapValues(any());
+        ArgumentCaptor<ValueMapper> argumentCaptor = ArgumentCaptor.forClass(ValueMapper.class);
+        verify(mockKStreamStringSpan).mapValues(argumentCaptor.capture());
+        final ValueMapper<Span, Span> valueMapper = argumentCaptor.getValue();
+        final Span span = Span.getDefaultInstance();
+        assertSame(span, valueMapper.apply(span));
+        System.out.println(valueMapper);
         verify(mockKStreamStringSpanJsonSerializer).to(any(),  any(), eq("json-spans"));
     }
 }
