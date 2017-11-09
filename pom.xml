@@ -12,6 +12,7 @@
 
     <properties>
         <encoding>UTF-8</encoding>
+        <haystack-metrics-version>0.2.1</haystack-metrics-version>
     </properties>
 
     <modules>
