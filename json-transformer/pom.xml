@@ -16,7 +16,7 @@
         <!-- Versions -->
         <cfg4j-core-version>4.4.1</cfg4j-core-version>
         <commons-text-version>1.1</commons-text-version>
-        <haystack-metrics-version>0.1</haystack-metrics-version>
+        <haystack-metrics-version>0.2.1</haystack-metrics-version>
         <haystack-pipes-commons-version>1.0-SNAPSHOT</haystack-pipes-commons-version>
         <jacoco-maven-plugin-version>0.7.9</jacoco-maven-plugin-version>
         <jacoco-percentage-instruction>1.0</jacoco-percentage-instruction>
