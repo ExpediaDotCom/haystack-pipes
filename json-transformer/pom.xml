@@ -19,7 +19,7 @@
         <haystack-metrics-version>0.2.1</haystack-metrics-version>
         <haystack-pipes-commons-version>1.0-SNAPSHOT</haystack-pipes-commons-version>
         <jacoco-maven-plugin-version>0.7.9</jacoco-maven-plugin-version>
-        <jacoco-percentage-instruction>1.0</jacoco-percentage-instruction>
+        <jacoco-percentage>1.0</jacoco-percentage>
         <java-version>1.8</java-version>
         <junit-version>4.12</junit-version>
         <kafka-version>0.10.2.1</kafka-version>
@@ -241,7 +241,12 @@
                                         <limit>
                                             <counter>INSTRUCTION</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>${jacoco-percentage-instruction}</minimum>
+                                            <minimum>${jacoco-percentage}</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>${jacoco-percentage}</minimum>
                                         </limit>
                                     </limits>
                                 </rule>
