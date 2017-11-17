@@ -17,7 +17,6 @@
         <!-- Versions -->
         <cfg4j-core-version>4.4.1</cfg4j-core-version>
         <jacoco-maven-plugin-version>0.7.9</jacoco-maven-plugin-version>
-        <jacoco-percentage-instruction>1.0</jacoco-percentage-instruction>
         <junit-version>4.12</junit-version>
         <kafka-version>0.10.2.1</kafka-version>
         <maven-compiler-plugin-version>3.6.1</maven-compiler-plugin-version>
@@ -48,6 +47,12 @@
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java-util</artifactId>
             <version>${protobuf-java-util-version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3-version}</version>
         </dependency>
 
         <!-- Test dependencies -->
@@ -137,7 +142,12 @@
                                         <limit>
                                             <counter>INSTRUCTION</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>${jacoco-percentage-instruction}</minimum>
+                                            <minimum>${jacoco-percentage}</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>${jacoco-percentage}</minimum>
                                         </limit>
                                     </limits>
                                 </rule>

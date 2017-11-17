@@ -40,7 +40,7 @@ public class KafkaStreamStarter {
     private void startKafkaStreams(KStreamBuilder kStreamBuilder) {
         final KafkaStreams kafkaStreams = factory.createKafkaStreams(kStreamBuilder, this);
         final SystemExitUncaughtExceptionHandler systemExitUncaughtExceptionHandler
-                = factory.createSystemExitUncaughtExceptionHandler();
+                = factory.createSystemExitUncaughtExceptionHandler(kafkaStreams);
         kafkaStreams.setUncaughtExceptionHandler(systemExitUncaughtExceptionHandler);
         kafkaStreams.start();
         logger.info(String.format(STARTED_MSG, kStreamBuilder.getClass().getSimpleName()));
@@ -81,8 +81,8 @@ public class KafkaStreamStarter {
             return new KafkaStreams(kStreamBuilder, kafkaStreamStarter.streamsConfig);
         }
 
-        SystemExitUncaughtExceptionHandler createSystemExitUncaughtExceptionHandler() {
-            return new SystemExitUncaughtExceptionHandler();
+        SystemExitUncaughtExceptionHandler createSystemExitUncaughtExceptionHandler(KafkaStreams kafkaStreams) {
+            return new SystemExitUncaughtExceptionHandler(kafkaStreams);
         }
 
     }

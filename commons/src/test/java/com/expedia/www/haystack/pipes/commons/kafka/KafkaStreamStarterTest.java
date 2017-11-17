@@ -1,8 +1,6 @@
 package com.expedia.www.haystack.pipes.commons.kafka;
 
 import com.expedia.www.haystack.pipes.commons.SystemExitUncaughtExceptionHandler;
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilder;
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.Factory;
 import com.netflix.servo.publish.PollScheduler;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -82,14 +80,15 @@ public class KafkaStreamStarterTest {
         when(mockFactory.createKStreamBuilder()).thenReturn(mockKStreamBuilder);
         when(mockFactory.createKafkaStreams(mockKStreamBuilder, kafkaStreamStarter))
                 .thenReturn(mockKafkaStreams);
-        when(mockFactory.createSystemExitUncaughtExceptionHandler()).thenReturn(mockSystemExitUncaughtExceptionHandler);
+        when(mockFactory.createSystemExitUncaughtExceptionHandler(mockKafkaStreams))
+                .thenReturn(mockSystemExitUncaughtExceptionHandler);
 
         kafkaStreamStarter.createAndStartStream(mockKafkaStreamBuilder);
 
         verify(mockFactory).createKStreamBuilder();
         verify(mockFactory).createKafkaStreams(mockKStreamBuilder, kafkaStreamStarter);
         verify(mockKafkaStreamBuilder).buildStreamTopology(mockKStreamBuilder);
-        verify(mockFactory).createSystemExitUncaughtExceptionHandler();
+        verify(mockFactory).createSystemExitUncaughtExceptionHandler(mockKafkaStreams);
         verify(mockKafkaStreams).setUncaughtExceptionHandler(mockSystemExitUncaughtExceptionHandler);
         verify(mockKafkaStreams).start();
         verify(mockLogger).info(String.format(STARTED_MSG, mockKStreamBuilder.getClass().getSimpleName()));
@@ -131,7 +130,7 @@ public class KafkaStreamStarterTest {
 
     @Test
     public void testFactoryCreateSystemExitUncaughtExceptionHandler() {
-        assertNotNull(realFactory.createSystemExitUncaughtExceptionHandler());
+        assertNotNull(realFactory.createSystemExitUncaughtExceptionHandler(mockKafkaStreams));
     }
 
 }

@@ -16,26 +16,72 @@
  */
 package com.expedia.www.haystack.pipes.commons;
 
+import com.netflix.servo.util.VisibleForTesting;
+import org.apache.kafka.streams.KafkaStreams;
+import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.Validate;
 
 public class SystemExitUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
-    static final String ERROR_MSG = "Thread [%s] is down because of an uncaught exception; "
+    @VisibleForTesting
+    final static String ERROR_MSG = "Thread [%s] is down because of an uncaught exception; "
             + "shutting down JVM so that Kubernetes can restart it";
-    static final int SYSTEM_EXIT_STATUS = -1; // TODO what status should be used?
+    @VisibleForTesting
+    static final String KAFKA_STREAMS_IS_NULL = "kafkaStreams is null";
+    @VisibleForTesting
+    final static int SYSTEM_EXIT_STATUS = -1;
 
+    @VisibleForTesting
+    final static String LOGBACK_METHOD_NAME = "stop";
+    @VisibleForTesting
+    final static String LOG4J_METHOD_NAME = "close";
+
+    @VisibleForTesting
     static Logger logger = LoggerFactory.getLogger(SystemExitUncaughtExceptionHandler.class);
+    @VisibleForTesting
     static Factory factory = new Factory();
+
+    private final KafkaStreams kafkaStreams;
+
+    public SystemExitUncaughtExceptionHandler(KafkaStreams kafkaStreams) {
+        Validate.notNull(kafkaStreams, KAFKA_STREAMS_IS_NULL);
+        this.kafkaStreams = kafkaStreams;
+    }
 
     @Override
     public void uncaughtException(Thread thread, Throwable throwable) {
         logger.error(String.format(ERROR_MSG, thread), throwable);
+        kafkaStreams.close();
+        shutdownLogger(LOGBACK_METHOD_NAME, LOG4J_METHOD_NAME);
         factory.getRuntime().exit(SYSTEM_EXIT_STATUS);
     }
 
+    @VisibleForTesting
+    Object shutdownLogger(String logbackMethodName, String log4jMethodName) {
+        // See https://jira.qos.ch/browse/SLF4J-192
+        ILoggerFactory iLoggerFactory = factory.getILoggerFactory();
+        Class<?> clazz = iLoggerFactory.getClass();
+        try {
+            return clazz.getMethod(logbackMethodName).invoke(iLoggerFactory);
+        } catch (ReflectiveOperationException ex) {
+            try {
+                return clazz.getMethod(log4jMethodName).invoke(iLoggerFactory);
+            } catch (ReflectiveOperationException ignored) {
+                // ignored
+            }
+        }
+        return null;
+    }
+
+    @VisibleForTesting
     static class Factory {
         Runtime getRuntime() {
             return Runtime.getRuntime();
+        }
+
+        ILoggerFactory getILoggerFactory() {
+            return LoggerFactory.getILoggerFactory();
         }
     }
 }
