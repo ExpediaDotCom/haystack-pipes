@@ -12,7 +12,9 @@
 
     <properties>
         <encoding>UTF-8</encoding>
-        <haystack-metrics-version>0.2.1</haystack-metrics-version>
+        <haystack-metrics-version>0.2.3</haystack-metrics-version>
+        <commons-lang3-version>3.7</commons-lang3-version>
+        <jacoco-percentage>1.0</jacoco-percentage>
     </properties>
 
     <modules>
