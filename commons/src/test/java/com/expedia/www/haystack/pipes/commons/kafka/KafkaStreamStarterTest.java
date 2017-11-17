@@ -21,6 +21,7 @@ import java.util.Random;
 import java.util.regex.Pattern;
 
 import static com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.STARTED_MSG;
+import static com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.STARTING_MSG;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.times;
@@ -32,6 +33,7 @@ import static org.mockito.Mockito.when;
 public class KafkaStreamStarterTest {
     private final static Random RANDOM = new Random();
     private final static String CLIENT_ID = RANDOM.nextLong() + "CLIENT_ID";
+    private static final String KAFKA_IP_AND_PORT = "localhost:" + 65534;
 
     @Mock
     private Factory mockFactory;
@@ -91,6 +93,7 @@ public class KafkaStreamStarterTest {
         verify(mockFactory).createSystemExitUncaughtExceptionHandler(mockKafkaStreams);
         verify(mockKafkaStreams).setUncaughtExceptionHandler(mockSystemExitUncaughtExceptionHandler);
         verify(mockKafkaStreams).start();
+        verify(mockLogger).info(String.format(STARTING_MSG, KAFKA_IP_AND_PORT));
         verify(mockLogger).info(String.format(STARTED_MSG, mockKStreamBuilder.getClass().getSimpleName()));
 
     }
@@ -102,7 +105,7 @@ public class KafkaStreamStarterTest {
         assertEquals(CLIENT_ID, properties.get(StreamsConfig.CLIENT_ID_CONFIG));
         assertEquals(mockKafkaStreamBuilder.getClass().getName(), properties.get(ConsumerConfig.GROUP_ID_CONFIG));
         assertEquals(mockKafkaStreamBuilder.getClass().getSimpleName(), properties.get(StreamsConfig.APPLICATION_ID_CONFIG));
-        assertEquals("localhost:" + 65534, properties.get(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG));
+        assertEquals(KAFKA_IP_AND_PORT, properties.get(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG));
         assertEquals(2147483645, properties.get(StreamsConfig.REPLICATION_FACTOR_CONFIG));
         assertEquals(WallclockTimestampExtractor.class, properties.get(StreamsConfig.TIMESTAMP_EXTRACTOR_CLASS_CONFIG));
     }

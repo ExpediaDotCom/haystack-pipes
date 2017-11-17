@@ -12,9 +12,29 @@
 
     <properties>
         <encoding>UTF-8</encoding>
-        <haystack-metrics-version>0.2.3</haystack-metrics-version>
+        <!-- Versions -->
+        <cfg4j-core-version>4.4.1</cfg4j-core-version>
         <commons-lang3-version>3.7</commons-lang3-version>
+        <commons-text-version>1.1</commons-text-version>
+        <haystack-metrics-version>0.2.3</haystack-metrics-version>
+        <haystack-metrics-version>0.2.3</haystack-metrics-version>
+        <haystack-pipes-commons-version>1.0-SNAPSHOT</haystack-pipes-commons-version>
+        <jacoco-maven-plugin-version>0.7.9</jacoco-maven-plugin-version>
         <jacoco-percentage>1.0</jacoco-percentage>
+        <java-version>1.8</java-version>
+        <junit-version>4.12</junit-version>
+        <kafka-version>0.10.2.1</kafka-version>
+        <logback-version>1.2.3</logback-version>
+        <maven-compiler-plugin-version>3.6.1</maven-compiler-plugin-version>
+        <maven-jar-plugin-version>3.0.2</maven-jar-plugin-version>
+        <mockito-version>1.9.5</mockito-version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <protobuf-java-util-version>3.3.1</protobuf-java-util-version>
+        <protoc-jar-maven-version>3.3.0.1</protoc-jar-maven-version>
+        <servo-version>0.12.17</servo-version>
+        <slf4j-version>1.7.25</slf4j-version>
+        <spring-boot-version>1.5.8.RELEASE</spring-boot-version>
+        <zookeeper-version>3.4.9</zookeeper-version>
     </properties>
 
     <modules>
