@@ -3,7 +3,6 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.expedia.www</groupId>
     <artifactId>haystack-pipes-json-transformer</artifactId>
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
@@ -13,34 +12,12 @@
 
     <properties>
         <start-class>com.expedia.www.haystack.pipes.jsonTransformer.JsonTransformerIsActiveController</start-class>
-        <!-- Versions -->
-        <cfg4j-core-version>4.4.1</cfg4j-core-version>
-        <commons-text-version>1.1</commons-text-version>
-        <haystack-metrics-version>0.2.3</haystack-metrics-version>
-        <haystack-pipes-commons-version>1.0-SNAPSHOT</haystack-pipes-commons-version>
-        <jacoco-maven-plugin-version>0.7.9</jacoco-maven-plugin-version>
-        <jacoco-percentage>1.0</jacoco-percentage>
-        <java-version>1.8</java-version>
-        <junit-version>4.12</junit-version>
-        <kafka-version>0.10.2.1</kafka-version>
-        <logback-version>1.2.3</logback-version>
-        <maven-compiler-plugin-version>3.6.1</maven-compiler-plugin-version>
-        <maven-jar-plugin-version>3.0.2</maven-jar-plugin-version>
-        <mockito-version>1.9.5</mockito-version>
-        <servo-version>0.12.17</servo-version>
-        <spring-boot-version>1.5.7.RELEASE</spring-boot-version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <protobuf-java-util-version>3.3.1</protobuf-java-util-version>
-        <protoc-jar-maven-version>3.3.0.1</protoc-jar-maven-version>
-        <slf4j-version>1.7.25</slf4j-version>
-        <zookeeper-version>3.4.9</zookeeper-version>
     </properties>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.5.7.RELEASE</version> <!-- should match spring-boot-version in <properties> above -->
-        <relativePath/>
+        <artifactId>haystack-pipes</artifactId>
+        <groupId>com.expedia.www</groupId>
+        <version>1.0-SNAPSHOT</version>
     </parent>
 
     <dependencies>
