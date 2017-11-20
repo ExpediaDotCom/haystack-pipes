@@ -11,10 +11,6 @@
     <name>haystack-pipes-kafka-producer</name>
     <url>http://maven.apache.org</url>
 
-    <properties>
-        <start-class>com.expedia.www.haystack.pipes.kafkaProducer.KafkaProducerIsActiveController</start-class>
-    </properties>
-
     <parent>
         <artifactId>haystack-pipes</artifactId>
         <groupId>com.expedia.www</groupId>
@@ -153,6 +149,9 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot-version}</version>
+                <configuration>
+                    <mainClass>com.expedia.www.haystack.pipes.kafkaProducer.KafkaProducerIsActiveController</mainClass>
+                </configuration>
             </plugin>
         </plugins>
     </build>
