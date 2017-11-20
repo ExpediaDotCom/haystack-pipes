@@ -235,6 +235,13 @@
                 <configuration>
                     <mainClass>com.expedia.www.haystack.pipes.jsonTransformer.JsonTransformerIsActiveController</mainClass>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
