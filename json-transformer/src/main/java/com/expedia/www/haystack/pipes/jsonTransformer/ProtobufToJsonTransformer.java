@@ -20,7 +20,6 @@ import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilder;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
-import com.expedia.www.haystack.pipes.commons.Metrics;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -29,7 +28,6 @@ import org.apache.kafka.streams.kstream.KStreamBuilder;
 
 public class ProtobufToJsonTransformer implements KafkaStreamBuilder {
     static final String CLIENT_ID = "haystack-pipes-protobuf-to-json-transformer";
-    static Metrics metrics = new Metrics();
 
     private static final KafkaConfigurationProvider KAFKA_CONFIGURATION_PROVIDER = new KafkaConfigurationProvider();
 
@@ -50,7 +48,6 @@ public class ProtobufToJsonTransformer implements KafkaStreamBuilder {
      * making it an instance method facilitates unit testing.
      */
     void main() {
-        metrics.startMetricsPolling();
         kafkaStreamStarter.createAndStartStream(this);
     }
 

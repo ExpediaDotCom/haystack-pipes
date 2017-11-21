@@ -23,6 +23,11 @@
             <version>${haystack-pipes-commons-version}</version>
         </dependency>
         <dependency>
+            <groupId>com.expedia.www</groupId>
+            <artifactId>haystack-logback-metrics-appender</artifactId>
+            <version>${haystack-logback-metrics-appender-version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka_2.11</artifactId>
             <version>${kafka-version}</version>
