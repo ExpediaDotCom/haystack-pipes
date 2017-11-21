@@ -69,7 +69,6 @@ public class ChangeEnvVarsToLowerCaseConfigurationSource implements Configuratio
             final String key = (String) next.getKey();
             if (key.startsWith(prefixOfStringsToConvertToLowerCase)) {
                 toAdd.put(key.toLowerCase(), next.getValue());
-                iterator.remove();
             }
         }
         properties.putAll(toAdd);

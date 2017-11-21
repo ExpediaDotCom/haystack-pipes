@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 
 import static com.expedia.www.haystack.pipes.commons.ChangeEnvVarsToLowerCaseConfigurationSource.lowerCaseKeysThatStartWithPrefix;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -60,17 +60,17 @@ public class ChangeEnvVarsToLowerCaseConfigurationSourceTest {
 
         verify(mockEnvironmentVariablesConfigurationSource).getConfiguration(ENVIRONMENT);
         verify(mockEnvironmentVariablesConfigurationSource).init();
-        assertSourceAndDestinationSizesAreEqual(ppes, configuration);
-        assertUpperCaseKeyIsMissingFromDestination(ppes, configuration);
+        assertSourceSizeIsOneLessThanDestinationSize(ppes, configuration);
+        assertUpperCaseKeyIsStillPresentInDestination(ppes, configuration);
         assertSourceAndDestinationValuesAreEqual(ppes, configuration);
     }
 
-    private void assertSourceAndDestinationSizesAreEqual(EnvironmentInfo ppes, Properties configuration) {
-        assertEquals(ppes.properties.size(), configuration.size());
+    private void assertSourceSizeIsOneLessThanDestinationSize(EnvironmentInfo source, Properties destination) {
+        assertEquals(source.properties.size() + 1, destination.size());
     }
 
-    private void assertUpperCaseKeyIsMissingFromDestination(EnvironmentInfo ppes, Properties configuration) {
-        assertNull(configuration.getProperty(ppes.entireString));
+    private void assertUpperCaseKeyIsStillPresentInDestination(EnvironmentInfo ppes, Properties configuration) {
+        assertNotNull(configuration.getProperty(ppes.entireString));
     }
 
     private void assertSourceAndDestinationValuesAreEqual(EnvironmentInfo ppes, Properties configuration) {
@@ -159,7 +159,7 @@ public class ChangeEnvVarsToLowerCaseConfigurationSourceTest {
 
         final Properties actual = lowerCaseKeysThatStartWithPrefix(properties, prefix);
 
-        assertEquals(2, actual.size());
+        assertEquals(3, actual.size());
         assertEquals(value1, actual.getProperty(matchingKey.toLowerCase()));
         assertEquals(value2, actual.getProperty(nonMatchingKey));
     }
