@@ -30,7 +30,6 @@ import org.apache.kafka.streams.kstream.KStreamBuilder;
 
 public class ProtobufToKafkaProducer implements KafkaStreamBuilder {
     static final String CLIENT_ID = "haystack-pipes-json-to-kafka-producer";
-    static Metrics metrics = new Metrics();
 
     private static final KafkaConfigurationProvider KAFKA_CONFIGURATION_PROVIDER = new KafkaConfigurationProvider();
     static ProtobufToKafkaProducer instance = new ProtobufToKafkaProducer();
@@ -53,7 +52,6 @@ public class ProtobufToKafkaProducer implements KafkaStreamBuilder {
      * making it an instance method facilitates unit testing.
      */
     void main() {
-        metrics.startMetricsPolling();
         instance.kafkaStreamStarter.createAndStartStream(instance);
     }
 

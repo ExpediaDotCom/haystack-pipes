@@ -6,10 +6,18 @@
             <pattern>%d{HH:mm:ss.SSS} %level [%thread] %X{requestid} %logger{10} %msg%n</pattern>
         </encoder>
     </appender>
-    <logger name="com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction" additivity="false" level="DEBUG">
-        <appender-ref ref="STDOUT" />
+    <appender name="EmitToGraphiteLogbackAppender"
+              class="com.expedia.www.haystack.metrics.appenders.logback.EmitToGraphiteLogbackAppender">
+        <address>${HAYSTACK_GRAPHITE_ADDRESS}</address>
+    </appender>
+    <logger name="com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter" additivity="false" level="INFO">
+        <appender-ref ref="STDOUT" /><!-- Display start up message without flooding logs with other info messages -->
+    </logger>
+    <logger name="com.netflix.servo.publish.graphite.GraphiteMetricObserver" additivity="false" level="INFO">
+        <appender-ref ref="STDOUT" /><!-- Display start up message without flooding logs with other info messages -->
     </logger>
     <root level="WARN">
         <appender-ref ref="STDOUT" />
+        <appender-ref ref="EmitToGraphiteLogbackAppender" />
     </root>
 </configuration>

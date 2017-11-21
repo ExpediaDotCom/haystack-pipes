@@ -42,9 +42,6 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class ProtobufToKafkaProducerTest {
     @Mock
-    private Metrics mockMetrics;
-    private Metrics realMetrics;
-    @Mock
     private ProtobufToKafkaProducer.Factory mockFactory;
     private ProtobufToKafkaProducer.Factory realFactory;
 
@@ -61,8 +58,6 @@ public class ProtobufToKafkaProducerTest {
 
     @Before
     public void setUp() {
-        realMetrics = ProtobufToKafkaProducer.metrics;
-        ProtobufToKafkaProducer.metrics = mockMetrics;
         realFactory = ProtobufToKafkaProducer.factory;
         ProtobufToKafkaProducer.factory = mockFactory;
         protobufToKafkaProducer = new ProtobufToKafkaProducer(mockKafkaStreamStarter, new SpanSerdeFactory());
@@ -70,9 +65,8 @@ public class ProtobufToKafkaProducerTest {
 
     @After
     public void tearDown() {
-        ProtobufToKafkaProducer.metrics = realMetrics;
         ProtobufToKafkaProducer.factory = realFactory;
-        verifyNoMoreInteractions(mockMetrics, mockKStreamBuilder, mockKStream, mockKafkaStreamStarter,
+        verifyNoMoreInteractions(mockKStreamBuilder, mockKStream, mockKafkaStreamStarter,
                 mockProduceIntoExternalKafkaAction);
     }
 
@@ -91,7 +85,6 @@ public class ProtobufToKafkaProducerTest {
 
         protobufToKafkaProducer.main();
 
-        verify(mockMetrics).startMetricsPolling();
         verify(mockKafkaStreamStarter).createAndStartStream(protobufToKafkaProducer);
         ProtobufToKafkaProducer.instance = instanceLoadedByClassLoader;
     }
