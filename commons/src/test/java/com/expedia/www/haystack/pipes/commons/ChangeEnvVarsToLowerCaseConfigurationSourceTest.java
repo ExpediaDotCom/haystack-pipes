@@ -1,5 +1,7 @@
 package com.expedia.www.haystack.pipes.commons;
 
+import com.google.common.collect.MapDifference;
+import com.google.common.collect.Maps;
 import org.cfg4j.source.context.environment.Environment;
 import org.cfg4j.source.context.environment.ImmutableEnvironment;
 import org.cfg4j.source.system.EnvironmentVariablesConfigurationSource;
@@ -66,7 +68,8 @@ public class ChangeEnvVarsToLowerCaseConfigurationSourceTest {
     }
 
     private void assertSourceSizeIsOneLessThanDestinationSize(EnvironmentInfo source, Properties destination) {
-        assertEquals(source.properties.size() + 1, destination.size());
+        final MapDifference<Object, Object> difference = Maps.difference(source.properties, destination);
+        assertEquals(difference.toString(),source.properties.size() + 1, destination.size());
     }
 
     private void assertUpperCaseKeyIsStillPresentInDestination(EnvironmentInfo ppes, Properties configuration) {
