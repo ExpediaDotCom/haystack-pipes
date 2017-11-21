@@ -68,7 +68,9 @@ public class ChangeEnvVarsToLowerCaseConfigurationSourceTest {
 
     private void assertLowerCaseKeyIsPresentInDestination(Properties destination) {
         final String lowerCaseKey = ppes.entireString.toLowerCase().replace('_', '.');
-        assertTrue("Destination should contain " + lowerCaseKey, destination.containsKey(lowerCaseKey));
+        final String format = "Destination should contain %s; its keys are %s";
+        final String failureMessage = String.format(format, lowerCaseKey, destination.keySet());
+        assertTrue(failureMessage, destination.containsKey(lowerCaseKey));
     }
 
     private void assertUpperCaseKeyIsStillPresentInDestination(EnvironmentInfo ppes, Properties destination) {
