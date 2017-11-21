@@ -1,7 +1,5 @@
 package com.expedia.www.haystack.pipes.commons;
 
-import com.google.common.collect.MapDifference;
-import com.google.common.collect.Maps;
 import org.cfg4j.source.context.environment.Environment;
 import org.cfg4j.source.context.environment.ImmutableEnvironment;
 import org.cfg4j.source.system.EnvironmentVariablesConfigurationSource;
@@ -23,6 +21,7 @@ import java.util.regex.Pattern;
 import static com.expedia.www.haystack.pipes.commons.ChangeEnvVarsToLowerCaseConfigurationSource.lowerCaseKeysThatStartWithPrefix;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -62,23 +61,24 @@ public class ChangeEnvVarsToLowerCaseConfigurationSourceTest {
 
         verify(mockEnvironmentVariablesConfigurationSource).getConfiguration(ENVIRONMENT);
         verify(mockEnvironmentVariablesConfigurationSource).init();
-        assertSourceSizeIsOneLessThanDestinationSize(ppes, configuration);
+        assertLowerCaseKeyIsPresentInDestination(configuration);
         assertUpperCaseKeyIsStillPresentInDestination(ppes, configuration);
         assertSourceAndDestinationValuesAreEqual(ppes, configuration);
     }
 
-    private void assertSourceSizeIsOneLessThanDestinationSize(EnvironmentInfo source, Properties destination) {
-        final MapDifference<Object, Object> difference = Maps.difference(source.properties, destination);
-        assertEquals(difference.toString(),source.properties.size() + 1, destination.size());
+    private void assertLowerCaseKeyIsPresentInDestination(Properties destination) {
+        final String lowerCaseKey = ppes.entireString.toLowerCase();
+        assertTrue(destination.containsKey(lowerCaseKey));
     }
 
-    private void assertUpperCaseKeyIsStillPresentInDestination(EnvironmentInfo ppes, Properties configuration) {
-        assertNotNull(configuration.getProperty(ppes.entireString));
+    private void assertUpperCaseKeyIsStillPresentInDestination(EnvironmentInfo ppes, Properties destination) {
+        assertNotNull(destination.getProperty(ppes.entireString));
     }
 
-    private void assertSourceAndDestinationValuesAreEqual(EnvironmentInfo ppes, Properties configuration) {
+    private void assertSourceAndDestinationValuesAreEqual(EnvironmentInfo ppes, Properties destination) {
         final String expected = ppes.properties.getProperty(ppes.entireString);
-        final String actual = configuration.getProperty(ppes.entireString.toLowerCase());
+        final String lowerCaseKey = ppes.entireString.toLowerCase();
+        final String actual = destination.getProperty(lowerCaseKey);
         assertEquals(expected, actual);
     }
 
