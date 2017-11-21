@@ -18,7 +18,6 @@ package com.expedia.www.haystack.pipes.jsonTransformer;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
-import com.expedia.www.haystack.pipes.commons.Metrics;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanJsonSerializer;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
 import org.apache.kafka.common.serialization.Serde;
@@ -46,10 +45,6 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class ProtobufToJsonTransformerTest {
     @Mock
-    private Metrics mockMetrics;
-    private Metrics realMetrics;
-
-    @Mock
     private KafkaStreamStarter mockKafkaStreamStarter;
     @Mock
     private KStreamBuilder mockKStreamBuilder;
@@ -62,15 +57,12 @@ public class ProtobufToJsonTransformerTest {
 
     @Before
     public void setUp() {
-        realMetrics = ProtobufToJsonTransformer.metrics;
-        ProtobufToJsonTransformer.metrics = mockMetrics;
         protobufToJsonTransformer = new ProtobufToJsonTransformer(mockKafkaStreamStarter, new SpanSerdeFactory());
     }
 
     @After
     public void tearDown() {
-        ProtobufToJsonTransformer.metrics = realMetrics;
-        verifyNoMoreInteractions(mockMetrics, mockKafkaStreamStarter, mockKStreamBuilder, mockKStreamStringSpan,
+        verifyNoMoreInteractions(mockKafkaStreamStarter, mockKStreamBuilder, mockKStreamStringSpan,
                 mockKStreamStringSpanJsonSerializer);
     }
 
@@ -86,7 +78,6 @@ public class ProtobufToJsonTransformerTest {
     public void testMain() {
         protobufToJsonTransformer.main();
 
-        verify(mockMetrics).startMetricsPolling();
         verify(mockKafkaStreamStarter).createAndStartStream(protobufToJsonTransformer);
     }
 
