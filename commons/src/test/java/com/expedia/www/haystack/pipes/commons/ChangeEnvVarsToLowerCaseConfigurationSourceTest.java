@@ -4,7 +4,6 @@ import org.cfg4j.source.context.environment.Environment;
 import org.cfg4j.source.context.environment.ImmutableEnvironment;
 import org.cfg4j.source.system.EnvironmentVariablesConfigurationSource;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,11 +11,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.HashMap;
+import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Random;
 
 import static com.expedia.www.haystack.pipes.commons.ChangeEnvVarsToLowerCaseConfigurationSource.lowerCaseKeysThatStartWithPrefix;
 import static org.junit.Assert.assertEquals;
@@ -27,25 +25,29 @@ import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ChangeEnvVarsToLowerCaseConfigurationSourceTest {
+    private static final Random RANDOM = new Random();
     private static final Environment ENVIRONMENT = new ImmutableEnvironment("");
+    private static final String PREFIX_OF_STRINGS_TO_CONVERT_TO_LOWER_CASE = "HAYSTACK";
+    private static final String CONFIGURATION_NAME_UPPER_CASE = PREFIX_OF_STRINGS_TO_CONVERT_TO_LOWER_CASE + "_TEST";
+    private static final String CONFIGURATION_NAME_LOWER_CASE = CONFIGURATION_NAME_UPPER_CASE.toLowerCase();
+    private static final String CONFIGURATION_VALUE = Boolean.valueOf(RANDOM.nextBoolean()).toString();
 
     @Mock
     private EnvironmentVariablesConfigurationSource mockEnvironmentVariablesConfigurationSource;
 
     private int initCallCount = 1;
-    private EnvironmentInfo ppes;
     private ChangeEnvVarsToLowerCaseConfigurationSource changeEnvVarsToLowerCaseConfigurationSource;
 
     @Before
     public void setUp() {
-        ppes = getEnvironmentInfo();
-        //noinspection ConstantConditions : pps will never be null
+        putHaystackTestIntoEnvironmentVariables();
         changeEnvVarsToLowerCaseConfigurationSource =
-                new ChangeEnvVarsToLowerCaseConfigurationSource(ppes.prefix, mockEnvironmentVariablesConfigurationSource);
+                new ChangeEnvVarsToLowerCaseConfigurationSource(PREFIX_OF_STRINGS_TO_CONVERT_TO_LOWER_CASE, mockEnvironmentVariablesConfigurationSource);
     }
 
     @After
     public void tearDown() {
+        removeEnvironmentVariables(CONFIGURATION_NAME_UPPER_CASE, CONFIGURATION_NAME_LOWER_CASE);
         verify(mockEnvironmentVariablesConfigurationSource, times(initCallCount)).init();
 
         Mockito.verifyNoMoreInteractions(mockEnvironmentVariablesConfigurationSource);
@@ -54,7 +56,7 @@ public class ChangeEnvVarsToLowerCaseConfigurationSourceTest {
     @Test
     public void testGetConfiguration() {
         final Properties copyOfCf4jProperties = new Properties();
-        copyOfCf4jProperties.putAll(ppes.properties);
+        copyOfCf4jProperties.putAll(System.getenv());
         Mockito.when(mockEnvironmentVariablesConfigurationSource.getConfiguration(ENVIRONMENT)).thenReturn(copyOfCf4jProperties);
 
         final Properties configuration = changeEnvVarsToLowerCaseConfigurationSource.getConfiguration(ENVIRONMENT);
@@ -62,72 +64,25 @@ public class ChangeEnvVarsToLowerCaseConfigurationSourceTest {
         verify(mockEnvironmentVariablesConfigurationSource).getConfiguration(ENVIRONMENT);
         verify(mockEnvironmentVariablesConfigurationSource).init();
         assertLowerCaseKeyIsPresentInDestination(configuration);
-        assertUpperCaseKeyIsStillPresentInDestination(ppes, configuration);
-        assertSourceAndDestinationValuesAreEqual(ppes, configuration);
+        assertUpperCaseKeyIsStillPresentInDestination(configuration);
+        assertSourceAndDestinationValuesAreEqual(copyOfCf4jProperties, configuration);
     }
 
     private void assertLowerCaseKeyIsPresentInDestination(Properties destination) {
-        final String lowerCaseKey = ppes.entireString.toLowerCase().replace('_', '.');
         final String format = "Destination should contain %s; its keys are %s";
-        final String failureMessage = String.format(format, lowerCaseKey, destination.keySet());
-        assertTrue(failureMessage, destination.containsKey(lowerCaseKey));
+        final String failureMessage = String.format(format, CONFIGURATION_NAME_LOWER_CASE, destination.keySet());
+        assertTrue(failureMessage, destination.containsKey(CONFIGURATION_NAME_LOWER_CASE));
     }
 
-    private void assertUpperCaseKeyIsStillPresentInDestination(EnvironmentInfo ppes, Properties destination) {
-        assertNotNull(destination.getProperty(ppes.entireString));
+    private void assertUpperCaseKeyIsStillPresentInDestination(Properties destination) {
+        assertNotNull(destination.getProperty(CONFIGURATION_NAME_UPPER_CASE));
     }
 
-    private void assertSourceAndDestinationValuesAreEqual(EnvironmentInfo ppes, Properties destination) {
-        final String expected = ppes.properties.getProperty(ppes.entireString);
-        final String lowerCaseKey = ppes.entireString.toLowerCase();
+    private void assertSourceAndDestinationValuesAreEqual(Properties source, Properties destination) {
+        final String expected = source.getProperty(CONFIGURATION_NAME_UPPER_CASE);
+        final String lowerCaseKey = CONFIGURATION_NAME_UPPER_CASE.toLowerCase();
         final String actual = destination.getProperty(lowerCaseKey);
         assertEquals(expected, actual);
-    }
-
-    /**
-     * EnvironmentInfo encapsulates data about the data that happens to be set in the environment variables of the host
-     * where these unit tests are being run. Since environment variable keys are often upper case, the
-     * ChangeEnvVarsToLowerCaseConfigurationSourceTest.testGetConfiguration() looks for any environment variable that
-     * contains an upper case character and uses that environment variable to test the upper to lower case conversion
-     * behavior of ChangeEnvVarsToLowerCaseConfigurationSource.getConfiguration(). If such a key is not found, the test
-     * will fail, but this is highly unlikely. Such a failure could be addressed with reflection similar to the rather
-     * ugly code in ProtobufToJsonTransformerTest.putKafkaPortIntoEnvironmentVariables(). (Addressing the failure would
-     * require reflection to add an environment variable with an upper case key to the environment.)
-     */
-    private static class EnvironmentInfo {
-        // The replacing of _ by . in properties is performed by cfg4j's EnvironmentVariablesConfigurationSource class
-        private final Properties properties; // all environment variables and their values, with _ replaced by . in keys
-
-        private final String prefix;         // prefix of environment variable that contains upper case in key
-        private final String entireString;   // entire string of environment variable that contains upper case in key
-
-        private EnvironmentInfo(Properties properties, String prefix, String entireString) {
-            this.properties = properties;
-            this.prefix = prefix;
-            this.entireString = entireString;
-        }
-    }
-
-    private Properties getPropertiesFromCfg4jEnvironmentVariablesConfigurationSource() {
-        final EnvironmentVariablesConfigurationSource sourceToRetrieveProperties =
-                new EnvironmentVariablesConfigurationSource();
-        sourceToRetrieveProperties.init();
-        return sourceToRetrieveProperties.getConfiguration(ENVIRONMENT);
-    }
-
-    private EnvironmentInfo getEnvironmentInfo() {
-        final Map<String, String> environmentVariables = new HashMap<>();
-        environmentVariables.putAll(System.getenv());
-        for (final String key : environmentVariables.keySet()) {
-            final Pattern pattern = Pattern.compile("([A-Z]+).*");
-            final Matcher matcher = pattern.matcher(key);
-            if(matcher.find()) {
-                return new EnvironmentInfo(
-                        getPropertiesFromCfg4jEnvironmentVariablesConfigurationSource(), matcher.group(), key);
-            }
-        }
-        Assert.fail("An environment variable containing upper case letters could not be found");
-        return null;
     }
 
     @Test
@@ -168,4 +123,45 @@ public class ChangeEnvVarsToLowerCaseConfigurationSourceTest {
         assertEquals(value1, actual.getProperty(matchingKey.toLowerCase()));
         assertEquals(value2, actual.getProperty(nonMatchingKey));
     }
+
+    private void putHaystackTestIntoEnvironmentVariables() {
+        try {
+            final Map<String,String> unmodifiableEnv = System.getenv();
+            final Class<?> cl = unmodifiableEnv.getClass();
+
+            // It is not intended that environment variables be changed after the JVM starts, thus reflection
+            @SuppressWarnings("JavaReflectionMemberAccess")
+            final Field field = cl.getDeclaredField("m");
+            field.setAccessible(true);
+
+            @SuppressWarnings("unchecked")
+            final Map<String,String> modifiableEnv = (Map<String,String>) field.get(unmodifiableEnv);
+            modifiableEnv.put(CONFIGURATION_NAME_UPPER_CASE, CONFIGURATION_VALUE);
+            field.setAccessible(false);
+        } catch(Exception e) {
+            throw new RuntimeException("Unable to access writable environment variable map.");
+        }
+    }
+
+    private void removeEnvironmentVariables(String...valuesToRemove) {
+        try {
+            final Map<String,String> unmodifiableEnv = System.getenv();
+            final Class<?> cl = unmodifiableEnv.getClass();
+
+            // It is not intended that environment variables be changed after the JVM starts, thus reflection
+            @SuppressWarnings("JavaReflectionMemberAccess")
+            final Field field = cl.getDeclaredField("m");
+            field.setAccessible(true);
+
+            @SuppressWarnings("unchecked")
+            final Map<String,String> modifiableEnv = (Map<String,String>) field.get(unmodifiableEnv);
+            for(final String valueToRemove : valuesToRemove) {
+                modifiableEnv.remove(valueToRemove);
+            }
+            field.setAccessible(false);
+        } catch(Exception e) {
+            throw new RuntimeException("Unable to access writable environment variable map.");
+        }
+    }
+
 }
