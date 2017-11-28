@@ -49,10 +49,10 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
     private static final String TOPIC = EKCP.totopic();
     private static final String CLASS_NAME = ProduceIntoExternalKafkaAction.class.getSimpleName();
     private static final MetricObjects METRIC_OBJECTS = new MetricObjects();
-    static final String ERROR_MSG = "Problem posting JSON [%s] to Kafka";
+    static final String ERROR_MSG = "Problem posting JSON [%s] to Kafka; received message [%s]";
     static final String DEBUG_MSG = "Sent JSON [%s] to Kafka topic [%s]";
     static final Counter REQUEST = METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "REQUEST");
-    static JsonFormat.Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
+    private static JsonFormat.Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
     static Timer KAFKA_PRODUCER_POST = METRIC_OBJECTS.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, CLASS_NAME,
             "KAFKA_PRODUCER_POST", TimeUnit.MICROSECONDS);
     static Logger logger = LoggerFactory.getLogger(ProduceIntoExternalKafkaAction.class);
@@ -63,9 +63,10 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
     public void apply(String key, Span value) {
         REQUEST.increment();
         final Stopwatch stopwatch = KAFKA_PRODUCER_POST.start();
+        String jsonWithFlattenedTags = "";
         try {
             final String jsonWithOpenTracingTags = printer.print(value);
-            final String jsonWithFlattenedTags = flattenTags(jsonWithOpenTracingTags);
+            jsonWithFlattenedTags = flattenTags(jsonWithOpenTracingTags);
             final ProducerRecord<String, String> producerRecord = factory.createProducerRecord(key, jsonWithFlattenedTags);
             final Future<RecordMetadata> recordMetadataFuture = kafkaProducer.send(producerRecord);
             if(EKCP.waitforresponse()) {
@@ -75,7 +76,7 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
                 }
             }
         } catch (Exception exception) {
-            logger.error(ERROR_MSG, value, exception);
+            logger.error(String.format(ERROR_MSG, jsonWithFlattenedTags, exception.getMessage()), exception);
         } finally {
             stopwatch.stop();
         }
