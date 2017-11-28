@@ -219,7 +219,16 @@ public class ProduceIntoExternalKafkaActionTest {
         produceIntoExternalKafkaAction.apply(KEY, FULLY_POPULATED_SPAN);
 
         verifiesForTestApplyAndThrow();
-        verify(mockLogger).error(ERROR_MSG, FULLY_POPULATED_SPAN, executionException);
+        final String jsonWithFlattenedTags = "{\"traceId\":\"unique-trace-id\",\"spanId\":\"unique-span-id\","
+                + "\"parentSpanId\":\"unique-parent-span-id\",\"serviceName\":\"unique-service-name\","
+                + "\"operationName\":\"operation-name\",\"startTime\":\"123456789\",\"duration\":\"234\","
+                + "\"logs\":[{\"timestamp\":\"234567890\",\"fields\":[{\"key\":\"strField\","
+                + "\"vStr\":\"logFieldValue\"},{\"key\":\"longField\",\"vLong\":\"4567890\"}]},"
+                + "{\"timestamp\":\"234567891\",\"fields\":[{\"key\":\"doubleField\",\"vDouble\":6.54321},"
+                + "{\"key\":\"boolField\",\"vBool\":false}]}],\"tags\":{\"strKey\":\"tagValue\","
+                + "\"longKey\":987654321,\"doubleKey\":9876.54321,\"boolKey\":true,\"bytesKey\":\"AAEC/f7/\"}}";
+        final String msg = String.format(ERROR_MSG, jsonWithFlattenedTags, executionException.getMessage());
+        verify(mockLogger).error(msg, executionException);
     }
 
     @Test(expected = OutOfMemoryError.class)
