@@ -31,13 +31,14 @@ class TestConstantsAndCommonCode {
             "{\"key\":\"doubleKey\",\"vDouble\":9876.54321}," +
             "{\"key\":\"boolKey\",\"vBool\":true}," +
             "{\"key\":\"bytesKey\",\"vBytes\":\"AAEC/f7/\"}]}";
-    final static String FLATTENED_TAGS = "{"
+    private static final String BOGUS_TAGS = "[{\"key\":\"bogusKey\",\"vBogus\":\"bogusValue\"}]}";
+    private static final String FLATTENED_TAGS = "{"
             + "\"strKey\":\"tagValue\","
             + "\"longKey\":987654321,"
             + "\"doubleKey\":9876.54321,"
             + "\"boolKey\":true,"
             + "\"bytesKey\":\"AAEC/f7/\"}}";
-    final static String JSON_SPAN_STRING = "{\"traceId\":\"unique-trace-id\"," +
+    private static final String JSON_SPAN_STRING = "{\"traceId\":\"unique-trace-id\"," +
             "\"spanId\":\"unique-span-id\"," +
             "\"parentSpanId\":\"unique-parent-span-id\"," +
             "\"serviceName\":\"unique-service-name\"," +
@@ -46,10 +47,12 @@ class TestConstantsAndCommonCode {
             "\"duration\":\"234\"," +
             "\"logs\":" + LOGS +
             "\"tags\":" + TAGS;
-    final static String JSON_SPAN_STRING_WITH_FLATTENED_TAGS = JSON_SPAN_STRING.replace(TAGS, FLATTENED_TAGS);
-    final static String JSON_SPAN_STRING_WITH_NO_TAGS = JSON_SPAN_STRING.replace(",\"tags\":" + TAGS, "}");
-    final static Span FULLY_POPULATED_SPAN = buildSpan(JSON_SPAN_STRING);
-    final static Span NO_TAGS_SPAN = buildSpan(JSON_SPAN_STRING_WITH_NO_TAGS);
+    static final String JSON_SPAN_STRING_WITH_FLATTENED_TAGS = JSON_SPAN_STRING.replace(TAGS, FLATTENED_TAGS);
+    static final String JSON_SPAN_STRING_WITH_NO_TAGS = JSON_SPAN_STRING.replace(",\"tags\":" + TAGS, "}");
+    static final String JSON_SPAN_STRING_WITH_EMPTY_TAGS = JSON_SPAN_STRING.replace(TAGS, "{}}");
+    static final Span FULLY_POPULATED_SPAN = buildSpan(JSON_SPAN_STRING);
+    static final Span NO_TAGS_SPAN = buildSpan(JSON_SPAN_STRING_WITH_NO_TAGS);
+    static final String JSON_SPAN_STRING_WITH_BOGUS_TAGS = JSON_SPAN_STRING.replace(TAGS, BOGUS_TAGS);
 
     private static Span buildSpan(String jsonSpanString) {
         final Span.Builder builder = Span.newBuilder();
@@ -60,7 +63,4 @@ class TestConstantsAndCommonCode {
         }
         return builder.build();
     }
-
-    @SuppressWarnings("ConstantConditions")
-    final static byte[] PROTOBUF_SPAN_BYTES = FULLY_POPULATED_SPAN.toByteArray();
 }
