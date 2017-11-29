@@ -166,27 +166,17 @@ public class ProduceIntoExternalKafkaActionTest {
 
         putWaitForResponseIntoEnvironmentVariables(true); // so that other tests won't see a false
         verifyCounters();
-        verifiesForTestApplySuccess(false, true, jsonSpanString);
+        verifiesForTestApplySuccess(false, jsonSpanString);
     }
 
     @Test
-    public void testApplySuccessWaitForResponseDebugEnabled() throws ExecutionException, InterruptedException {
+    public void testApplySuccessWaitForResponse() throws ExecutionException, InterruptedException {
         whensForTestApplySuccess(true, true);
 
         produceIntoExternalKafkaAction.apply(KEY, FULLY_POPULATED_SPAN);
 
         verifyCounters();
-        verifiesForTestApplySuccess(true, true, JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
-    }
-
-    @Test
-    public void testApplySuccessWaitForResponseDebugDisabled() throws ExecutionException, InterruptedException {
-        whensForTestApplySuccess(true, false);
-
-        produceIntoExternalKafkaAction.apply(KEY, FULLY_POPULATED_SPAN);
-
-        verifyCounters();
-        verifiesForTestApplySuccess(true, false, JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
+        verifiesForTestApplySuccess(true, JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
     }
 
     private void whensForTestApplySuccess(boolean waitForResponse, boolean isDebugEnabled)
@@ -200,14 +190,11 @@ public class ProduceIntoExternalKafkaActionTest {
         }
     }
 
-    private void verifiesForTestApplySuccess(boolean waitForResponse, boolean isDebugEnabled, String jsonSpanString)
+    private void verifiesForTestApplySuccess(boolean waitForResponse, String jsonSpanString)
             throws InterruptedException, ExecutionException {
         verifiesForTestApply(waitForResponse, jsonSpanString);
         if(waitForResponse) {
-            verify(mockLogger).isDebugEnabled();
-            if (isDebugEnabled) {
-                verify(mockLogger).debug(String.format(DEBUG_MSG, FULLY_POPULATED_SPAN, PARTITION));
-            }
+            verify(mockLogger).debug(DEBUG_MSG, FULLY_POPULATED_SPAN, PARTITION);
         }
     }
 
@@ -227,8 +214,9 @@ public class ProduceIntoExternalKafkaActionTest {
                 + "{\"timestamp\":\"234567891\",\"fields\":[{\"key\":\"doubleField\",\"vDouble\":6.54321},"
                 + "{\"key\":\"boolField\",\"vBool\":false}]}],\"tags\":{\"strKey\":\"tagValue\","
                 + "\"longKey\":987654321,\"doubleKey\":9876.54321,\"boolKey\":true,\"bytesKey\":\"AAEC/f7/\"}}";
-        final String msg = String.format(ERROR_MSG, jsonWithFlattenedTags, executionException.getMessage());
-        verify(mockLogger).error(msg, executionException);
+        final int lineNumber = executionException.getStackTrace()[0].getLineNumber();
+        final String message = executionException.getMessage();
+        verify(mockLogger).error(ERROR_MSG, lineNumber, jsonWithFlattenedTags, message, executionException);
     }
 
     @Test(expected = OutOfMemoryError.class)
