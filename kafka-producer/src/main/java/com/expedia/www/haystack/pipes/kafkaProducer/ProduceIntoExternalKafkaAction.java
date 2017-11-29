@@ -71,17 +71,21 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
             final Future<RecordMetadata> recordMetadataFuture = kafkaProducer.send(producerRecord);
             if(EKCP.waitforresponse()) {
                 final RecordMetadata recordMetadata = recordMetadataFuture.get();
-                logger.debug(DEBUG_MSG, value, recordMetadata.partition());
+                if(logger.isDebugEnabled()) {
+                    logger.debug(DEBUG_MSG, value, recordMetadata.partition());
+                }
             }
         } catch (Exception exception) {
             final int lineNumber = exception.getStackTrace()[0].getLineNumber();
-            logger.error(ERROR_MSG, lineNumber, jsonWithFlattenedTags, exception.getMessage(), exception);
+            // Must format below because log4j2 underneath slf4j doesn't handle .error(varargs) properly
+            final String message = String.format(ERROR_MSG, lineNumber, jsonWithFlattenedTags, exception.getMessage());
+            logger.error(message, exception);
         } finally {
             stopwatch.stop();
         }
     }
 
-    private static String flattenTags(String jsonWithOpenTracingTags) {
+    static String flattenTags(String jsonWithOpenTracingTags) {
         final String tagsKey = "tags";
         final JsonObject jsonObject = new Gson().fromJson(jsonWithOpenTracingTags, JsonObject.class);
         final JsonArray jsonArray = jsonObject.getAsJsonArray(tagsKey);
@@ -113,7 +117,9 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
                     continue;
                 }
                 final JsonElement vBytes = tagMap.get("vBytes");
-                flattenedTagMap.addProperty(key, vBytes.getAsString());
+                if(vBytes != null) {
+                    flattenedTagMap.addProperty(key, vBytes.getAsString());
+                }
             }
         }
         return jsonObject.toString();

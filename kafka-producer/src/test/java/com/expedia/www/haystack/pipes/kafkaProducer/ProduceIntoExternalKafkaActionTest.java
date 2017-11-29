@@ -47,6 +47,8 @@ import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKa
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.factory;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.kafkaProducer;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.logger;
+import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_BOGUS_TAGS;
+import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_EMPTY_TAGS;
 import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_FLATTENED_TAGS;
 import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_NO_TAGS;
 import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.NO_TAGS_SPAN;
@@ -166,18 +168,29 @@ public class ProduceIntoExternalKafkaActionTest {
 
         putWaitForResponseIntoEnvironmentVariables(true); // so that other tests won't see a false
         verifyCounters();
-        verifiesForTestApplySuccess(false, jsonSpanString);
+        verifiesForTestApplySuccess(false, false, jsonSpanString);
     }
 
     @Test
-    public void testApplySuccessWaitForResponse() throws ExecutionException, InterruptedException {
+    public void testApplySuccessWaitForResponseDebugEnabled() throws ExecutionException, InterruptedException {
         whensForTestApplySuccess(true, true);
 
         produceIntoExternalKafkaAction.apply(KEY, FULLY_POPULATED_SPAN);
 
         verifyCounters();
-        verifiesForTestApplySuccess(true, JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
+        verifiesForTestApplySuccess(true, true, JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
     }
+
+    @Test
+    public void testApplySuccessWaitForResponseDebugDisabled() throws ExecutionException, InterruptedException {
+        whensForTestApplySuccess(true, false);
+
+        produceIntoExternalKafkaAction.apply(KEY, FULLY_POPULATED_SPAN);
+
+        verifyCounters();
+        verifiesForTestApplySuccess(true, false, JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
+    }
+
 
     private void whensForTestApplySuccess(boolean waitForResponse, boolean isDebugEnabled)
             throws InterruptedException, ExecutionException {
@@ -190,11 +203,14 @@ public class ProduceIntoExternalKafkaActionTest {
         }
     }
 
-    private void verifiesForTestApplySuccess(boolean waitForResponse, String jsonSpanString)
+    private void verifiesForTestApplySuccess(boolean waitForResponse, boolean isDebugEnabled, String jsonSpanString)
             throws InterruptedException, ExecutionException {
         verifiesForTestApply(waitForResponse, jsonSpanString);
         if(waitForResponse) {
-            verify(mockLogger).debug(DEBUG_MSG, FULLY_POPULATED_SPAN, PARTITION);
+            verify(mockLogger).isDebugEnabled();
+            if(isDebugEnabled) {
+                verify(mockLogger).debug(DEBUG_MSG, FULLY_POPULATED_SPAN, PARTITION);
+            }
         }
     }
 
@@ -216,7 +232,8 @@ public class ProduceIntoExternalKafkaActionTest {
                 + "\"longKey\":987654321,\"doubleKey\":9876.54321,\"boolKey\":true,\"bytesKey\":\"AAEC/f7/\"}}";
         final int lineNumber = executionException.getStackTrace()[0].getLineNumber();
         final String message = executionException.getMessage();
-        verify(mockLogger).error(ERROR_MSG, lineNumber, jsonWithFlattenedTags, message, executionException);
+        final String format = String.format(ERROR_MSG, lineNumber, jsonWithFlattenedTags, message);
+        verify(mockLogger).error(format, executionException);
     }
 
     @Test(expected = OutOfMemoryError.class)
@@ -287,5 +304,11 @@ public class ProduceIntoExternalKafkaActionTest {
         } catch(Exception e) {
             throw new RuntimeException("Unable to access writable environment variable map.");
         }
+    }
+
+    @Test
+    public void testFlattenTagsWithBogusTag() {
+        final String flattenedTags = ProduceIntoExternalKafkaAction.flattenTags(JSON_SPAN_STRING_WITH_BOGUS_TAGS);
+        assertEquals(JSON_SPAN_STRING_WITH_EMPTY_TAGS, flattenedTags);
     }
 }
