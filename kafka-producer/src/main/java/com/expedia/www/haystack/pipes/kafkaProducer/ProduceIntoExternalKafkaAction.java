@@ -49,8 +49,8 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
     private static final String TOPIC = EKCP.totopic();
     private static final String CLASS_NAME = ProduceIntoExternalKafkaAction.class.getSimpleName();
     private static final MetricObjects METRIC_OBJECTS = new MetricObjects();
-    static final String ERROR_MSG = "Problem posting JSON [%s] to Kafka; received message [%s]";
-    static final String DEBUG_MSG = "Sent JSON [%s] to Kafka topic [%s]";
+    static final String ERROR_MSG = "Exception at line number %d posting JSON [%s] to Kafka; received message [%s]";
+    static final String DEBUG_MSG = "Sent JSON [%s] to Kafka partition [%d]";
     static final Counter REQUEST = METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "REQUEST");
     private static JsonFormat.Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
     static Timer KAFKA_PRODUCER_POST = METRIC_OBJECTS.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, CLASS_NAME,
@@ -71,12 +71,11 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
             final Future<RecordMetadata> recordMetadataFuture = kafkaProducer.send(producerRecord);
             if(EKCP.waitforresponse()) {
                 final RecordMetadata recordMetadata = recordMetadataFuture.get();
-                if(logger.isDebugEnabled()) {
-                    logger.debug(String.format(DEBUG_MSG, value, recordMetadata.partition()));
-                }
+                logger.debug(DEBUG_MSG, value, recordMetadata.partition());
             }
         } catch (Exception exception) {
-            logger.error(String.format(ERROR_MSG, jsonWithFlattenedTags, exception.getMessage()), exception);
+            final int lineNumber = exception.getStackTrace()[0].getLineNumber();
+            logger.error(ERROR_MSG, lineNumber, jsonWithFlattenedTags, exception.getMessage(), exception);
         } finally {
             stopwatch.stop();
         }
