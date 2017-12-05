@@ -13,5 +13,5 @@
         <port>${HAYSTACK_GRAPHITE_PORT:2003}</port>
         <namePrefix>haystack.pipes.kafka-producer.#hostname#.</namePrefix>
     </outputWriter>
-    <collectIntervalInSeconds>30</collectIntervalInSeconds>
+    <collectIntervalInSeconds>60</collectIntervalInSeconds>
 </jmxtrans-agent>

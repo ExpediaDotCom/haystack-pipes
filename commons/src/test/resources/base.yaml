@@ -9,7 +9,7 @@ haystack:
       replicationfactor: 2147483645
   graphite:
      prefix: "haystack.graphite.prefix"
-     address: "haystack.graphite.address"
+     host: "haystack.graphite.host"
      port: 65535
      pollintervalseconds: 2147483646
      queuesize: 2147483647
