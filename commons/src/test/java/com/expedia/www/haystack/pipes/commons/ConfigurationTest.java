@@ -16,21 +16,21 @@ public class ConfigurationTest {
     private final static String HAYSTACK_KAFKA_TO_TOPIC = "haystack.kafka.totopic";
     private final static String HAYSTACK_PIPE_STREAMS_REPLICATION_FACTOR = "haystack.pipe.streams.replicationfactor";
     private final static String HAYSTACK_GRAPHITE_PREFIX = "haystack.graphite.prefix";
-    private final static String HAYSTACK_GRAPHITE_ADDRESS = "haystack.graphite.address";
+    private final static String HAYSTACK_GRAPHITE_HOST = "haystack.graphite.host";
     private final static String HAYSTACK_GRAPHITE_PORT = "haystack.graphite.port";
     private final static String HAYSTACK_GRAPHITE_POLL_INTERVAL_SECONDS = "haystack.graphite.pollintervalseconds";
     private final static String HAYSTACK_GRAPHITE_QUEUE_SIZE = "haystack.graphite.queuesize";
     private final static Object[][] TEST_DATA = {
-            { HAYSTACK_KAFKA_BROKERS, "localhost" },
-            { HAYSTACK_KAFKA_FROM_TOPIC, HAYSTACK_KAFKA_FROM_TOPIC },
-            { HAYSTACK_KAFKA_PORT, 65534 },
-            { HAYSTACK_KAFKA_TO_TOPIC, HAYSTACK_KAFKA_TO_TOPIC },
-            { HAYSTACK_PIPE_STREAMS_REPLICATION_FACTOR, 2147483645 },
-            { HAYSTACK_GRAPHITE_PREFIX, HAYSTACK_GRAPHITE_PREFIX },
-            { HAYSTACK_GRAPHITE_ADDRESS, HAYSTACK_GRAPHITE_ADDRESS },
-            { HAYSTACK_GRAPHITE_PORT, 65535 },
-            { HAYSTACK_GRAPHITE_POLL_INTERVAL_SECONDS, 2147483646 },
-            { HAYSTACK_GRAPHITE_QUEUE_SIZE, 2147483647 },
+            {HAYSTACK_KAFKA_BROKERS, "localhost"},
+            {HAYSTACK_KAFKA_FROM_TOPIC, HAYSTACK_KAFKA_FROM_TOPIC},
+            {HAYSTACK_KAFKA_PORT, 65534},
+            {HAYSTACK_KAFKA_TO_TOPIC, HAYSTACK_KAFKA_TO_TOPIC},
+            {HAYSTACK_PIPE_STREAMS_REPLICATION_FACTOR, 2147483645},
+            {HAYSTACK_GRAPHITE_PREFIX, HAYSTACK_GRAPHITE_PREFIX},
+            {HAYSTACK_GRAPHITE_HOST, HAYSTACK_GRAPHITE_HOST},
+            {HAYSTACK_GRAPHITE_PORT, 65535},
+            {HAYSTACK_GRAPHITE_POLL_INTERVAL_SECONDS, 2147483646},
+            {HAYSTACK_GRAPHITE_QUEUE_SIZE, 2147483647},
     };
     private static final char UNDERSCORE = '_';
     private static final char PERIOD = '.';

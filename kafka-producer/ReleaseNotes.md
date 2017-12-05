@@ -1,0 +1,3 @@
+# Release Notes
+
+## 2017-12-04 Change haystack-metrics-version from 0.2.6 to 0.2.7
