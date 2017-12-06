@@ -20,125 +20,77 @@
         <dependency>
             <groupId>com.expedia.www</groupId>
             <artifactId>haystack-pipes-commons</artifactId>
-            <version>${haystack-pipes-commons-version}</version>
         </dependency>
         <dependency>
             <groupId>com.expedia.www</groupId>
             <artifactId>haystack-logback-metrics-appender</artifactId>
-            <version>${haystack-logback-metrics-appender-version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka_2.11</artifactId>
-            <version>${kafka-version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
-            <version>${zookeeper-version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-streams</artifactId>
-            <version>${kafka-version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java-util -->
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java-util</artifactId>
-            <version>${protobuf-java-util-version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>${slf4j-version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>${logback-version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-core -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <version>${logback-version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.cfg4j/cfg4j-core -->
         <dependency>
             <groupId>org.cfg4j</groupId>
             <artifactId>cfg4j-core</artifactId>
-            <version>${cfg4j-core-version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-text -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>${commons-text-version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.netflix.servo/servo-core -->
         <dependency>
             <groupId>com.netflix.servo</groupId>
             <artifactId>servo-core</artifactId>
-            <version>${servo-version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.netflix.servo/servo-graphite -->
         <dependency>
             <groupId>com.netflix.servo</groupId>
             <artifactId>servo-graphite</artifactId>
-            <version>${servo-version}</version>
         </dependency>
         <dependency>
             <groupId>com.expedia.www</groupId>
             <artifactId>haystack-metrics</artifactId>
-            <version>${haystack-metrics-version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-parent</artifactId>
-            <version>${spring-boot-version}</version>
             <type>pom</type>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <version>${spring-boot-version}</version>
         </dependency>
 
         <!-- Test dependencies -->
-        <!-- https://mvnrepository.com/artifact/junit/junit -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>${junit-version}</version>
-            <scope>test</scope>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.mockito/mockito-all -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
-            <version>${mockito-version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 
