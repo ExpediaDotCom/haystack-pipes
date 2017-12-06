@@ -21,4 +21,4 @@ haystack:
     batchsize: 16384
     lingerms: 5
     buffermemory: 1048576 # 1 Megabyte
-    waitforresponse: true
+    waitforresponse: false
