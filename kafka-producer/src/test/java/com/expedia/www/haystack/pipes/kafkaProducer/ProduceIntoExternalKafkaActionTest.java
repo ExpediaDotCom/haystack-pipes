@@ -53,7 +53,9 @@ import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommo
 import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_NO_TAGS;
 import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.NO_TAGS_SPAN;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -251,7 +253,8 @@ public class ProduceIntoExternalKafkaActionTest {
     private void whensForTestApply() {
         when(mockTimer.start()).thenReturn(mockStopwatch);
         when(mockFactory.createProducerRecord(anyString(), anyString())).thenReturn(mockProducerRecord);
-        when(mockKafkaProducer.send(Matchers.any())).thenReturn(mockRecordMetadataFuture);
+        when(mockKafkaProducer.send(any(), any(ProduceIntoExternalKafkaCallback.class)))
+                .thenReturn(mockRecordMetadataFuture);
     }
 
     private void whenForTestApplyAndThrow(Throwable outOfMemoryError) throws InterruptedException, ExecutionException {
@@ -262,7 +265,8 @@ public class ProduceIntoExternalKafkaActionTest {
     private void verifiesForTestApply(boolean waitForResponse, String jsonSpanString) throws InterruptedException, ExecutionException {
         verify(mockTimer).start();
         verify(mockFactory).createProducerRecord(KEY, jsonSpanString);
-        verify(mockKafkaProducer).send(mockProducerRecord);
+        // TODO verify below without any() when the ProduceIntoExternalKafkaCallback object is returned by a factory
+        verify(mockKafkaProducer).send(eq(mockProducerRecord), any(ProduceIntoExternalKafkaCallback.class));
         if(waitForResponse) {
             verify(mockRecordMetadataFuture).get();
         }

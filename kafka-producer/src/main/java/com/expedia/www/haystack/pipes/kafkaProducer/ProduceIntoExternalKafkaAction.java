@@ -68,7 +68,9 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
             final String jsonWithOpenTracingTags = printer.print(value);
             jsonWithFlattenedTags = flattenTags(jsonWithOpenTracingTags);
             final ProducerRecord<String, String> producerRecord = factory.createProducerRecord(key, jsonWithFlattenedTags);
-            final Future<RecordMetadata> recordMetadataFuture = kafkaProducer.send(producerRecord);
+            // TODO Use factory to create callback
+            final ProduceIntoExternalKafkaCallback callback = new ProduceIntoExternalKafkaCallback();
+            final Future<RecordMetadata> recordMetadataFuture = kafkaProducer.send(producerRecord, callback);
             if(EKCP.waitforresponse()) {
                 final RecordMetadata recordMetadata = recordMetadataFuture.get();
                 if(logger.isDebugEnabled()) {
