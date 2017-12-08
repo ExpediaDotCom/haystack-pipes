@@ -26,6 +26,7 @@ import com.google.protobuf.util.JsonFormat;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.monitor.Timer;
+import com.netflix.servo.util.VisibleForTesting;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -45,18 +46,24 @@ import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
 
 public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Span> {
-    static final ExternalKafkaConfigurationProvider EKCP = new ExternalKafkaConfigurationProvider();
+    @VisibleForTesting static final ExternalKafkaConfigurationProvider EKCP = new ExternalKafkaConfigurationProvider();
+
     private static final String TOPIC = EKCP.totopic();
     private static final String CLASS_NAME = ProduceIntoExternalKafkaAction.class.getSimpleName();
     private static final MetricObjects METRIC_OBJECTS = new MetricObjects();
-    static final String ERROR_MSG = "Exception at line number %d posting JSON [%s] to Kafka; received message [%s]";
-    static final String DEBUG_MSG = "Sent JSON [%s] to Kafka partition [%d]";
-    static final Counter REQUEST = METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "REQUEST");
-    private static JsonFormat.Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
-    static Timer KAFKA_PRODUCER_POST = METRIC_OBJECTS.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, CLASS_NAME,
-            "KAFKA_PRODUCER_POST", TimeUnit.MICROSECONDS);
-    static Logger logger = LoggerFactory.getLogger(ProduceIntoExternalKafkaAction.class);
-    static Factory factory = new Factory();
+    private static final JsonFormat.Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
+
+    @VisibleForTesting static final String ERROR_MSG =
+            "Exception posting JSON [%s] to Kafka; received message [%s]";
+    @VisibleForTesting static final String DEBUG_MSG = "Sent JSON [%s] to Kafka partition [%d]";
+    @VisibleForTesting static final Counter REQUEST = METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION,
+            CLASS_NAME, "REQUEST");
+    @VisibleForTesting static final ProduceIntoExternalKafkaCallback CALLBACK = new ProduceIntoExternalKafkaCallback();
+
+    @VisibleForTesting static Timer KAFKA_PRODUCER_POST = METRIC_OBJECTS.createAndRegisterBasicTimer(SUBSYSTEM,
+            APPLICATION, CLASS_NAME, "KAFKA_PRODUCER_POST", TimeUnit.MICROSECONDS);
+    @VisibleForTesting static Logger logger = LoggerFactory.getLogger(ProduceIntoExternalKafkaAction.class);
+    @VisibleForTesting static Factory factory = new Factory();
 
     static KafkaProducer<String, String> kafkaProducer = new KafkaProducer<>(getConfigurationMap());
 
@@ -68,9 +75,7 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
             final String jsonWithOpenTracingTags = printer.print(value);
             jsonWithFlattenedTags = flattenTags(jsonWithOpenTracingTags);
             final ProducerRecord<String, String> producerRecord = factory.createProducerRecord(key, jsonWithFlattenedTags);
-            // TODO Use factory to create callback
-            final ProduceIntoExternalKafkaCallback callback = new ProduceIntoExternalKafkaCallback();
-            final Future<RecordMetadata> recordMetadataFuture = kafkaProducer.send(producerRecord, callback);
+            final Future<RecordMetadata> recordMetadataFuture = kafkaProducer.send(producerRecord, CALLBACK);
             if(EKCP.waitforresponse()) {
                 final RecordMetadata recordMetadata = recordMetadataFuture.get();
                 if(logger.isDebugEnabled()) {
@@ -78,9 +83,8 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
                 }
             }
         } catch (Exception exception) {
-            final int lineNumber = exception.getStackTrace()[0].getLineNumber();
             // Must format below because log4j2 underneath slf4j doesn't handle .error(varargs) properly
-            final String message = String.format(ERROR_MSG, lineNumber, jsonWithFlattenedTags, exception.getMessage());
+            final String message = String.format(ERROR_MSG, jsonWithFlattenedTags, exception.getMessage());
             logger.error(message, exception);
         } finally {
             stopwatch.stop();
