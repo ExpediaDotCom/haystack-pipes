@@ -28,7 +28,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
@@ -39,14 +38,15 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.CALLBACK;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.DEBUG_MSG;
-import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.ERROR_MSG;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.KAFKA_PRODUCER_POST;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.REQUEST;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.factory;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.kafkaProducer;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.logger;
+import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_BOGUS_TAGS;
 import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_EMPTY_TAGS;
 import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_FLATTENED_TAGS;
@@ -55,7 +55,6 @@ import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommo
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -163,7 +162,8 @@ public class ProduceIntoExternalKafkaActionTest {
         testApplySuccessDoNotWaitForResponse(NO_TAGS_SPAN, JSON_SPAN_STRING_WITH_NO_TAGS);
     }
 
-    private void testApplySuccessDoNotWaitForResponse(Span span, String jsonSpanString) throws InterruptedException, ExecutionException {
+    private void testApplySuccessDoNotWaitForResponse(Span span, String jsonSpanString)
+            throws InterruptedException, ExecutionException {
         whensForTestApplySuccess(false, false);
 
         produceIntoExternalKafkaAction.apply(KEY, span);
@@ -232,9 +232,8 @@ public class ProduceIntoExternalKafkaActionTest {
                 + "{\"timestamp\":\"234567891\",\"fields\":[{\"key\":\"doubleField\",\"vDouble\":6.54321},"
                 + "{\"key\":\"boolField\",\"vBool\":false}]}],\"tags\":{\"strKey\":\"tagValue\","
                 + "\"longKey\":987654321,\"doubleKey\":9876.54321,\"boolKey\":true,\"bytesKey\":\"AAEC/f7/\"}}";
-        final int lineNumber = executionException.getStackTrace()[0].getLineNumber();
         final String message = executionException.getMessage();
-        final String format = String.format(ERROR_MSG, lineNumber, jsonWithFlattenedTags, message);
+        final String format = String.format(ERROR_MSG, jsonWithFlattenedTags, message);
         verify(mockLogger).error(format, executionException);
     }
 
@@ -262,11 +261,12 @@ public class ProduceIntoExternalKafkaActionTest {
         when(mockRecordMetadataFuture.get()).thenThrow(outOfMemoryError);
     }
 
-    private void verifiesForTestApply(boolean waitForResponse, String jsonSpanString) throws InterruptedException, ExecutionException {
+    private void verifiesForTestApply(boolean waitForResponse, String jsonSpanString)
+            throws InterruptedException, ExecutionException {
         verify(mockTimer).start();
         verify(mockFactory).createProducerRecord(KEY, jsonSpanString);
         // TODO verify below without any() when the ProduceIntoExternalKafkaCallback object is returned by a factory
-        verify(mockKafkaProducer).send(eq(mockProducerRecord), any(ProduceIntoExternalKafkaCallback.class));
+        verify(mockKafkaProducer).send(mockProducerRecord, CALLBACK);
         if(waitForResponse) {
             verify(mockRecordMetadataFuture).get();
         }
