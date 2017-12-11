@@ -31,7 +31,6 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.kstream.ForeachAction;
 import org.slf4j.Logger;
@@ -39,15 +38,13 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
 
 public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Span> {
-    @VisibleForTesting static final ExternalKafkaConfigurationProvider EKCP = new ExternalKafkaConfigurationProvider();
-
+    private static final ExternalKafkaConfigurationProvider EKCP = new ExternalKafkaConfigurationProvider();
     private static final String TOPIC = EKCP.totopic();
     private static final String CLASS_NAME = ProduceIntoExternalKafkaAction.class.getSimpleName();
     private static final MetricObjects METRIC_OBJECTS = new MetricObjects();
@@ -55,13 +52,12 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
 
     @VisibleForTesting static final String ERROR_MSG =
             "Exception posting JSON [%s] to Kafka; received message [%s]";
-    @VisibleForTesting static final String DEBUG_MSG = "Sent JSON [%s] to Kafka partition [%d]";
-    @VisibleForTesting static final Counter REQUEST = METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION,
-            CLASS_NAME, "REQUEST");
+    @VisibleForTesting static final Counter REQUEST =
+            METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "REQUEST");
     @VisibleForTesting static final ProduceIntoExternalKafkaCallback CALLBACK = new ProduceIntoExternalKafkaCallback();
 
-    @VisibleForTesting static Timer KAFKA_PRODUCER_POST = METRIC_OBJECTS.createAndRegisterBasicTimer(SUBSYSTEM,
-            APPLICATION, CLASS_NAME, "KAFKA_PRODUCER_POST", TimeUnit.MICROSECONDS);
+    @VisibleForTesting static Timer KAFKA_PRODUCER_POST = METRIC_OBJECTS.createAndRegisterBasicTimer(
+            SUBSYSTEM, APPLICATION, CLASS_NAME, "KAFKA_PRODUCER_POST", TimeUnit.MICROSECONDS);
     @VisibleForTesting static Logger logger = LoggerFactory.getLogger(ProduceIntoExternalKafkaAction.class);
     @VisibleForTesting static Factory factory = new Factory();
 
@@ -74,14 +70,9 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
         try {
             final String jsonWithOpenTracingTags = printer.print(value);
             jsonWithFlattenedTags = flattenTags(jsonWithOpenTracingTags);
-            final ProducerRecord<String, String> producerRecord = factory.createProducerRecord(key, jsonWithFlattenedTags);
-            final Future<RecordMetadata> recordMetadataFuture = kafkaProducer.send(producerRecord, CALLBACK);
-            if(EKCP.waitforresponse()) {
-                final RecordMetadata recordMetadata = recordMetadataFuture.get();
-                if(logger.isDebugEnabled()) {
-                    logger.debug(DEBUG_MSG, value, recordMetadata.partition());
-                }
-            }
+            final ProducerRecord<String, String> producerRecord =
+                    factory.createProducerRecord(key, jsonWithFlattenedTags);
+            kafkaProducer.send(producerRecord, CALLBACK);
         } catch (Exception exception) {
             // Must format below because log4j2 underneath slf4j doesn't handle .error(varargs) properly
             final String message = String.format(ERROR_MSG, jsonWithFlattenedTags, exception.getMessage());
