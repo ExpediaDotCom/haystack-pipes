@@ -66,11 +66,6 @@ public class ExternalKafkaConfigurationProviderTest {
     }
 
     @Test
-    public void testWaitForResponse() {
-        assertTrue(externalKafkaConfigurationProvider.waitforresponse());
-    }
-
-    @Test
     public void testReload() {
         externalKafkaConfigurationProvider.reload();
         testBrokers();
@@ -80,6 +75,5 @@ public class ExternalKafkaConfigurationProviderTest {
         testBatchSize();
         testLingerMs();
         testBufferMemory();
-        testWaitForResponse();
     }
 }

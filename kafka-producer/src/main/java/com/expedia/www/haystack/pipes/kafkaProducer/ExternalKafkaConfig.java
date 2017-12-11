@@ -39,6 +39,4 @@ public interface ExternalKafkaConfig {
     int lingerms();
 
     int buffermemory();
-
-    boolean waitforresponse();
 }

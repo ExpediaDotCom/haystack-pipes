@@ -63,11 +63,6 @@ public class ExternalKafkaConfigurationProvider implements ExternalKafkaConfig {
         return externalKafkaConfig.buffermemory();
     }
 
-    @Override
-    public boolean waitforresponse() {
-        return externalKafkaConfig.waitforresponse();
-    }
-
     void reload() {
         final Configuration configuration = new Configuration();
         final ConfigurationProvider configurationProvider = configuration.createMergeConfigurationProvider();
