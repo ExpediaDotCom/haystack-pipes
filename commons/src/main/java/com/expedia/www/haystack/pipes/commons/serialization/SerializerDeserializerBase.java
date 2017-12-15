@@ -51,7 +51,7 @@ class SerializerDeserializerBase {
         static MetricObjects metricObjects = new MetricObjects();
 
         Counter createCounter(String application, String className, String counterName) {
-            return metricObjects.createAndRegisterCounter(
+            return metricObjects.createAndRegisterResettingCounter(
                     SUBSYSTEM, application, className, counterName);
         }
         Timer createTimer(String application, String className, String timerName) {
