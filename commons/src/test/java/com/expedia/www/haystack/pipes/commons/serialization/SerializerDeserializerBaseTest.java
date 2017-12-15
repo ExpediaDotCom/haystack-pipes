@@ -96,13 +96,13 @@ public class SerializerDeserializerBaseTest {
 
     @Test
     public void testFactoryCreateCounter() {
-        when(mockMetricObjects.createAndRegisterCounter(anyString(), anyString(), anyString(), anyString()))
+        when(mockMetricObjects.createAndRegisterResettingCounter(anyString(), anyString(), anyString(), anyString()))
                 .thenReturn(mockCounter);
 
         final Counter counter = realFactory.createCounter(APPLICATION, CLASS_NAME, COUNTER_NAME);
 
         assertSame(counter, mockCounter);
-        verify(mockMetricObjects).createAndRegisterCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, COUNTER_NAME);
+        verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, COUNTER_NAME);
     }
 
     @Test

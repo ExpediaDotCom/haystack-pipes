@@ -52,8 +52,8 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
 
     @VisibleForTesting static final String ERROR_MSG =
             "Exception posting JSON [%s] to Kafka; received message [%s]";
-    @VisibleForTesting static final Counter REQUEST =
-            METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "REQUEST");
+    @VisibleForTesting static Counter REQUEST =
+            METRIC_OBJECTS.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "REQUEST");
     @VisibleForTesting static final ProduceIntoExternalKafkaCallback CALLBACK = new ProduceIntoExternalKafkaCallback();
 
     @VisibleForTesting static Timer KAFKA_PRODUCER_POST = METRIC_OBJECTS.createAndRegisterBasicTimer(

@@ -13,3 +13,4 @@ haystack:
      port: 2003 # default Graphite port, rarely overridden, but can be overridden by env variable
      pollintervalseconds: 60
      queuesize: 10
+     sendasrate: true
