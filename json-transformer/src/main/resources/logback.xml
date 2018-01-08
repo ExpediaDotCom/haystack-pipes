@@ -9,6 +9,7 @@
     <appender name="EmitToGraphiteLogbackAppender"
               class="com.expedia.www.haystack.metrics.appenders.logback.EmitToGraphiteLogbackAppender">
         <host>${HAYSTACK_GRAPHITE_HOST}</host>
+        <subsystem>pipes-json-transformer</subsystem>
     </appender>
     <logger name="com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter" additivity="false" level="INFO">
         <appender-ref ref="STDOUT" /><!-- Display start up message without flooding logs with other info messages -->
