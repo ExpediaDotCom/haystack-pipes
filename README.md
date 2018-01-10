@@ -1,3 +1,4 @@
+[![Coverage Status](https://coveralls.io/repos/github/ExpediaDotCom/haystack-pipes/badge.svg?branch=master)](https://coveralls.io/github/ExpediaDotCom/haystack-pipes?branch=master)
 [Build Status](https://travis-ci.org/ExpediaDotCom/haystack-pipes)
 
 # haystack-pipes
