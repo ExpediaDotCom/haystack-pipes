@@ -27,6 +27,11 @@ import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.monitor.Timer;
 import com.netflix.servo.util.VisibleForTesting;
+import org.apache.commons.pool2.BasePooledObjectFactory;
+import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
+import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -54,7 +59,7 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
             "Exception posting JSON [%s] to Kafka; received message [%s]";
     @VisibleForTesting static Counter REQUEST =
             METRIC_OBJECTS.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "REQUEST");
-    @VisibleForTesting static final ProduceIntoExternalKafkaCallback CALLBACK = new ProduceIntoExternalKafkaCallback();
+    static ObjectPool<ProduceIntoExternalKafkaCallback> objectPool = new GenericObjectPool<>(new CallbackFactory());
 
     @VisibleForTesting static Timer KAFKA_PRODUCER_POST = METRIC_OBJECTS.createAndRegisterBasicTimer(
             SUBSYSTEM, APPLICATION, CLASS_NAME, "KAFKA_PRODUCER_POST", TimeUnit.MICROSECONDS);
@@ -72,7 +77,12 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
             jsonWithFlattenedTags = flattenTags(jsonWithOpenTracingTags);
             final ProducerRecord<String, String> producerRecord =
                     factory.createProducerRecord(key, jsonWithFlattenedTags);
-            kafkaProducer.send(producerRecord, CALLBACK);
+
+            // The callback is responsible for returning itself to the pool
+            final ProduceIntoExternalKafkaCallback callback = objectPool.borrowObject();
+            // TODO Put producerRecord into the callback so that it can retry
+
+            kafkaProducer.send(producerRecord, callback);
         } catch (Exception exception) {
             // Must format below because log4j2 underneath slf4j doesn't handle .error(varargs) properly
             final String message = String.format(ERROR_MSG, jsonWithFlattenedTags, exception.getMessage());
@@ -138,6 +148,19 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
     static class Factory {
         ProducerRecord<String, String> createProducerRecord(String key, String value) {
             return new ProducerRecord<>(TOPIC, key, value);
+        }
+    }
+
+    static class CallbackFactory extends BasePooledObjectFactory<ProduceIntoExternalKafkaCallback> {
+        @Override
+        public ProduceIntoExternalKafkaCallback create() {
+            return new ProduceIntoExternalKafkaCallback();
+        }
+
+        @Override
+        public PooledObject<ProduceIntoExternalKafkaCallback> wrap(
+                ProduceIntoExternalKafkaCallback produceIntoExternalKafkaCallback) {
+            return new DefaultPooledObject<>(produceIntoExternalKafkaCallback);
         }
     }
 }

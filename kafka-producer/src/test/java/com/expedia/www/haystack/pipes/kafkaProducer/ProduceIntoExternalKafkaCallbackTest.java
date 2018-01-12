@@ -16,6 +16,7 @@
  */
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
+import org.apache.commons.pool2.ObjectPool;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.junit.After;
@@ -28,9 +29,15 @@ import org.slf4j.Logger;
 
 import java.util.Random;
 
+import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.objectPool;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.DEBUG_MSG;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.ERROR_MSG;
+import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.POOL_ERROR_MSG;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.logger;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -56,6 +63,10 @@ public class ProduceIntoExternalKafkaCallbackTest {
     @Mock
     private Exception mockException;
 
+    @Mock
+    private ObjectPool<ProduceIntoExternalKafkaCallback> mockObjectPool;
+    private ObjectPool<ProduceIntoExternalKafkaCallback> realObjectPool;
+
     private RecordMetadata recordMetadata;
     private ProduceIntoExternalKafkaCallback produceIntoExternalKafkaCallback;
 
@@ -69,6 +80,7 @@ public class ProduceIntoExternalKafkaCallbackTest {
 
     private void injectMockAndSaveRealObjects() {
         saveRealAndInjectMockLogger();
+        saveRealAndInjectMockObjectPool();
     }
 
     private void saveRealAndInjectMockLogger() {
@@ -76,48 +88,84 @@ public class ProduceIntoExternalKafkaCallbackTest {
         logger = mockLogger;
     }
 
+    private void saveRealAndInjectMockObjectPool() {
+        realObjectPool = objectPool;
+        objectPool = mockObjectPool;
+    }
+
     @After
     public void tearDown() {
         restoreRealObjects();
-        verifyNoMoreInteractions(mockLogger, mockException);
+        verifyNoMoreInteractions(mockLogger, mockException, mockObjectPool);
     }
 
     private void restoreRealObjects() {
         logger = realLogger;
+        objectPool = realObjectPool;
     }
 
     @Test
-    public void testOnCompletionBothNull() {
+    public void testOnCompletionBothNull() throws Exception {
         produceIntoExternalKafkaCallback.onCompletion(null, null);
+        verify(mockObjectPool).returnObject(produceIntoExternalKafkaCallback);
     }
 
     @Test
-    public void testOnCompletionNonNullMetadataDebugDisabled() {
+    public void testOnCompletionBothNullReturnToObjectPoolSuccess() throws Exception {
+        final String exceptionMessage = "Exception Message";
+        final Exception testException = new Exception(exceptionMessage);
+        doThrow(testException).when(mockObjectPool).returnObject(any(ProduceIntoExternalKafkaCallback.class));
+
+        produceIntoExternalKafkaCallback.onCompletion(null, null);
+        verify(mockObjectPool).returnObject(produceIntoExternalKafkaCallback);
+        verify(mockLogger).error(String.format(POOL_ERROR_MSG, exceptionMessage), testException);
+    }
+
+    @Test
+    public void testOnCompletionRuntimeExceptionReturnToObjectPoolSuccess() throws Exception {
+        final Exception runtimeException = new RuntimeException("RuntimeException Message");
+        final Exception testException = new Exception("Exception Message");
+        doThrow(runtimeException).when(mockLogger).error(anyString(), any(Throwable.class));
+
+        try {
+            produceIntoExternalKafkaCallback.onCompletion(null, testException);
+        } catch(Throwable e) {
+            assertSame(runtimeException, e);
+            verify(mockLogger).error(String.format(ERROR_MSG, testException.getMessage()), testException);
+            verify(mockObjectPool).returnObject(produceIntoExternalKafkaCallback);
+        }
+    }
+
+    @Test
+    public void testOnCompletionNonNullMetadataDebugDisabled() throws Exception {
         when(mockLogger.isDebugEnabled()).thenReturn(false);
 
         produceIntoExternalKafkaCallback.onCompletion(recordMetadata, null);
 
         verify(mockLogger).isDebugEnabled();
+        verify(mockObjectPool).returnObject(produceIntoExternalKafkaCallback);
     }
 
     @Test
-    public void testOnCompletionNonNullMetadataDebugEnabled() {
+    public void testOnCompletionNonNullMetadataDebugEnabled() throws Exception {
         when(mockLogger.isDebugEnabled()).thenReturn(true);
 
         produceIntoExternalKafkaCallback.onCompletion(recordMetadata, null);
 
         verify(mockLogger).isDebugEnabled();
         verify(mockLogger).debug(String.format(DEBUG_MSG, TOPIC, PARTITION, BASE_OFFSET));
+        verify(mockObjectPool).returnObject(produceIntoExternalKafkaCallback);
     }
 
     @Test
-    public void testOneCompletionNonNullException() {
+    public void testOneCompletionNonNullException() throws Exception {
         when(mockException.getMessage()).thenReturn(MESSAGE);
 
         produceIntoExternalKafkaCallback.onCompletion(null, mockException);
 
         verify(mockException).getMessage();
         verify(mockLogger).error(String.format(ERROR_MSG, MESSAGE), mockException);
+        verify(mockObjectPool).returnObject(produceIntoExternalKafkaCallback);
     }
 
 }

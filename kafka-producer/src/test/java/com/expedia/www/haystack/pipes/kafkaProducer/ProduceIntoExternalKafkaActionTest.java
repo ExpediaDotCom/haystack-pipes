@@ -32,9 +32,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
 
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.CALLBACK;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.ERROR_MSG;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.KAFKA_PRODUCER_POST;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.REQUEST;
@@ -140,17 +138,16 @@ public class ProduceIntoExternalKafkaActionTest {
     }
 
     @Test
-    public void testApplySuccessWithTags() throws ExecutionException, InterruptedException {
+    public void testApplySuccessWithTags() {
         testApplySuccess(FULLY_POPULATED_SPAN, JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
     }
 
     @Test
-    public void testApplySuccessWithoutTags() throws ExecutionException, InterruptedException {
+    public void testApplySuccessWithoutTags() {
         testApplySuccess(NO_TAGS_SPAN, JSON_SPAN_STRING_WITH_NO_TAGS);
     }
 
-    private void testApplySuccess(Span span, String jsonSpanString)
-            throws InterruptedException, ExecutionException {
+    private void testApplySuccess(Span span, String jsonSpanString) {
         whensForTestApply();
 
         produceIntoExternalKafkaAction.apply(KEY, span);
@@ -172,7 +169,7 @@ public class ProduceIntoExternalKafkaActionTest {
     }
 
     @Test(expected = OutOfMemoryError.class)
-    public void testApplyOutOfMemoryError() throws ExecutionException, InterruptedException {
+    public void testApplyOutOfMemoryError() {
         whensForTestApply();
         when(mockKafkaProducer.send(any(), any())).thenThrow(new OutOfMemoryError());
 
@@ -194,7 +191,7 @@ public class ProduceIntoExternalKafkaActionTest {
         verify(mockTimer).start();
         verify(mockFactory).createProducerRecord(KEY, jsonSpanString);
         // TODO verify below without any() when the ProduceIntoExternalKafkaCallback object is returned by a factory
-        verify(mockKafkaProducer).send(mockProducerRecord, CALLBACK);
+        verify(mockKafkaProducer).send(eq(mockProducerRecord), any(ProduceIntoExternalKafkaCallback.class));
         verify(mockStopwatch).stop();
     }
 
