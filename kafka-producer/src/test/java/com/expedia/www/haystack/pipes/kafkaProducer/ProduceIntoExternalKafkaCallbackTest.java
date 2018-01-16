@@ -16,6 +16,7 @@
  */
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
+import com.netflix.servo.monitor.Counter;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
@@ -29,6 +30,7 @@ import org.slf4j.Logger;
 
 import java.util.Random;
 
+import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.POSTS_IN_FLIGHT;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.objectPool;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.DEBUG_MSG;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.ERROR_MSG_TEMPLATE;
@@ -67,6 +69,10 @@ public class ProduceIntoExternalKafkaCallbackTest {
     private ObjectPool<ProduceIntoExternalKafkaCallback> mockObjectPool;
     private ObjectPool<ProduceIntoExternalKafkaCallback> realObjectPool;
 
+    @Mock
+    private Counter mockPostsInFlightCounter;
+    private Counter realPostsInFlightCounter;
+
     private RecordMetadata recordMetadata;
     private ProduceIntoExternalKafkaCallback produceIntoExternalKafkaCallback;
 
@@ -81,6 +87,7 @@ public class ProduceIntoExternalKafkaCallbackTest {
     private void injectMockAndSaveRealObjects() {
         saveRealAndInjectMockLogger();
         saveRealAndInjectMockObjectPool();
+        saveRealAndInjectMockPostsInFlightCounter();
     }
 
     private void saveRealAndInjectMockLogger() {
@@ -93,15 +100,22 @@ public class ProduceIntoExternalKafkaCallbackTest {
         objectPool = mockObjectPool;
     }
 
+    private void saveRealAndInjectMockPostsInFlightCounter() {
+        realPostsInFlightCounter = POSTS_IN_FLIGHT;
+        POSTS_IN_FLIGHT = mockPostsInFlightCounter;
+    }
+
     @After
     public void tearDown() {
+        verify(mockPostsInFlightCounter).increment(-1);
         restoreRealObjects();
-        verifyNoMoreInteractions(mockLogger, mockException, mockObjectPool);
+        verifyNoMoreInteractions(mockLogger, mockException, mockObjectPool, mockPostsInFlightCounter);
     }
 
     private void restoreRealObjects() {
         logger = realLogger;
         objectPool = realObjectPool;
+        POSTS_IN_FLIGHT = realPostsInFlightCounter;
     }
 
     @Test

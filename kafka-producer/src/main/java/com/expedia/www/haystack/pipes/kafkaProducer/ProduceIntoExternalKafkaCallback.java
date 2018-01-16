@@ -22,6 +22,8 @@ import org.apache.kafka.clients.producer.Callback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.POSTS_IN_FLIGHT;
+
 public class ProduceIntoExternalKafkaCallback implements Callback {
     static final String DEBUG_MSG = "Successfully posted JSON to Kafka: topic [%s] partition [%d] offset [%d]";
     static final String ERROR_MSG_TEMPLATE = "Callback exception posting JSON to Kafka; received message [%s]";
@@ -48,6 +50,7 @@ public class ProduceIntoExternalKafkaCallback implements Callback {
 
     private void returnObjectToPoolButLogExceptionIfReturnFails() {
         try {
+            POSTS_IN_FLIGHT.increment(-1);
             ProduceIntoExternalKafkaAction.objectPool.returnObject(this);
         } catch (Exception exception) {
             logError(exception, POOL_ERROR_MSG_TEMPLATE);
