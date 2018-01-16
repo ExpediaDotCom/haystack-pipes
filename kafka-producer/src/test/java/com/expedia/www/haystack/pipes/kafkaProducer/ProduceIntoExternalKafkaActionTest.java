@@ -32,11 +32,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
 
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.CALLBACK;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.ERROR_MSG;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.KAFKA_PRODUCER_POST;
+import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.POSTS_IN_FLIGHT;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.REQUEST;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.factory;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.kafkaProducer;
@@ -62,8 +61,11 @@ public class ProduceIntoExternalKafkaActionTest {
     private final static String VALUE = RANDOM.nextLong() + "VALUE";
 
     @Mock
-    private Counter mockCounter;
-    private Counter realCounter;
+    private Counter mockRequestCounter;
+    private Counter realRequestCounter;
+    @Mock
+    private Counter mockPostsInFlightCounter;
+    private Counter realPostsInFlightCounter;
     @Mock
     private Timer mockTimer;
     private Timer realTimer;
@@ -87,28 +89,34 @@ public class ProduceIntoExternalKafkaActionTest {
 
     @Before
     public void setUp() {
-        injectMockAndSaveRealObjects();
+        injectMocksAndSaveRealObjects();
         produceIntoExternalKafkaAction = new ProduceIntoExternalKafkaAction();
     }
 
     @After
     public void tearDown() {
         restoreRealObjects();
-        verifyNoMoreInteractions(mockCounter, mockTimer, mockLogger, mockFactory, mockKafkaProducer, mockProducerRecord,
-                mockStopwatch);
+        verifyNoMoreInteractions(mockRequestCounter, mockPostsInFlightCounter, mockTimer, mockLogger, mockFactory,
+                mockKafkaProducer, mockProducerRecord, mockStopwatch);
     }
 
-    private void injectMockAndSaveRealObjects() {
-        saveRealAndInjectMockCounter();
+    private void injectMocksAndSaveRealObjects() {
+        saveRealAndInjectMockRequestCounter();
+        saveRealAndInjectMockPostsInFlightCounter();
         saveRealAndInjectMockTimer();
         saveRealAndInjectMockLogger();
         saveRealAndInjectMockFactory();
         saveRealAndInjectMockProducer();
     }
 
-    private void saveRealAndInjectMockCounter() {
-        realCounter = REQUEST;
-        REQUEST = mockCounter;
+    private void saveRealAndInjectMockRequestCounter() {
+        realRequestCounter = REQUEST;
+        REQUEST = mockRequestCounter;
+    }
+
+    private void saveRealAndInjectMockPostsInFlightCounter() {
+        realPostsInFlightCounter = POSTS_IN_FLIGHT;
+        POSTS_IN_FLIGHT = mockPostsInFlightCounter;
     }
 
     private void saveRealAndInjectMockTimer() {
@@ -132,7 +140,8 @@ public class ProduceIntoExternalKafkaActionTest {
     }
 
     private void restoreRealObjects() {
-        REQUEST = realCounter;
+        REQUEST = realRequestCounter;
+        POSTS_IN_FLIGHT = realPostsInFlightCounter;
         KAFKA_PRODUCER_POST = realTimer;
         logger = realLogger;
         factory = realFactory;
@@ -140,22 +149,21 @@ public class ProduceIntoExternalKafkaActionTest {
     }
 
     @Test
-    public void testApplySuccessWithTags() throws ExecutionException, InterruptedException {
+    public void testApplySuccessWithTags() {
         testApplySuccess(FULLY_POPULATED_SPAN, JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
     }
 
     @Test
-    public void testApplySuccessWithoutTags() throws ExecutionException, InterruptedException {
+    public void testApplySuccessWithoutTags() {
         testApplySuccess(NO_TAGS_SPAN, JSON_SPAN_STRING_WITH_NO_TAGS);
     }
 
-    private void testApplySuccess(Span span, String jsonSpanString)
-            throws InterruptedException, ExecutionException {
+    private void testApplySuccess(Span span, String jsonSpanString) {
         whensForTestApply();
 
         produceIntoExternalKafkaAction.apply(KEY, span);
 
-        verify(mockCounter).increment();
+        verify(mockRequestCounter).increment();
         verifiesForTestApply(jsonSpanString);
     }
 
@@ -165,21 +173,21 @@ public class ProduceIntoExternalKafkaActionTest {
 
         produceIntoExternalKafkaAction.apply(KEY, null);
 
-        verify(mockCounter).increment();
+        verify(mockRequestCounter).increment();
         verify(mockTimer).start();
         verify(mockLogger).error(eq(String.format(ERROR_MSG, "", null)), any(NullPointerException.class));
         verify(mockStopwatch).stop();
     }
 
     @Test(expected = OutOfMemoryError.class)
-    public void testApplyOutOfMemoryError() throws ExecutionException, InterruptedException {
+    public void testApplyOutOfMemoryError() {
         whensForTestApply();
         when(mockKafkaProducer.send(any(), any())).thenThrow(new OutOfMemoryError());
 
         try {
             produceIntoExternalKafkaAction.apply(KEY, FULLY_POPULATED_SPAN);
         } finally {
-            verify(mockCounter).increment();
+            verify(mockRequestCounter).increment();
             verifiesForTestApply(JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
         }
 
@@ -194,8 +202,9 @@ public class ProduceIntoExternalKafkaActionTest {
         verify(mockTimer).start();
         verify(mockFactory).createProducerRecord(KEY, jsonSpanString);
         // TODO verify below without any() when the ProduceIntoExternalKafkaCallback object is returned by a factory
-        verify(mockKafkaProducer).send(mockProducerRecord, CALLBACK);
+        verify(mockKafkaProducer).send(eq(mockProducerRecord), any(ProduceIntoExternalKafkaCallback.class));
         verify(mockStopwatch).stop();
+        verify(mockPostsInFlightCounter).increment();
     }
 
     @Test
