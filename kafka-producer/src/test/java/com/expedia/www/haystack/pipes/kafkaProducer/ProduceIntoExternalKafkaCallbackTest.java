@@ -31,8 +31,8 @@ import java.util.Random;
 
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.objectPool;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.DEBUG_MSG;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.ERROR_MSG;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.POOL_ERROR_MSG;
+import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.ERROR_MSG_TEMPLATE;
+import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.POOL_ERROR_MSG_TEMPLATE;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.logger;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.any;
@@ -112,13 +112,12 @@ public class ProduceIntoExternalKafkaCallbackTest {
 
     @Test
     public void testOnCompletionBothNullReturnToObjectPoolSuccess() throws Exception {
-        final String exceptionMessage = "Exception Message";
-        final Exception testException = new Exception(exceptionMessage);
+        final Exception testException = new Exception("Exception Message");
         doThrow(testException).when(mockObjectPool).returnObject(any(ProduceIntoExternalKafkaCallback.class));
 
         produceIntoExternalKafkaCallback.onCompletion(null, null);
         verify(mockObjectPool).returnObject(produceIntoExternalKafkaCallback);
-        verify(mockLogger).error(String.format(POOL_ERROR_MSG, exceptionMessage), testException);
+        verify(mockLogger).error(String.format(POOL_ERROR_MSG_TEMPLATE, testException.getMessage()), testException);
     }
 
     @Test
@@ -131,7 +130,7 @@ public class ProduceIntoExternalKafkaCallbackTest {
             produceIntoExternalKafkaCallback.onCompletion(null, testException);
         } catch(Throwable e) {
             assertSame(runtimeException, e);
-            verify(mockLogger).error(String.format(ERROR_MSG, testException.getMessage()), testException);
+            verify(mockLogger).error(String.format(ERROR_MSG_TEMPLATE, testException.getMessage()), testException);
             verify(mockObjectPool).returnObject(produceIntoExternalKafkaCallback);
         }
     }
@@ -164,7 +163,7 @@ public class ProduceIntoExternalKafkaCallbackTest {
         produceIntoExternalKafkaCallback.onCompletion(null, mockException);
 
         verify(mockException).getMessage();
-        verify(mockLogger).error(String.format(ERROR_MSG, MESSAGE), mockException);
+        verify(mockLogger).error(String.format(ERROR_MSG_TEMPLATE, MESSAGE), mockException);
         verify(mockObjectPool).returnObject(produceIntoExternalKafkaCallback);
     }
 

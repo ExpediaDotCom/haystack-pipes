@@ -85,7 +85,7 @@ public class ProduceIntoExternalKafkaActionTest {
 
     @Before
     public void setUp() {
-        injectMockAndSaveRealObjects();
+        injectMocksAndSaveRealObjects();
         produceIntoExternalKafkaAction = new ProduceIntoExternalKafkaAction();
     }
 
@@ -96,7 +96,7 @@ public class ProduceIntoExternalKafkaActionTest {
                 mockStopwatch);
     }
 
-    private void injectMockAndSaveRealObjects() {
+    private void injectMocksAndSaveRealObjects() {
         saveRealAndInjectMockCounter();
         saveRealAndInjectMockTimer();
         saveRealAndInjectMockLogger();

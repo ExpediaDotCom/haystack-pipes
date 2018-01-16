@@ -24,8 +24,8 @@ import org.slf4j.LoggerFactory;
 
 public class ProduceIntoExternalKafkaCallback implements Callback {
     static final String DEBUG_MSG = "Successfully posted JSON to Kafka: topic [%s] partition [%d] offset [%d]";
-    static final String ERROR_MSG = "Callback exception posting JSON to Kafka; received message [%s]";
-    static final String POOL_ERROR_MSG = "Exception returning callback to pool; received message [%s]";
+    static final String ERROR_MSG_TEMPLATE = "Callback exception posting JSON to Kafka; received message [%s]";
+    static final String POOL_ERROR_MSG_TEMPLATE = "Exception returning callback to pool; received message [%s]";
     static Logger logger = LoggerFactory.getLogger(ProduceIntoExternalKafkaCallback.class);
 
     @Override
@@ -39,17 +39,24 @@ public class ProduceIntoExternalKafkaCallback implements Callback {
                 }
             }
             if (exception != null) {
-                // Must format below because log4j2 underneath slf4j doesn't handle .error(varargs) properly
-                final String message = String.format(ERROR_MSG, exception.getMessage());
-                logger.error(message, exception);
+                logError(exception, ERROR_MSG_TEMPLATE);
             }
         } finally {
-            try {
-                ProduceIntoExternalKafkaAction.objectPool.returnObject(this);
-            } catch (Exception returnObjectException) {
-                final String message = String.format(POOL_ERROR_MSG, returnObjectException.getMessage());
-                logger.error(message, returnObjectException);
-            }
+            returnObjectToPoolButLogExceptionIfReturnFails();
         }
+    }
+
+    private void returnObjectToPoolButLogExceptionIfReturnFails() {
+        try {
+            ProduceIntoExternalKafkaAction.objectPool.returnObject(this);
+        } catch (Exception exception) {
+            logError(exception, POOL_ERROR_MSG_TEMPLATE);
+        }
+    }
+
+    private void logError(Exception returnObjectException, String errorMessageTemplate) {
+        // Must format below because log4j2 underneath slf4j doesn't handle .error(varargs) properly
+        final String message = String.format(errorMessageTemplate, returnObjectException.getMessage());
+        logger.error(message, returnObjectException);
     }
 }

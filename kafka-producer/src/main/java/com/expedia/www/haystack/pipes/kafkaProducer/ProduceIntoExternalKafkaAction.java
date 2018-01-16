@@ -78,9 +78,8 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
             final ProducerRecord<String, String> producerRecord =
                     factory.createProducerRecord(key, jsonWithFlattenedTags);
 
-            // The callback is responsible for returning itself to the pool
-            final ProduceIntoExternalKafkaCallback callback = objectPool.borrowObject();
-            // TODO Put producerRecord into the callback so that it can retry
+            final ProduceIntoExternalKafkaCallback callback = objectPool.borrowObject(); // callback must returnObject()
+            // TODO Put the Span value into the callback so that it can write it to Kafka for retry
 
             kafkaProducer.send(producerRecord, callback);
         } catch (Exception exception) {
