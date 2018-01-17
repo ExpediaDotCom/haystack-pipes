@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/ExpediaDotCom/haystack-pipes.svg?branch=master)](https://travis-ci.org/ExpediaDotCom/haystack-pipes)
 
 # haystack-pipes
-Packages to send ("pipe") Haystack data to external sinks (like AWS Firehose)
+Packages to send ("pipe") Haystack data to external sinks (like AWS Firehose or another Kafka queue)
 ![High Level Block Diagram](https://github.com/ExpediaDotCom/haystack-pipes/blob/master/documents/diagrams/haystack_pipes.png)
 
 The haystack-pipes unit delivers a human-friendly version of Haystack messages to zero or more "durable" locations for 
