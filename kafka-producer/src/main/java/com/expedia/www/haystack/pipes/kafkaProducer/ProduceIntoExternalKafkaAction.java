@@ -60,7 +60,7 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
     @VisibleForTesting static Counter REQUEST =
             METRIC_OBJECTS.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "REQUEST");
     @VisibleForTesting static Counter POSTS_IN_FLIGHT =
-            METRIC_OBJECTS.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "POSTS_IN_FLIGHT");
+            METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "POSTS_IN_FLIGHT");
     static ObjectPool<ProduceIntoExternalKafkaCallback> objectPool = new GenericObjectPool<>(new CallbackFactory());
 
     @VisibleForTesting static Timer KAFKA_PRODUCER_POST = METRIC_OBJECTS.createAndRegisterBasicTimer(

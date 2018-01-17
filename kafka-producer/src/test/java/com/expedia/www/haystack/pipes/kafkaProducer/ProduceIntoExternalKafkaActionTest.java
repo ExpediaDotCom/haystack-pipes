@@ -18,6 +18,7 @@ package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.Factory;
+import com.netflix.servo.monitor.BasicCounter;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.monitor.Timer;
@@ -46,6 +47,7 @@ import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommo
 import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_FLATTENED_TAGS;
 import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_NO_TAGS;
 import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.NO_TAGS_SPAN;
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -219,5 +221,11 @@ public class ProduceIntoExternalKafkaActionTest {
     public void testFlattenTagsWithBogusTag() {
         final String flattenedTags = ProduceIntoExternalKafkaAction.flattenTags(JSON_SPAN_STRING_WITH_BOGUS_TAGS);
         assertEquals(JSON_SPAN_STRING_WITH_EMPTY_TAGS, flattenedTags);
+    }
+
+    @Test
+    public void testPostsInFlightCounterType() {
+        assertTrue("POSTS_IN_FLIGHT should be a BasicCounter, not a ResettingCounter",
+                realPostsInFlightCounter instanceof BasicCounter);
     }
 }
