@@ -35,7 +35,7 @@
         <protoc-jar-maven-version>3.3.0.1</protoc-jar-maven-version>
         <servo-version>0.12.17</servo-version>
         <slf4j-version>1.7.25</slf4j-version>
-        <spring-boot-version>1.5.8.RELEASE</spring-boot-version>
+        <spring-boot-plugins-version>1.5.9.RELEASE</spring-boot-plugins-version>
         <zookeeper-version>3.4.9</zookeeper-version>
     </properties>
 
@@ -146,13 +146,13 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-parent</artifactId>
-                <version>${spring-boot-version}</version>
+                <version>${spring-boot-plugins-version}</version>
                 <type>pom</type>
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-web</artifactId>
-                <version>${spring-boot-version}</version>
+                <version>${spring-boot-plugins-version}</version>
             </dependency>
 
             <!-- Test dependencies -->
@@ -264,7 +264,7 @@
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
-                    <version>${spring-boot-version}</version>
+                    <version>${spring-boot-plugins-version}</version>
                     <executions>
                         <execution>
                             <goals>
