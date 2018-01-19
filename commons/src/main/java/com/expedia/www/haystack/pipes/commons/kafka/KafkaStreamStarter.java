@@ -33,7 +33,7 @@ import java.util.Properties;
 public class KafkaStreamStarter {
     static Factory factory = new Factory(); // will be mocked out in unit tests
     static Logger logger = LoggerFactory.getLogger(KafkaStreamStarter.class);
-    static final String STARTING_MSG = "Attempting to start stream pointing at Kafka [%s]";
+    static final String STARTING_MSG = "Attempting to start stream pointing at Kafka [%s] from topic [%s] to topic [%s]";
     static final String STARTED_MSG = "Now started Stream %s";
     private static final ConfigurationProvider CONFIGURATION_PROVIDER =
             new Configuration().createMergeConfigurationProvider();
@@ -59,7 +59,7 @@ public class KafkaStreamStarter {
         final SystemExitUncaughtExceptionHandler systemExitUncaughtExceptionHandler
                 = factory.createSystemExitUncaughtExceptionHandler(kafkaStreams);
         kafkaStreams.setUncaughtExceptionHandler(systemExitUncaughtExceptionHandler);
-        logger.info(String.format(STARTING_MSG, getKafkaIpAnPort()));
+        logger.info(String.format(STARTING_MSG, getKafkaIpAnPort(), getKafkaFromTopic(), getKafkaToTopic()));
         kafkaStreams.start();
         logger.info(String.format(STARTED_MSG, kStreamBuilder.getClass().getSimpleName()));
     }
@@ -78,6 +78,16 @@ public class KafkaStreamStarter {
     private String getKafkaIpAnPort() {
         final KafkaConfig kafkaConfig = getKafkaConfig();
         return kafkaConfig.brokers() + ":" + kafkaConfig.port();
+    }
+
+    private String getKafkaFromTopic() {
+        final KafkaConfig kafkaConfig = getKafkaConfig();
+        return kafkaConfig.fromtopic();
+    }
+
+    private String getKafkaToTopic() {
+        final KafkaConfig kafkaConfig = getKafkaConfig();
+        return kafkaConfig.totopic();
     }
 
     private int getReplicationFactor() {
