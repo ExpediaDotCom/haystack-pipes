@@ -32,7 +32,7 @@ public class ExternalKafkaConfigurationProviderTest {
 
     @Test
     public void testBrokers() {
-        assertEquals("localhost", externalKafkaConfigurationProvider.brokers());
+        assertEquals("localhost:9092", externalKafkaConfigurationProvider.brokers());
     }
 
     @Test

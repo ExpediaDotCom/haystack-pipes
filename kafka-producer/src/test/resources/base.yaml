@@ -14,7 +14,7 @@ haystack:
      pollintervalseconds: 60
      queuesize: 10
   externalkafka:
-    brokers: "localhost"
+    brokers: "localhost:9092"
     port: 9093
     totopic: "externalKafkaTopic"
     acks: "0"
