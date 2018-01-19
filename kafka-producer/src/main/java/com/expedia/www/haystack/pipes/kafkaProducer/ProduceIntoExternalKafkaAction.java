@@ -142,7 +142,7 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
 
     private static Map<String, Object> getConfigurationMap() {
         final Map<String, Object> map = new HashMap<>();
-        map.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, EKCP.brokers() + ":" + EKCP.port());
+        map.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, EKCP.brokers());
         map.put(ProducerConfig.ACKS_CONFIG, EKCP.acks());
         map.put(ProducerConfig.RETRIES_CONFIG, 3);
         map.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, 1000);
