@@ -13,6 +13,7 @@
     <properties>
         <encoding>UTF-8</encoding>
         <!-- Versions -->
+        <aws-java-sdk-kinesis-version>1.11.267</aws-java-sdk-kinesis-version>
         <cfg4j-core-version>4.4.1</cfg4j-core-version>
         <commons-lang3-version>3.7</commons-lang3-version>
         <commons-pool2-version>2.5.0</commons-pool2-version>
@@ -43,10 +44,16 @@
         <module>commons</module>
         <module>json-transformer</module>
         <module>kafka-producer</module>
+        <module>firehose-writer</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-kinesis</artifactId>
+                <version>${aws-java-sdk-kinesis-version}</version>
+            </dependency>
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
