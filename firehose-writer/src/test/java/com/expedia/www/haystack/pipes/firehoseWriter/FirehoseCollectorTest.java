@@ -70,7 +70,7 @@ public class FirehoseCollectorTest {
 
     private void testShouldCreateNewBatchDueToRecordCount(int recordCount, boolean expected) {
         when(mockRecord.getData()).thenReturn(EMPTY_DATA);
-        for(int i = 0 ; i < recordCount ; i++) {
+        for (int i = 0; i < recordCount; i++) {
             final List<Record> batch = firehoseCollector.addRecordAndReturnBatch(mockRecord);
             assertTrue(batch.isEmpty());
         }
