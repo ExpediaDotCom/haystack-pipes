@@ -50,6 +50,8 @@ public class KafkaStreamStarterTest {
     private final static Random RANDOM = new Random();
     private final static String CLIENT_ID = RANDOM.nextLong() + "CLIENT_ID";
     private static final String KAFKA_IP_AND_PORT = "localhost:" + 65534;
+    private static final String KAFKA_FROM_TOPIC = "haystack.kafka.fromtopic";
+    private static final String KAFKA_TO_TOPIC = "haystack.kafka.totopic";
 
     @Mock
     private Factory mockFactory;
@@ -109,7 +111,7 @@ public class KafkaStreamStarterTest {
         verify(mockFactory).createSystemExitUncaughtExceptionHandler(mockKafkaStreams);
         verify(mockKafkaStreams).setUncaughtExceptionHandler(mockSystemExitUncaughtExceptionHandler);
         verify(mockKafkaStreams).start();
-        verify(mockLogger).info(String.format(STARTING_MSG, KAFKA_IP_AND_PORT));
+        verify(mockLogger).info(String.format(STARTING_MSG, KAFKA_IP_AND_PORT, KAFKA_FROM_TOPIC, KAFKA_TO_TOPIC));
         verify(mockLogger).info(String.format(STARTED_MSG, mockKStreamBuilder.getClass().getSimpleName()));
 
     }
