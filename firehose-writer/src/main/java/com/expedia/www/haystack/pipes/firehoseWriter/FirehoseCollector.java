@@ -1,10 +1,10 @@
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
+import com.amazonaws.services.kinesisfirehose.model.Record;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import com.amazonaws.services.kinesisfirehose.model.Record;
 
 class FirehoseCollector {
     /**
@@ -41,11 +41,11 @@ class FirehoseCollector {
 
     List<Record> addRecordAndReturnBatch(Record record) {
         final List<Record> records;
-        if(shouldCreateNewBatchDueToDataSize(record)) {
+        if (shouldCreateNewBatchDueToDataSize(record)) {
             records = this.records;
             initialize();
             addRecord(record);
-        } else if(shouldCreateNewBatchDueToRecordCount()) {
+        } else if (shouldCreateNewBatchDueToRecordCount()) {
             addRecord(record);
             records = this.records;
             initialize();
