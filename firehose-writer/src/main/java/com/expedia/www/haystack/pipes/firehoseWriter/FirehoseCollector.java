@@ -31,7 +31,6 @@ class FirehoseCollector {
         totalDataSizeOfRecords = 0;
     }
 
-
     boolean shouldCreateNewBatchDueToRecordCount() {
         return (records.size() + 1) == MAX_RECORDS_IN_BATCH;
     }
