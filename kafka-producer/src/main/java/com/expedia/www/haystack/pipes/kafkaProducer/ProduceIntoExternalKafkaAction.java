@@ -70,7 +70,7 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
     @VisibleForTesting static Logger logger = LoggerFactory.getLogger(ProduceIntoExternalKafkaAction.class);
     static
     {
-        logger.info(TOPIC_MESSAGE, EKCP.brokers(), EKCP.port(), TOPIC);
+        logger.info(String.format(TOPIC_MESSAGE, EKCP.brokers(), EKCP.port(), TOPIC));
     }
     @VisibleForTesting static Factory factory = new Factory();
 
