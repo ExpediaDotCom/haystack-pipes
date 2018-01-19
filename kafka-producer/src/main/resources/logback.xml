@@ -14,6 +14,9 @@
     <logger name="com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter" additivity="false" level="INFO">
         <appender-ref ref="STDOUT" /><!-- Display start up message without flooding logs with other info messages -->
     </logger>
+    <logger name="com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction" additivity="false" level="INFO">
+        <appender-ref ref="STDOUT" /><!-- Display start up message without flooding logs with other info messages -->
+    </logger>
     <logger name="com.netflix.servo.publish.graphite.GraphiteMetricObserver" additivity="false" level="INFO">
         <appender-ref ref="STDOUT" /><!-- Display start up message without flooding logs with other info messages -->
     </logger>

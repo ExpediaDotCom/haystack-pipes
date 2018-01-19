@@ -54,6 +54,8 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
     private static final String CLASS_NAME = ProduceIntoExternalKafkaAction.class.getSimpleName();
     private static final MetricObjects METRIC_OBJECTS = new MetricObjects();
     private static final JsonFormat.Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
+    private static final String TOPIC_MESSAGE =
+            "Loading ProduceIntoExternalKafkaAction with brokers [%s] port [%d] topic [%s]";
 
     @VisibleForTesting static final String ERROR_MSG =
             "Exception posting JSON [%s] to Kafka; received message [%s]";
@@ -66,6 +68,10 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
     @VisibleForTesting static Timer KAFKA_PRODUCER_POST = METRIC_OBJECTS.createAndRegisterBasicTimer(
             SUBSYSTEM, APPLICATION, CLASS_NAME, "KAFKA_PRODUCER_POST", TimeUnit.MICROSECONDS);
     @VisibleForTesting static Logger logger = LoggerFactory.getLogger(ProduceIntoExternalKafkaAction.class);
+    static
+    {
+        logger.info(TOPIC_MESSAGE, EKCP.brokers(), EKCP.port(), TOPIC);
+    }
     @VisibleForTesting static Factory factory = new Factory();
 
     static KafkaProducer<String, String> kafkaProducer = new KafkaProducer<>(getConfigurationMap());
