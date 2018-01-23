@@ -27,7 +27,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
-import static com.expedia.www.haystack.pipes.firehoseWriter.ProtobufToFirehoseProducer.CLIENT_ID;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.verify;
 
@@ -64,6 +63,6 @@ public class SpringConfigTest {
         final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter();
 
         assertSame(ProtobufToFirehoseProducer.class, kafkaStreamStarter.containingClass);
-        assertSame(CLIENT_ID, kafkaStreamStarter.clientId);
+        assertSame(APPLICATION, kafkaStreamStarter.clientId);
     }
 }

@@ -28,7 +28,6 @@ import org.springframework.context.annotation.Configuration;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
-import static com.expedia.www.haystack.pipes.firehoseWriter.ProtobufToFirehoseProducer.CLIENT_ID;
 
 @Configuration
 @ComponentScan(basePackageClasses = SpringConfig.class)
@@ -44,7 +43,7 @@ public class SpringConfig {
 
     @Bean
     public KafkaStreamStarter kafkaStreamStarter() {
-        return new KafkaStreamStarter(ProtobufToFirehoseProducer.class, CLIENT_ID);
+        return new KafkaStreamStarter(ProtobufToFirehoseProducer.class, APPLICATION);
     }
 
     @Bean
