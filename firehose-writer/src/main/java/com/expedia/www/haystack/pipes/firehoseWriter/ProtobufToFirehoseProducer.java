@@ -30,7 +30,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ProtobufToFirehoseProducer implements KafkaStreamBuilder {
-    static final String CLIENT_ID = "haystack-pipes-json-to-kafka-producer";
+    static final String CLIENT_ID = "haystack-pipes-protobuf-to-firehose-producer";
 
     private final KafkaStreamStarter kafkaStreamStarter;
     private final SpanSerdeFactory spanSerdeFactory;
