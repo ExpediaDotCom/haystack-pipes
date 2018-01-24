@@ -29,27 +29,28 @@ import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SpringConfigTest {
     @Mock
     private MetricObjects mockMetricObjects;
-    private MetricObjects realMetricObjects;
 
     private SpringConfig springConfig;
 
     @Before
     public void setUp() {
-        springConfig = new SpringConfig();
-        realMetricObjects = SpringConfig.metricObjects;
-        SpringConfig.metricObjects = mockMetricObjects;
+        springConfig = new SpringConfig(mockMetricObjects);
     }
 
     @After
     public void tearDown() {
-        SpringConfig.metricObjects = realMetricObjects;
+        verifyNoMoreInteractions(mockMetricObjects);
     }
 
+    /**
+     * Test that the request counter is created with the appropriate arguments
+     */
     @Test
     public void testRequestCounter() {
         springConfig.requestCounter();
@@ -58,6 +59,9 @@ public class SpringConfigTest {
                 FirehoseAction.class.getName(), "REQUEST");
     }
 
+    /**
+     * Test that the KafkaStreamStarter is created with the appropriate arguments
+     */
     @Test
     public void testKafkaStreamStarter() {
         final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter();
@@ -65,4 +69,8 @@ public class SpringConfigTest {
         assertSame(ProtobufToFirehoseProducer.class, kafkaStreamStarter.containingClass);
         assertSame(APPLICATION, kafkaStreamStarter.clientId);
     }
+
+    // All of the other beans in SpringConfig are default constructor calls, or use arguments provided by other Spring
+    // beans, so no other tests are necessary, because Spring is started by the unit test
+    // FirehoseIsActiveControllerTest.testMainCreatesApplicationContext() which verifies the Spring wiring is correct.
 }

@@ -21,7 +21,7 @@ import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
 import com.netflix.servo.monitor.Counter;
-import com.netflix.servo.util.VisibleForTesting;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -32,8 +32,12 @@ import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATIO
 @Configuration
 @ComponentScan(basePackageClasses = SpringConfig.class)
 public class SpringConfig {
-    @VisibleForTesting
-    static MetricObjects metricObjects = new MetricObjects();
+    private final MetricObjects metricObjects;
+
+    @Autowired
+    public SpringConfig(MetricObjects metricObjects) {
+        this.metricObjects = metricObjects;
+    }
 
     @Bean
     public Counter requestCounter() {
@@ -57,8 +61,9 @@ public class SpringConfig {
     }
 
     @Bean
-    public FirehoseAction firehoseAction() {
-        return new FirehoseAction(requestCounter());
+    @Autowired
+    public FirehoseAction firehoseAction(Counter requestCounter) {
+        return new FirehoseAction(requestCounter);
     }
 
     @Bean
@@ -67,9 +72,21 @@ public class SpringConfig {
     }
 
     @Bean
-    public ProtobufToFirehoseProducer protobufToFirehoseProducer() {
+    @Autowired
+    public ProtobufToFirehoseProducer protobufToFirehoseProducer(KafkaStreamStarter kafkaStreamStarter,
+                                                                 SpanSerdeFactory spanSerdeFactory,
+                                                                 FirehoseAction firehoseAction,
+                                                                 KafkaConfigurationProvider kafkaConfigurationProvider) {
         return new ProtobufToFirehoseProducer(
-                kafkaStreamStarter(), spanSerdeFactory(), firehoseAction(), kafkaConfigurationProvider());
+                kafkaStreamStarter, spanSerdeFactory, firehoseAction, kafkaConfigurationProvider);
     }
 
+    @Configuration
+    public static class MetricObjectsSpringConfig {
+        @Bean
+        public MetricObjects metricObjects() {
+            return new MetricObjects();
+        }
+    }
 }
+

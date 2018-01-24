@@ -59,15 +59,15 @@ public class FirehoseIsActiveControllerTest {
     @After
     public void tearDown() {
         verifyNoMoreInteractions(mockProtobufToFirehoseProducer, mockFactory, mockSpringApplication);
-        clearFirehostIsActiveControllerInStaticInstance();
+        clearFirehoseIsActiveControllerInStaticInstance();
     }
 
-    private void clearFirehostIsActiveControllerInStaticInstance() {
+    private void clearFirehoseIsActiveControllerInStaticInstance() {
         FirehoseIsActiveController.INSTANCE.set(null);
     }
 
     @Test
-    public void testMain() {
+    public void testMainWithMockObjects() {
         when(mockFactory.createSpringApplication()).thenReturn(mockSpringApplication);
 
         FirehoseIsActiveController.main(ARGS);
@@ -75,6 +75,13 @@ public class FirehoseIsActiveControllerTest {
         verify(mockProtobufToFirehoseProducer).main();
         verify(mockFactory).createSpringApplication();
         verify(mockSpringApplication).run(ARGS);
+    }
+
+    @Test
+    public void testMainCreatesApplicationContext() {
+        FirehoseIsActiveController.INSTANCE.set(null);
+
+        FirehoseIsActiveController.main(ARGS);
     }
 
     @Test

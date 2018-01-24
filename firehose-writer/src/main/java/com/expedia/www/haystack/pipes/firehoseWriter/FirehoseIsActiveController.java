@@ -49,9 +49,7 @@ public class FirehoseIsActiveController extends SpringBootServletInitializer {
     }
 
     public static void main(String[] args) {
-        final AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
-        applicationContext.register(SpringConfig.class);
-        applicationContext.refresh();
+        new AnnotationConfigApplicationContext(SpringConfig.class);
         INSTANCE.get().protobufToFirehoseProducer.main();
         INSTANCE.get().firehoseIsActiveControllerFactory.createSpringApplication().run(args);
     }
