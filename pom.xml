@@ -37,6 +37,7 @@
         <servo-version>0.12.17</servo-version>
         <slf4j-version>1.7.25</slf4j-version>
         <spring-boot-plugins-version>1.5.9.RELEASE</spring-boot-plugins-version>
+        <spring-context-version>5.0.2.RELEASE</spring-context-version>
         <zookeeper-version>3.4.9</zookeeper-version>
     </properties>
 
@@ -160,6 +161,11 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-web</artifactId>
                 <version>${spring-boot-plugins-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${spring-context-version}</version>
             </dependency>
 
             <!-- Test dependencies -->
