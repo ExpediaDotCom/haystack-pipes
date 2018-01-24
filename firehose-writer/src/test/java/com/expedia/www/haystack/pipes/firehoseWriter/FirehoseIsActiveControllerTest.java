@@ -78,13 +78,6 @@ public class FirehoseIsActiveControllerTest {
     }
 
     @Test
-    public void testMainCreatesApplicationContext() {
-        FirehoseIsActiveController.INSTANCE.set(null);
-
-        FirehoseIsActiveController.main(ARGS);
-    }
-
-    @Test
     public void testFactoryCreateSpringApplication() {
         final SpringApplication springApplication = factory.createSpringApplication();
 

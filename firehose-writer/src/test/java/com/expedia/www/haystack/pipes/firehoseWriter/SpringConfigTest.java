@@ -70,7 +70,6 @@ public class SpringConfigTest {
         assertSame(APPLICATION, kafkaStreamStarter.clientId);
     }
 
-    // All of the other beans in SpringConfig are default constructor calls, or use arguments provided by other Spring
-    // beans, so no other tests are necessary, because Spring is started by the unit test
-    // FirehoseIsActiveControllerTest.testMainCreatesApplicationContext() which verifies the Spring wiring is correct.
+    // All of the other beans in SpringConfig use default constructors, or use arguments provided by other Spring beans
+    // in SpringConfig, so tests on the methods that create those beans have little value.
 }

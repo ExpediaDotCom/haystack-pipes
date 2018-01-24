@@ -29,60 +29,75 @@ import org.springframework.context.annotation.Configuration;
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
 
+/**
+ * Spring configuration class. The FirehoseIsActiveControllerTest.testMainWithMockObjects() unit test creates a new
+ * AnnotationConfigApplicationContext that loads this class and instantiates all Spring beans defined in it,
+ * so less than 100% unit test coverage of this class indicates a Spring configuration bean that is not used.
+ */
 @Configuration
 @ComponentScan(basePackageClasses = SpringConfig.class)
-public class SpringConfig {
+class SpringConfig {
     private final MetricObjects metricObjects;
 
+    /**
+     * @param metricObjects provided by a static inner class that is loaded first
+     * @see MetricObjectsSpringConfig
+     */
     @Autowired
-    public SpringConfig(MetricObjects metricObjects) {
+    SpringConfig(MetricObjects metricObjects) {
         this.metricObjects = metricObjects;
     }
 
     @Bean
-    public Counter requestCounter() {
-        return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                FirehoseAction.class.getName(), "REQUEST");
-    }
-
-    @Bean
-    public KafkaStreamStarter kafkaStreamStarter() {
-        return new KafkaStreamStarter(ProtobufToFirehoseProducer.class, APPLICATION);
-    }
-
-    @Bean
-    public SpanSerdeFactory spanSerdeFactory() {
+    SpanSerdeFactory spanSerdeFactory() {
         return new SpanSerdeFactory();
     }
 
     @Bean
-    public FirehoseIsActiveController.Factory firehoseIsActiveControllerFactory() {
+    FirehoseIsActiveController.Factory firehoseIsActiveControllerFactory() {
         return new FirehoseIsActiveController.Factory();
     }
 
     @Bean
     @Autowired
-    public FirehoseAction firehoseAction(Counter requestCounter) {
+    FirehoseAction firehoseAction(Counter requestCounter) {
         return new FirehoseAction(requestCounter);
     }
 
     @Bean
-    public KafkaConfigurationProvider kafkaConfigurationProvider() {
+    KafkaConfigurationProvider kafkaConfigurationProvider() {
         return new KafkaConfigurationProvider();
     }
 
     @Bean
+    Counter requestCounter() {
+        return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
+                FirehoseAction.class.getName(), "REQUEST");
+    }
+
+    @Bean
+    KafkaStreamStarter kafkaStreamStarter() {
+        return new KafkaStreamStarter(ProtobufToFirehoseProducer.class, APPLICATION);
+    }
+
+    @Bean
     @Autowired
-    public ProtobufToFirehoseProducer protobufToFirehoseProducer(KafkaStreamStarter kafkaStreamStarter,
-                                                                 SpanSerdeFactory spanSerdeFactory,
-                                                                 FirehoseAction firehoseAction,
-                                                                 KafkaConfigurationProvider kafkaConfigurationProvider) {
+    ProtobufToFirehoseProducer protobufToFirehoseProducer(KafkaStreamStarter kafkaStreamStarter,
+                                                          SpanSerdeFactory spanSerdeFactory,
+                                                          FirehoseAction firehoseAction,
+                                                          KafkaConfigurationProvider kafkaConfigurationProvider) {
         return new ProtobufToFirehoseProducer(
                 kafkaStreamStarter, spanSerdeFactory, firehoseAction, kafkaConfigurationProvider);
     }
 
+    /**
+     * Spring loads this static inner class before loading the SpringConfig outer class so that its bean is available to
+     * the outer class constructor.
+     *
+     * @see SpringConfig
+     */
     @Configuration
-    public static class MetricObjectsSpringConfig {
+    static class MetricObjectsSpringConfig {
         @Bean
         public MetricObjects metricObjects() {
             return new MetricObjects();
