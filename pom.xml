@@ -21,13 +21,16 @@
         <coveralls-maven-plugin-version>4.3.0</coveralls-maven-plugin-version>
         <haystack-metrics-version>0.5.0</haystack-metrics-version>
         <haystack-logback-metrics-appender-version>0.1.10</haystack-logback-metrics-appender-version>
+        <haystack-log4j-metrics-appender-version>0.1.6</haystack-log4j-metrics-appender-version>
         <haystack-pipes-commons-version>1.0-SNAPSHOT</haystack-pipes-commons-version>
         <jacoco-maven-plugin-version>0.7.9</jacoco-maven-plugin-version>
         <jacoco-percentage>1.0</jacoco-percentage>
+        <jackson-version>2.9.1</jackson-version>
         <java-version>1.8</java-version>
         <junit-version>4.12</junit-version>
         <kafka-version>0.10.2.1</kafka-version>
         <logback-version>1.2.3</logback-version>
+        <log4j-version>2.10.0</log4j-version>
         <maven-compiler-plugin-version>3.6.1</maven-compiler-plugin-version>
         <maven-jar-plugin-version>3.0.2</maven-jar-plugin-version>
         <mockito-version>1.9.5</mockito-version>
@@ -72,6 +75,11 @@
             </dependency>
             <dependency>
                 <groupId>com.expedia.www</groupId>
+                <artifactId>haystack-log4j-metrics-appender</artifactId>
+                <version>${haystack-log4j-metrics-appender-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.expedia.www</groupId>
                 <artifactId>haystack-metrics</artifactId>
                 <version>${haystack-metrics-version}</version>
             </dependency>
@@ -79,6 +87,16 @@
                 <groupId>com.expedia.www</groupId>
                 <artifactId>haystack-pipes-commons</artifactId>
                 <version>${haystack-pipes-commons-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
+                <version>${jackson-version}</version>
             </dependency>
             <dependency>
                 <groupId>com.google.protobuf</groupId>
@@ -127,6 +145,26 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j-impl</artifactId>
+                <version>${log4j-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>${log4j-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>${log4j-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-web</artifactId>
+                <version>${log4j-version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.zookeeper</groupId>
                 <artifactId>zookeeper</artifactId>
                 <version>${zookeeper-version}</version>
@@ -152,6 +190,11 @@
                 <version>${slf4j-version}</version>
             </dependency>
             <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-ext</artifactId>
+                <version>${slf4j-version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-parent</artifactId>
                 <version>${spring-boot-plugins-version}</version>
@@ -161,6 +204,12 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-web</artifactId>
                 <version>${spring-boot-plugins-version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>ch.qos.logback</groupId>
+                        <artifactId>logback-classic</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>

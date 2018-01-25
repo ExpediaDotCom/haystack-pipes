@@ -19,16 +19,23 @@ package com.expedia.www.haystack.pipes.firehoseWriter;
 import com.expedia.open.tracing.Span;
 import com.netflix.servo.monitor.Counter;
 import org.apache.kafka.streams.kstream.ForeachAction;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class FirehoseAction implements ForeachAction<String, Span> {
+    private final Logger logger;
     private final Counter requestCounter;
+    private final FirehoseCollector firehoseCollector;
 
     @Autowired
-    FirehoseAction(Counter requestCounter) {
+    FirehoseAction(Logger firehoseActionLogger,
+                   Counter requestCounter,
+                   FirehoseCollector firehoseCollector) {
+        this.logger = firehoseActionLogger;
         this.requestCounter = requestCounter;
+        this.firehoseCollector = firehoseCollector;
     }
 
     @Override

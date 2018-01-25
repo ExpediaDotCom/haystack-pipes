@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
 
 import java.util.Random;
 
@@ -36,18 +37,22 @@ public class FirehoseActionTest {
     private static final String KEY = RANDOM.nextLong() + "KEY";
 
     @Mock
+    private Logger mockLogger;
+    @Mock
     private Counter mockCounter;
+    @Mock
+    private FirehoseCollector firehoseCollector;
 
     private FirehoseAction firehoseAction;
 
     @Before
     public void setUp() {
-        firehoseAction = new FirehoseAction(mockCounter);
+        firehoseAction = new FirehoseAction(mockLogger, mockCounter, firehoseCollector);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockCounter);
+        verifyNoMoreInteractions(mockLogger, mockCounter, firehoseCollector);
     }
 
     @Test

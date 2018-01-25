@@ -21,6 +21,8 @@ import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
 import com.netflix.servo.monitor.Counter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -48,6 +50,39 @@ class SpringConfig {
         this.metricObjects = metricObjects;
     }
 
+    // Beans with unit tests
+    @Bean
+    Counter requestCounter() {
+        return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
+                FirehoseAction.class.getName(), "REQUEST");
+    }
+
+    @Bean
+    KafkaStreamStarter kafkaStreamStarter() {
+        return new KafkaStreamStarter(ProtobufToFirehoseProducer.class, APPLICATION);
+    }
+
+    @Bean
+    Logger firehoseActionLogger() {
+        return LoggerFactory.getLogger(FirehoseAction.class);
+    }
+
+    @Bean
+    Logger protobufToFirehoseProducerLogger() {
+        return LoggerFactory.getLogger(ProtobufToFirehoseProducer.class);
+    }
+
+    @Bean
+    Logger firehoseIsActiveControllerLogger() {
+        return LoggerFactory.getLogger(FirehoseIsActiveController.class);
+    }
+
+    // Beans without unit tests
+    @Bean
+    FirehoseCollector firehoseCollector() {
+        return new FirehoseCollector();
+    }
+
     @Bean
     SpanSerdeFactory spanSerdeFactory() {
         return new SpanSerdeFactory();
@@ -60,24 +95,15 @@ class SpringConfig {
 
     @Bean
     @Autowired
-    FirehoseAction firehoseAction(Counter requestCounter) {
-        return new FirehoseAction(requestCounter);
+    FirehoseAction firehoseAction(Logger firehoseActionLogger,
+                                  Counter requestCounter,
+                                  FirehoseCollector firehoseCollector) {
+        return new FirehoseAction(firehoseActionLogger, requestCounter, firehoseCollector);
     }
 
     @Bean
     KafkaConfigurationProvider kafkaConfigurationProvider() {
         return new KafkaConfigurationProvider();
-    }
-
-    @Bean
-    Counter requestCounter() {
-        return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                FirehoseAction.class.getName(), "REQUEST");
-    }
-
-    @Bean
-    KafkaStreamStarter kafkaStreamStarter() {
-        return new KafkaStreamStarter(ProtobufToFirehoseProducer.class, APPLICATION);
     }
 
     @Bean
