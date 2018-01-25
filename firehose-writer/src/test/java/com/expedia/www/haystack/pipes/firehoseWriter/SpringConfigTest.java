@@ -24,9 +24,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -48,9 +50,6 @@ public class SpringConfigTest {
         verifyNoMoreInteractions(mockMetricObjects);
     }
 
-    /**
-     * Test that the request counter is created with the appropriate arguments
-     */
     @Test
     public void testRequestCounter() {
         springConfig.requestCounter();
@@ -59,15 +58,26 @@ public class SpringConfigTest {
                 FirehoseAction.class.getName(), "REQUEST");
     }
 
-    /**
-     * Test that the KafkaStreamStarter is created with the appropriate arguments
-     */
     @Test
     public void testKafkaStreamStarter() {
         final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter();
 
         assertSame(ProtobufToFirehoseProducer.class, kafkaStreamStarter.containingClass);
         assertSame(APPLICATION, kafkaStreamStarter.clientId);
+    }
+
+    @Test
+    public void testFirehoseActionLogger() {
+        final Logger logger = springConfig.firehoseActionLogger();
+
+        assertEquals(FirehoseAction.class.getName(), logger.getName());
+    }
+
+    @Test
+    public void testProtobufToFirehoseProducerLogger() {
+        final Logger logger = springConfig.protobufToFirehoseProducerLogger();
+
+        assertEquals(ProtobufToFirehoseProducer.class.getName(), logger.getName());
     }
 
     // All of the other beans in SpringConfig use default constructors, or use arguments provided by other Spring beans

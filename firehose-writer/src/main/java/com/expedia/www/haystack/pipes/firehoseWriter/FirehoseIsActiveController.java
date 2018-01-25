@@ -17,6 +17,7 @@
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
 import com.netflix.servo.util.VisibleForTesting;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -35,21 +36,26 @@ import java.util.concurrent.atomic.AtomicReference;
 public class FirehoseIsActiveController extends SpringBootServletInitializer {
     // Singleton, initialized on first constructor call, so that future instances created by Spring during unit tests
     // will not overwrite the initial INSTANCE (with mocks) created by the unit tests.
-    @VisibleForTesting final static AtomicReference<FirehoseIsActiveController> INSTANCE = new AtomicReference<>();
+    @VisibleForTesting static final AtomicReference<FirehoseIsActiveController> INSTANCE = new AtomicReference<>();
+    @VisibleForTesting static final String STARTUP_MSG = "Starting FirehoseIsActiveController";
 
     private final ProtobufToFirehoseProducer protobufToFirehoseProducer;
     private final Factory firehoseIsActiveControllerFactory;
+    private final Logger logger;
 
     @Autowired
     public FirehoseIsActiveController(ProtobufToFirehoseProducer protobufToFirehoseProducer,
-                                      Factory firehoseIsActiveControllerFactory) {
+                                      Factory firehoseIsActiveControllerFactory,
+                                      Logger firehoseIsActiveControllerLogger) {
         this.protobufToFirehoseProducer = protobufToFirehoseProducer;
         this.firehoseIsActiveControllerFactory = firehoseIsActiveControllerFactory;
+        this.logger = firehoseIsActiveControllerLogger;
         INSTANCE.compareAndSet(null, this);
     }
 
     public static void main(String[] args) {
         new AnnotationConfigApplicationContext(SpringConfig.class);
+        INSTANCE.get().logger.info(STARTUP_MSG);
         INSTANCE.get().protobufToFirehoseProducer.main();
         INSTANCE.get().firehoseIsActiveControllerFactory.createSpringApplication().run(args);
     }

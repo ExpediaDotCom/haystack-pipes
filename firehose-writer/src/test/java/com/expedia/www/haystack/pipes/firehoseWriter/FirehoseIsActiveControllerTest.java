@@ -23,10 +23,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
 import org.springframework.boot.SpringApplication;
 
 import java.util.Set;
 
+import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseIsActiveController.STARTUP_MSG;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.verify;
@@ -43,6 +45,8 @@ public class FirehoseIsActiveControllerTest {
     private Factory mockFactory;
     @Mock
     private SpringApplication mockSpringApplication;
+    @Mock
+    private Logger mockLogger;
 
     private Factory factory;
 
@@ -53,12 +57,12 @@ public class FirehoseIsActiveControllerTest {
     }
 
     private void storeFirehoseIsActiveControllerWithMocksInStaticInstance() {
-        new FirehoseIsActiveController(mockProtobufToFirehoseProducer, mockFactory);
+        new FirehoseIsActiveController(mockProtobufToFirehoseProducer, mockFactory, mockLogger);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockProtobufToFirehoseProducer, mockFactory, mockSpringApplication);
+        verifyNoMoreInteractions(mockProtobufToFirehoseProducer, mockFactory, mockSpringApplication, mockLogger);
         clearFirehoseIsActiveControllerInStaticInstance();
     }
 
@@ -72,6 +76,7 @@ public class FirehoseIsActiveControllerTest {
 
         FirehoseIsActiveController.main(ARGS);
 
+        verify(mockLogger).info(STARTUP_MSG);
         verify(mockProtobufToFirehoseProducer).main();
         verify(mockFactory).createSpringApplication();
         verify(mockSpringApplication).run(ARGS);
