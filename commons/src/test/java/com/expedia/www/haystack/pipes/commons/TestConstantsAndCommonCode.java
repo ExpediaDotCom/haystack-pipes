@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Expedia, Inc.
+ * Copyright 2018 Expedia, Inc.
  *
  *       Licensed under the Apache License, Version 2.0 (the "License");
  *       you may not use this file except in compliance with the License.
@@ -31,6 +31,13 @@ public class TestConstantsAndCommonCode {
             "{\"key\":\"doubleKey\",\"vDouble\":9876.54321}," +
             "{\"key\":\"boolKey\",\"vBool\":true}," +
             "{\"key\":\"bytesKey\",\"vBytes\":\"AAEC/f7/\"}]}";
+    private static final String BOGUS_TAGS = "[{\"key\":\"bogusKey\",\"vBogus\":\"bogusValue\"}]}";
+    private static final String FLATTENED_TAGS = "{"
+            + "\"strKey\":\"tagValue\","
+            + "\"longKey\":987654321,"
+            + "\"doubleKey\":9876.54321,"
+            + "\"boolKey\":true,"
+            + "\"bytesKey\":\"AAEC/f7/\"}}";
     public final static String JSON_SPAN_STRING = "{\"traceId\":\"unique-trace-id\"," +
             "\"spanId\":\"unique-span-id\"," +
             "\"parentSpanId\":\"unique-parent-span-id\"," +
@@ -40,7 +47,12 @@ public class TestConstantsAndCommonCode {
             "\"duration\":\"234\"," +
             "\"logs\":" + LOGS +
             "\"tags\":" + TAGS;
+    public static final String JSON_SPAN_STRING_WITH_FLATTENED_TAGS = JSON_SPAN_STRING.replace(TAGS, FLATTENED_TAGS);
+    public static final String JSON_SPAN_STRING_WITH_NO_TAGS = JSON_SPAN_STRING.replace(",\"tags\":" + TAGS, "}");
+    public static final String JSON_SPAN_STRING_WITH_EMPTY_TAGS = JSON_SPAN_STRING.replace(TAGS, "{}}");
     public final static Span FULLY_POPULATED_SPAN;
+    public static final String JSON_SPAN_STRING_WITH_BOGUS_TAGS = JSON_SPAN_STRING.replace(TAGS, BOGUS_TAGS);
+
     static {
         final Span.Builder builder = Span.newBuilder();
         try {

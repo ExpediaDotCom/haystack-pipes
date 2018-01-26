@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Expedia, Inc.
+ * Copyright 2018 Expedia, Inc.
  *
  *       Licensed under the Apache License, Version 2.0 (the "License");
  *       you may not use this file except in compliance with the License.
@@ -42,8 +42,6 @@ import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKa
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.kafkaProducer;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.logger;
 import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
-import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_BOGUS_TAGS;
-import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_EMPTY_TAGS;
 import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_FLATTENED_TAGS;
 import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_NO_TAGS;
 import static com.expedia.www.haystack.pipes.kafkaProducer.TestConstantsAndCommonCode.NO_TAGS_SPAN;
@@ -215,12 +213,6 @@ public class ProduceIntoExternalKafkaActionTest {
 
         assertEquals(KEY, producerRecord.key());
         assertEquals(VALUE, producerRecord.value());
-    }
-
-    @Test
-    public void testFlattenTagsWithBogusTag() {
-        final String flattenedTags = ProduceIntoExternalKafkaAction.flattenTags(JSON_SPAN_STRING_WITH_BOGUS_TAGS);
-        assertEquals(JSON_SPAN_STRING_WITH_EMPTY_TAGS, flattenedTags);
     }
 
     @Test

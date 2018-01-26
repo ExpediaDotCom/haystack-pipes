@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Expedia, Inc.
+ * Copyright 2018 Expedia, Inc.
  *
  *       Licensed under the Apache License, Version 2.0 (the "License");
  *       you may not use this file except in compliance with the License.
@@ -18,10 +18,7 @@ package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.metrics.MetricObjects;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.expedia.www.haystack.pipes.commons.kafka.TagFlattener;
 import com.google.protobuf.util.JsonFormat;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Stopwatch;
@@ -76,13 +73,15 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
 
     static KafkaProducer<String, String> kafkaProducer = new KafkaProducer<>(getConfigurationMap());
 
+    private final TagFlattener tagFlattener = new TagFlattener();
+
     public void apply(String key, Span value) {
         REQUEST.increment();
         final Stopwatch stopwatch = KAFKA_PRODUCER_POST.start();
         String jsonWithFlattenedTags = "";
         try {
             final String jsonWithOpenTracingTags = printer.print(value);
-            jsonWithFlattenedTags = flattenTags(jsonWithOpenTracingTags);
+            jsonWithFlattenedTags = tagFlattener.flattenTags(jsonWithOpenTracingTags);
             final ProducerRecord<String, String> producerRecord =
                     factory.createProducerRecord(key, jsonWithFlattenedTags);
 
@@ -98,46 +97,6 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
         } finally {
             stopwatch.stop();
         }
-    }
-
-    static String flattenTags(String jsonWithOpenTracingTags) {
-        final String tagsKey = "tags";
-        final JsonObject jsonObject = new Gson().fromJson(jsonWithOpenTracingTags, JsonObject.class);
-        final JsonArray jsonArray = jsonObject.getAsJsonArray(tagsKey);
-        final JsonElement openTracingTags = jsonObject.remove(tagsKey);
-        if(openTracingTags != null) {
-            final JsonObject flattenedTagMap = new JsonObject();
-            jsonObject.add(tagsKey, flattenedTagMap);
-            for (final JsonElement jsonElement : jsonArray) {
-                final JsonObject tagMap = jsonElement.getAsJsonObject();
-                final String key = tagMap.get("key").getAsString();
-                final JsonElement vStr = tagMap.get("vStr");
-                if (vStr != null) {
-                    flattenedTagMap.addProperty(key, vStr.getAsString());
-                    continue;
-                }
-                final JsonElement vLong = tagMap.get("vLong");
-                if (vLong != null) {
-                    flattenedTagMap.addProperty(key, vLong.getAsLong());
-                    continue;
-                }
-                final JsonElement vDouble = tagMap.get("vDouble");
-                if (vDouble != null) {
-                    flattenedTagMap.addProperty(key, vDouble.getAsDouble());
-                    continue;
-                }
-                final JsonElement vBool = tagMap.get("vBool");
-                if (vBool != null) {
-                    flattenedTagMap.addProperty(key, vBool.getAsBoolean());
-                    continue;
-                }
-                final JsonElement vBytes = tagMap.get("vBytes");
-                if(vBytes != null) {
-                    flattenedTagMap.addProperty(key, vBytes.getAsString());
-                }
-            }
-        }
-        return jsonObject.toString();
     }
 
     private static Map<String, Object> getConfigurationMap() {

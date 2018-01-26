@@ -15,7 +15,7 @@ haystack:
      queuesize: 10
      sendasrate: false
   externalkafka:
-    brokers: "haystack.local" # will point to external Kafka in typical usage
+    brokers: "haystack.local:9092" # will point to external Kafka in typical usage
     port: 9092
     totopic: "externalKafkaTopic"
     acks: "0"
