@@ -9,7 +9,6 @@
     <version>1.0-SNAPSHOT</version>
 
     <name>haystack-pipes-kafka-producer</name>
-    <url>http://maven.apache.org</url>
 
     <parent>
         <artifactId>haystack-pipes</artifactId>
