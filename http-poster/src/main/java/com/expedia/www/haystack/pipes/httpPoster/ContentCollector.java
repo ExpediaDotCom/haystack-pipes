@@ -16,6 +16,8 @@
  */
 package com.expedia.www.haystack.pipes.httpPoster;
 
+import org.apache.commons.lang3.StringUtils;
+
 class ContentCollector {
     private final int maxBytesInPost;
     private final StringBuilder postPayload;
@@ -31,31 +33,36 @@ class ContentCollector {
         postPayload.append('[');
     }
 
-    private boolean shouldCreateNewBatchDueToDataSize(String jsonToAdd) {
+    private boolean shouldCreateNewBatchDueToDataSize(String trimmedJsonToAdd) {
         int newPayloadLength = postPayload.length();
-        if(postPayloadContainsAtLeastOneRecord()) {
+        if(isCommaRequired(trimmedJsonToAdd)) {
             newPayloadLength += 1; // comma
         }
-        newPayloadLength += jsonToAdd.length();
+        newPayloadLength += trimmedJsonToAdd.length();
         newPayloadLength += 1; // closing ]
         return newPayloadLength > maxBytesInPost;
     }
 
     String addAndReturnBatch(String jsonToAdd) {
+        final String trimmedJsonToAdd = jsonToAdd.trim();
         final String jsonToPost;
-        if (shouldCreateNewBatchDueToDataSize(jsonToAdd)) {
+        if (shouldCreateNewBatchDueToDataSize(trimmedJsonToAdd)) {
             postPayload.append(']');
             jsonToPost = postPayload.toString();
             initialize();
-            postPayload.append(jsonToAdd);
+            postPayload.append(trimmedJsonToAdd);
         } else {
             jsonToPost = "";
-            if(postPayloadContainsAtLeastOneRecord()) {
+            if(isCommaRequired(trimmedJsonToAdd)) {
                 postPayload.append(',');
             }
-            postPayload.append(jsonToAdd);
+            postPayload.append(trimmedJsonToAdd);
         }
         return jsonToPost;
+    }
+
+    private boolean isCommaRequired(String jsonToAdd) {
+        return postPayloadContainsAtLeastOneRecord() && !StringUtils.isBlank(jsonToAdd);
     }
 
     private boolean postPayloadContainsAtLeastOneRecord() { // i.e. not just "["

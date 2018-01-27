@@ -18,6 +18,9 @@ import static org.mockito.Mockito.when;
 public class ContentCollectorTest {
     private static final String SMALLEST_POSSIBLE_JSON = "{}";
     private static final int SMALLEST_POSSIBLE_MAX_BYTES = SMALLEST_POSSIBLE_JSON.length() + "[]".length();
+    private static final String PERIOD = ".";
+    private static final String SPACES = "          ";
+    private static final String NEW_LINE = "\n";
 
     @Mock
     private HttpPostConfigurationProvider mockHttpPostConfigurationProvider;
@@ -44,7 +47,7 @@ public class ContentCollectorTest {
         contentCollector = new ContentCollector(mockHttpPostConfigurationProvider);
 
         assertEquals("", contentCollector.addAndReturnBatch(SMALLEST_POSSIBLE_JSON));
-        assertEquals('[' + SMALLEST_POSSIBLE_JSON + ']', contentCollector.addAndReturnBatch(""));
+        assertEquals('[' + SMALLEST_POSSIBLE_JSON + ']', contentCollector.addAndReturnBatch("."));
     }
 
     @Test
@@ -54,9 +57,15 @@ public class ContentCollectorTest {
         when(mockHttpPostConfigurationProvider.maxbytes()).thenReturn(expected.length());
         contentCollector = new ContentCollector(mockHttpPostConfigurationProvider);
 
+        assertEquals("", contentCollector.addAndReturnBatch(SPACES));
+        assertEquals("", contentCollector.addAndReturnBatch(NEW_LINE));
         assertEquals("", contentCollector.addAndReturnBatch(SMALLEST_POSSIBLE_JSON));
+        assertEquals("", contentCollector.addAndReturnBatch(SPACES));
+        assertEquals("", contentCollector.addAndReturnBatch(NEW_LINE));
         assertEquals("", contentCollector.addAndReturnBatch(SMALLEST_POSSIBLE_JSON));
-        assertEquals(expected, contentCollector.addAndReturnBatch(""));
+        assertEquals("", contentCollector.addAndReturnBatch(SPACES));
+        assertEquals("", contentCollector.addAndReturnBatch(NEW_LINE));
+        assertEquals(expected, contentCollector.addAndReturnBatch(PERIOD));
     }
 
 }
