@@ -68,6 +68,15 @@ public class FirehoseCollectorTest {
         testShouldCreateNewBatchDueToRecordCount(MAX_RECORDS_IN_BATCH - 2, false);
     }
 
+    @Test
+    public void testShouldCreateNewBatchDueToRecordCountNoMoreRoom() {
+        testShouldCreateNewBatchDueToRecordCount(MAX_RECORDS_IN_BATCH - 1, true);
+        final List<Record> batch = firehoseCollector.addRecordAndReturnBatch(mockRecord);
+        assertEquals(MAX_RECORDS_IN_BATCH, batch.size());
+        verify(mockRecord, times(2 * MAX_RECORDS_IN_BATCH)).getData();
+
+    }
+
     private void testShouldCreateNewBatchDueToRecordCount(int recordCount, boolean expected) {
         when(mockRecord.getData()).thenReturn(EMPTY_DATA);
         for (int i = 0; i < recordCount; i++) {
@@ -79,16 +88,4 @@ public class FirehoseCollectorTest {
 
         verify(mockRecord, times(2 * recordCount)).getData();
     }
-
-    @Test
-    public void testGetRemainingRecords() {
-        testShouldCreateNewBatchDueToRecordCount(MAX_RECORDS_IN_BATCH - 1, true);
-        final List<Record> batch = firehoseCollector.addRecordAndReturnBatch(mockRecord);
-        assertEquals(MAX_RECORDS_IN_BATCH, batch.size());
-
-        assertEquals(0, firehoseCollector.getRemainingRecords().size());
-
-        verify(mockRecord, times(2 * MAX_RECORDS_IN_BATCH)).getData();
-    }
-
 }

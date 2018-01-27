@@ -16,10 +16,49 @@
  */
 package com.expedia.www.haystack.pipes.httpPoster;
 
-public class ContentCollector {
+class ContentCollector {
     private final int maxBytesInPost;
+    private final StringBuilder postPayload;
 
-    public ContentCollector(HttpPostConfigurationProvider httpPostConfigurationProvider) {
+    ContentCollector(HttpPostConfigurationProvider httpPostConfigurationProvider) {
         this.maxBytesInPost = httpPostConfigurationProvider.maxbytes();
+        postPayload = new StringBuilder(maxBytesInPost);
+        initialize();
+    }
+
+    private void initialize() {
+        postPayload.setLength(0);
+        postPayload.append('[');
+    }
+
+    private boolean shouldCreateNewBatchDueToDataSize(String jsonToAdd) {
+        int newPayloadLength = postPayload.length();
+        if(postPayloadContainsAtLeastOneRecord()) {
+            newPayloadLength += 1; // comma
+        }
+        newPayloadLength += jsonToAdd.length();
+        newPayloadLength += 1; // closing ]
+        return newPayloadLength > maxBytesInPost;
+    }
+
+    String addAndReturnBatch(String jsonToAdd) {
+        final String jsonToPost;
+        if (shouldCreateNewBatchDueToDataSize(jsonToAdd)) {
+            postPayload.append(']');
+            jsonToPost = postPayload.toString();
+            initialize();
+            postPayload.append(jsonToAdd);
+        } else {
+            jsonToPost = "";
+            if(postPayloadContainsAtLeastOneRecord()) {
+                postPayload.append(',');
+            }
+            postPayload.append(jsonToAdd);
+        }
+        return jsonToPost;
+    }
+
+    private boolean postPayloadContainsAtLeastOneRecord() { // i.e. not just "["
+        return postPayload.length() > 1;
     }
 }

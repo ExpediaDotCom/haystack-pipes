@@ -7,38 +7,56 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Random;
-
-import static org.junit.Assert.assertNotNull;
+import static com.expedia.www.haystack.pipes.httpPoster.HttpPostConfigurationProviderTest.LARGEST_POSSIBLE_MAX_BYTES;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContentCollectorTest {
-    private static final Random RANDOM = new Random();
-    private static final int MAX_BYTES = RANDOM.nextInt(Integer.MAX_VALUE);
+    private static final String SMALLEST_POSSIBLE_JSON = "{}";
+    private static final int SMALLEST_POSSIBLE_MAX_BYTES = SMALLEST_POSSIBLE_JSON.length() + "[]".length();
 
     @Mock
     private HttpPostConfigurationProvider mockHttpPostConfigurationProvider;
 
     private ContentCollector contentCollector;
+    private int timesMaxBytes = 1;
 
     @Before
     public void setUp() {
-        when(mockHttpPostConfigurationProvider.maxbytes()).thenReturn(MAX_BYTES);
+        when(mockHttpPostConfigurationProvider.maxbytes()).thenReturn(LARGEST_POSSIBLE_MAX_BYTES);
         contentCollector = new ContentCollector(mockHttpPostConfigurationProvider);
     }
 
     @After
     public void tearDown() {
-        verify(mockHttpPostConfigurationProvider).maxbytes();
+        verify(mockHttpPostConfigurationProvider, times(timesMaxBytes)).maxbytes();
         verifyNoMoreInteractions(mockHttpPostConfigurationProvider);
     }
 
     @Test
-    public void doNothingTest() {
-        assertNotNull(contentCollector);
+    public void testAddAndReturnBatchOneRecord() {
+        timesMaxBytes = 2;
+        when(mockHttpPostConfigurationProvider.maxbytes()).thenReturn(SMALLEST_POSSIBLE_MAX_BYTES);
+        contentCollector = new ContentCollector(mockHttpPostConfigurationProvider);
+
+        assertEquals("", contentCollector.addAndReturnBatch(SMALLEST_POSSIBLE_JSON));
+        assertEquals('[' + SMALLEST_POSSIBLE_JSON + ']', contentCollector.addAndReturnBatch(""));
+    }
+
+    @Test
+    public void testAddAndReturnBatchTwoRecords() {
+        timesMaxBytes = 2;
+        final String expected = '[' + SMALLEST_POSSIBLE_JSON + ',' + SMALLEST_POSSIBLE_JSON + ']';
+        when(mockHttpPostConfigurationProvider.maxbytes()).thenReturn(expected.length());
+        contentCollector = new ContentCollector(mockHttpPostConfigurationProvider);
+
+        assertEquals("", contentCollector.addAndReturnBatch(SMALLEST_POSSIBLE_JSON));
+        assertEquals("", contentCollector.addAndReturnBatch(SMALLEST_POSSIBLE_JSON));
+        assertEquals(expected, contentCollector.addAndReturnBatch(""));
     }
 
 }
