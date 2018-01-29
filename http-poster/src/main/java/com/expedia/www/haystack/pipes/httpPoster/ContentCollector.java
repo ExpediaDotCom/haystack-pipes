@@ -35,7 +35,7 @@ class ContentCollector {
 
     private boolean shouldCreateNewBatchDueToDataSize(String trimmedJsonToAdd) {
         int newPayloadLength = postPayload.length();
-        if(isCommaRequired(trimmedJsonToAdd)) {
+        if (isCommaRequired(trimmedJsonToAdd)) {
             newPayloadLength += 1; // comma
         }
         newPayloadLength += trimmedJsonToAdd.length();
@@ -53,7 +53,7 @@ class ContentCollector {
             postPayload.append(trimmedJsonToAdd);
         } else {
             jsonToPost = "";
-            if(isCommaRequired(trimmedJsonToAdd)) {
+            if (isCommaRequired(trimmedJsonToAdd)) {
                 postPayload.append(',');
             }
             postPayload.append(trimmedJsonToAdd);
@@ -61,6 +61,13 @@ class ContentCollector {
         return jsonToPost;
     }
 
+    /**
+     * Determine if a comma is required; this method could be changed to no longer call isBlank() if the caller can be
+     * trusted to never send whitespace around the JSON.
+     *
+     * @param jsonToAdd the JSON to add
+     * @return true if the JSON is not blank
+     */
     private boolean isCommaRequired(String jsonToAdd) {
         return postPayloadContainsAtLeastOneRecord() && !StringUtils.isBlank(jsonToAdd);
     }
