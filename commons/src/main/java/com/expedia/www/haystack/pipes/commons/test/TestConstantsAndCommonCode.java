@@ -1,26 +1,14 @@
-/*
- * Copyright 2018 Expedia, Inc.
- *
- *       Licensed under the Apache License, Version 2.0 (the "License");
- *       you may not use this file except in compliance with the License.
- *       You may obtain a copy of the License at
- *
- *           http://www.apache.org/licenses/LICENSE-2.0
- *
- *       Unless required by applicable law or agreed to in writing, software
- *       distributed under the License is distributed on an "AS IS" BASIS,
- *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *       See the License for the specific language governing permissions and
- *       limitations under the License.
- *
- */
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.commons.test;
 
 import com.expedia.open.tracing.Span;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 
-class TestConstantsAndCommonCode {
+/**
+ * Constants used by tests in subpackages, included in functional code to avoid having to publish a jar file from the
+ * test directory.
+ */
+public class TestConstantsAndCommonCode {
     private static final String LOGS = "[{\"timestamp\":\"234567890\",\"fields\":" +
             "[{\"key\":\"strField\",\"vStr\":\"logFieldValue\"},{\"key\":\"longField\",\"vLong\":\"4567890\"}]},"
             + "{\"timestamp\":\"234567891\",\"fields\":" +
@@ -38,7 +26,7 @@ class TestConstantsAndCommonCode {
             + "\"doubleKey\":9876.54321,"
             + "\"boolKey\":true,"
             + "\"bytesKey\":\"AAEC/f7/\"}}";
-    private static final String JSON_SPAN_STRING = "{\"traceId\":\"unique-trace-id\"," +
+    public final static String JSON_SPAN_STRING = "{\"traceId\":\"unique-trace-id\"," +
             "\"spanId\":\"unique-span-id\"," +
             "\"parentSpanId\":\"unique-parent-span-id\"," +
             "\"serviceName\":\"unique-service-name\"," +
@@ -47,10 +35,12 @@ class TestConstantsAndCommonCode {
             "\"duration\":\"234\"," +
             "\"logs\":" + LOGS +
             "\"tags\":" + TAGS;
-    static final String JSON_SPAN_STRING_WITH_FLATTENED_TAGS = JSON_SPAN_STRING.replace(TAGS, FLATTENED_TAGS);
-    static final String JSON_SPAN_STRING_WITH_NO_TAGS = JSON_SPAN_STRING.replace(",\"tags\":" + TAGS, "}");
-    static final Span FULLY_POPULATED_SPAN = buildSpan(JSON_SPAN_STRING);
-    static final Span NO_TAGS_SPAN = buildSpan(JSON_SPAN_STRING_WITH_NO_TAGS);
+    public static final String JSON_SPAN_STRING_WITH_FLATTENED_TAGS = JSON_SPAN_STRING.replace(TAGS, FLATTENED_TAGS);
+    public static final String JSON_SPAN_STRING_WITH_NO_TAGS = JSON_SPAN_STRING.replace(",\"tags\":" + TAGS, "}");
+    public static final String JSON_SPAN_STRING_WITH_EMPTY_TAGS = JSON_SPAN_STRING.replace(TAGS, "{}}");
+    public static final Span FULLY_POPULATED_SPAN = buildSpan(JSON_SPAN_STRING);
+    public static final Span NO_TAGS_SPAN = buildSpan(JSON_SPAN_STRING_WITH_NO_TAGS);
+    public static final String JSON_SPAN_STRING_WITH_BOGUS_TAGS = JSON_SPAN_STRING.replace(TAGS, BOGUS_TAGS);
 
     private static Span buildSpan(String jsonSpanString) {
         final Span.Builder builder = Span.newBuilder();
@@ -61,4 +51,6 @@ class TestConstantsAndCommonCode {
         }
         return builder.build();
     }
-}
+
+    @SuppressWarnings("ConstantConditions")
+    public final static byte[] PROTOBUF_SPAN_BYTES = FULLY_POPULATED_SPAN.toByteArray();}

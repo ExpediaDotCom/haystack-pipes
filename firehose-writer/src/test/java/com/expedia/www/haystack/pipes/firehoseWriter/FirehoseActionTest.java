@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 
 import java.util.Random;
 
-import static com.expedia.www.haystack.pipes.firehoseWriter.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 

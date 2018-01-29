@@ -19,11 +19,11 @@ package com.expedia.www.haystack.pipes.commons.kafka;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.expedia.www.haystack.pipes.commons.TestConstantsAndCommonCode.JSON_SPAN_STRING;
-import static com.expedia.www.haystack.pipes.commons.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_BOGUS_TAGS;
-import static com.expedia.www.haystack.pipes.commons.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_EMPTY_TAGS;
-import static com.expedia.www.haystack.pipes.commons.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_FLATTENED_TAGS;
-import static com.expedia.www.haystack.pipes.commons.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_NO_TAGS;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.JSON_SPAN_STRING;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_BOGUS_TAGS;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_EMPTY_TAGS;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_FLATTENED_TAGS;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_NO_TAGS;
 import static org.junit.Assert.assertEquals;
 
 public class TagFlattenerTest {
