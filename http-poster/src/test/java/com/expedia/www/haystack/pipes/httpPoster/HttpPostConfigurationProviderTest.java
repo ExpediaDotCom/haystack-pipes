@@ -6,7 +6,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class HttpPostConfigurationProviderTest {
-    static final int LARGEST_POSSIBLE_MAX_BYTES = 1024 * 1024 - 1;
+    static final int LARGEST_POSSIBLE_MAX_BYTES = (1024 + 512) * 1024; // 1.5 MB
     private HttpPostConfigurationProvider httpPostConfigurationProvider;
 
     @Before
