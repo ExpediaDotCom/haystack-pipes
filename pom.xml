@@ -280,6 +280,7 @@
                     <configuration>
                         <excludes>
                             <exclude>**/com/expedia/open/tracing/**</exclude>
+                            <exclude>**/com/expedia/www/haystack/pipes/commons/test/*</exclude>
                         </excludes>
                     </configuration>
                     <executions>

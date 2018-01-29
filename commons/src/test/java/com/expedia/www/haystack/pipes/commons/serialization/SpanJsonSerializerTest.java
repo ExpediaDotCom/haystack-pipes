@@ -16,9 +16,8 @@
  */
 package com.expedia.www.haystack.pipes.commons.serialization;
 
-import com.expedia.www.haystack.pipes.commons.TestConstantsAndCommonCode;
 import com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.Factory;
-import com.google.protobuf.Descriptors;
+import com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat.Printer;
 import com.netflix.servo.monitor.Counter;
@@ -33,13 +32,13 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
-import static com.expedia.www.haystack.pipes.commons.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.BYTES_IN_COUNTERS;
 import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.BYTES_IN_COUNTER_NAME;
 import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.REQUESTS_COUNTERS;
 import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.REQUEST_COUNTER_NAME;
 import static com.expedia.www.haystack.pipes.commons.serialization.SpanJsonSerializer.JSON_SERIALIZATION_TIMERS;
 import static com.expedia.www.haystack.pipes.commons.serialization.SpanJsonSerializer.JSON_SERIALIZATION_TIMER_NAME;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -70,7 +69,7 @@ public class SpanJsonSerializerTest {
     private SpanJsonSerializer spanJsonSerializer;
 
     @Before
-    public void setUp() throws InvalidProtocolBufferException {
+    public void setUp() {
         realLogger = SpanJsonSerializer.logger;
         SpanJsonSerializer.logger = mockLogger;
         realFactory = SerializerDeserializerBase.factory;
@@ -98,7 +97,7 @@ public class SpanJsonSerializerTest {
     }
 
     @Test
-    public void testSerializeFullyPopulated() throws Descriptors.DescriptorValidationException {
+    public void testSerializeFullyPopulated() {
         when(mockTimer.start()).thenReturn(mockStopwatch);
 
         final byte[] byteArray = spanJsonSerializer.serialize(null, FULLY_POPULATED_SPAN);
@@ -149,14 +148,14 @@ public class SpanJsonSerializerTest {
     }
 
     @Test
-    public void testConfigure() throws InvalidProtocolBufferException {
+    public void testConfigure() {
         final Printer printer = injectMockPrinter();
         spanJsonSerializer.configure(null, true);
         SpanJsonSerializer.printer = printer;
     }
 
     @Test
-    public void testClose() throws InvalidProtocolBufferException {
+    public void testClose() {
         final Printer printer = injectMockPrinter();
         spanJsonSerializer.close();
         SpanJsonSerializer.printer = printer;
