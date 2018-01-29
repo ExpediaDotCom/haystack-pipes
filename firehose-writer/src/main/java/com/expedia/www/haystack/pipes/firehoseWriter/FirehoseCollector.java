@@ -60,10 +60,4 @@ class FirehoseCollector {
         records.add(record);
         totalDataSizeOfRecords += record.getData().array().length;
     }
-
-    List<Record> getRemainingRecords() {
-        final List<Record> remainingRecords = records;
-        initialize();
-        return remainingRecords;
-    }
 }

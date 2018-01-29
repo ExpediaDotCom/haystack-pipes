@@ -16,10 +16,63 @@
  */
 package com.expedia.www.haystack.pipes.httpPoster;
 
-public class ContentCollector {
-    private final int maxBytesInPost;
+import org.apache.commons.lang3.StringUtils;
 
-    public ContentCollector(HttpPostConfigurationProvider httpPostConfigurationProvider) {
+class ContentCollector {
+    private final int maxBytesInPost;
+    private final StringBuilder postPayload;
+
+    ContentCollector(HttpPostConfigurationProvider httpPostConfigurationProvider) {
         this.maxBytesInPost = httpPostConfigurationProvider.maxbytes();
+        postPayload = new StringBuilder(maxBytesInPost);
+        initialize();
+    }
+
+    private void initialize() {
+        postPayload.setLength(0);
+        postPayload.append('[');
+    }
+
+    private boolean shouldCreateNewBatchDueToDataSize(String trimmedJsonToAdd) {
+        int newPayloadLength = postPayload.length();
+        if (isCommaRequired(trimmedJsonToAdd)) {
+            newPayloadLength += 1; // comma
+        }
+        newPayloadLength += trimmedJsonToAdd.length();
+        newPayloadLength += 1; // closing ]
+        return newPayloadLength > maxBytesInPost;
+    }
+
+    String addAndReturnBatch(String jsonToAdd) {
+        final String trimmedJsonToAdd = jsonToAdd.trim();
+        final String jsonToPost;
+        if (shouldCreateNewBatchDueToDataSize(trimmedJsonToAdd)) {
+            postPayload.append(']');
+            jsonToPost = postPayload.toString();
+            initialize();
+            postPayload.append(trimmedJsonToAdd);
+        } else {
+            jsonToPost = "";
+            if (isCommaRequired(trimmedJsonToAdd)) {
+                postPayload.append(',');
+            }
+            postPayload.append(trimmedJsonToAdd);
+        }
+        return jsonToPost;
+    }
+
+    /**
+     * Determine if a comma is required; this method could be changed to no longer call isBlank() if the caller can be
+     * trusted to never send whitespace around the JSON.
+     *
+     * @param jsonToAdd the JSON to add
+     * @return true if the JSON is not blank
+     */
+    private boolean isCommaRequired(String jsonToAdd) {
+        return postPayloadContainsAtLeastOneRecord() && !StringUtils.isBlank(jsonToAdd);
+    }
+
+    private boolean postPayloadContainsAtLeastOneRecord() { // i.e. not just "["
+        return postPayload.length() > 1;
     }
 }

@@ -49,6 +49,7 @@
         <module>json-transformer</module>
         <module>kafka-producer</module>
         <module>firehose-writer</module>
+        <module>http-poster</module>
     </modules>
 
     <dependencyManagement>
