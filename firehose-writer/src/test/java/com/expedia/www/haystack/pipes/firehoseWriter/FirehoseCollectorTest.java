@@ -74,7 +74,6 @@ public class FirehoseCollectorTest {
         final List<Record> batch = firehoseCollector.addRecordAndReturnBatch(mockRecord);
         assertEquals(MAX_RECORDS_IN_BATCH, batch.size());
         verify(mockRecord, times(2 * MAX_RECORDS_IN_BATCH)).getData();
-
     }
 
     private void testShouldCreateNewBatchDueToRecordCount(int recordCount, boolean expected) {
