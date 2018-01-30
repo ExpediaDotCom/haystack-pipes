@@ -29,7 +29,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
@@ -37,6 +36,7 @@ import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDes
 import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.BYTES_IN_COUNTER_NAME;
 import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.REQUESTS_COUNTERS;
 import static com.expedia.www.haystack.pipes.commons.serialization.SerializerDeserializerBase.REQUEST_COUNTER_NAME;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.any;
@@ -47,7 +47,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SerializerDeserializerBaseTest {
-    private final static Random RANDOM = new Random();
     private final static String APPLICATION = RANDOM.nextLong() + "APPLICATION";
     private final static String CLASS_NAME = RANDOM.nextLong() + "CLASS_NAME";
     private final static String COUNTER_NAME = RANDOM.nextLong() + "COUNTER_NAME";

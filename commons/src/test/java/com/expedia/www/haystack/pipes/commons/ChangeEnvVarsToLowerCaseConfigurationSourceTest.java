@@ -30,9 +30,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Random;
 
 import static com.expedia.www.haystack.pipes.commons.ChangeEnvVarsToLowerCaseConfigurationSource.lowerCaseKeysThatStartWithPrefix;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -41,7 +41,6 @@ import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ChangeEnvVarsToLowerCaseConfigurationSourceTest {
-    private static final Random RANDOM = new Random();
     private static final Environment ENVIRONMENT = new ImmutableEnvironment("");
     private static final String PREFIX_OF_STRINGS_TO_CONVERT_TO_LOWER_CASE = "HAYSTACK";
     private static final String CONFIGURATION_NAME_UPPER_CASE = PREFIX_OF_STRINGS_TO_CONVERT_TO_LOWER_CASE + "_TEST";

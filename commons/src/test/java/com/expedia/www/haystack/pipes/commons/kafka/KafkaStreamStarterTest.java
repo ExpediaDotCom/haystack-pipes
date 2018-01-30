@@ -33,11 +33,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
 import java.util.Properties;
-import java.util.Random;
 import java.util.regex.Pattern;
 
 import static com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.STARTED_MSG;
 import static com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.STARTING_MSG;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.times;
@@ -47,7 +47,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class KafkaStreamStarterTest {
-    private final static Random RANDOM = new Random();
     private final static String CLIENT_ID = RANDOM.nextLong() + "CLIENT_ID";
     private static final String KAFKA_IP_AND_PORT = "localhost:" + 65534;
     private static final String KAFKA_FROM_TOPIC = "haystack.kafka.fromtopic";

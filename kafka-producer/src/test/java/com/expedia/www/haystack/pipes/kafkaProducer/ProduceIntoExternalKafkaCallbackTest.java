@@ -28,8 +28,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
-import java.util.Random;
-
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.POSTS_IN_FLIGHT;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.objectPool;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.DEBUG_MSG;
@@ -46,7 +45,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProduceIntoExternalKafkaCallbackTest {
-    private final static Random RANDOM = new Random();
     private final static String TOPIC = RANDOM.nextLong() + "TOPIC";
     private final static int PARTITION = RANDOM.nextInt();
     private final static TopicPartition TOPIC_PARTITION = new TopicPartition(TOPIC, PARTITION);

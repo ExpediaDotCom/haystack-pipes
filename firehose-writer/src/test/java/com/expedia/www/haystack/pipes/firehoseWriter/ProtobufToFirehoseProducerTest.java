@@ -32,8 +32,7 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Random;
-
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -44,7 +43,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProtobufToFirehoseProducerTest {
-    private final static Random RANDOM = new Random();
     private final static String FROM_TOPIC = RANDOM.nextLong() + "FROM_TOPIC";
 
     @Mock
