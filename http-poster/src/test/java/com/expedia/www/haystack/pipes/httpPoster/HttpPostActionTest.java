@@ -1,7 +1,6 @@
 package com.expedia.www.haystack.pipes.httpPoster;
 
 import com.expedia.www.haystack.metrics.MetricObjects;
-import com.google.protobuf.util.JsonFormat.Printer;
 import com.netflix.servo.monitor.Counter;
 import org.junit.After;
 import org.junit.Before;
@@ -26,21 +25,18 @@ public class HttpPostActionTest {
     @Mock
     private MetricObjects mockMetricObjects;
     @Mock
-    private Printer mockPrinter;
-    @Mock
     private Counter mockRequestCounter;
 
     private HttpPostAction httpPostExternalAction;
 
     @Before
     public void setUp() {
-        httpPostExternalAction = new HttpPostAction(mockContentCollector, mockMetricObjects, mockPrinter,
-                mockRequestCounter);
+        httpPostExternalAction = new HttpPostAction(mockContentCollector, mockMetricObjects, mockRequestCounter);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockContentCollector, mockMetricObjects, mockPrinter, mockRequestCounter);
+        verifyNoMoreInteractions(mockContentCollector, mockMetricObjects, mockRequestCounter);
     }
 
     @Test

@@ -4,11 +4,15 @@ import com.expedia.open.tracing.Span;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 
+import java.util.Random;
+
 /**
  * Constants used by tests in subpackages, included in functional code to avoid having to publish a jar file from the
  * test directory.
  */
 public class TestConstantsAndCommonCode {
+    public static final Random RANDOM = new Random();
+
     private static final String LOGS = "[{\"timestamp\":\"234567890\",\"fields\":" +
             "[{\"key\":\"strField\",\"vStr\":\"logFieldValue\"},{\"key\":\"longField\",\"vLong\":\"4567890\"}]},"
             + "{\"timestamp\":\"234567891\",\"fields\":" +

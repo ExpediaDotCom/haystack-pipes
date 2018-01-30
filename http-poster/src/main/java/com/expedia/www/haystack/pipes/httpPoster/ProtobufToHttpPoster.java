@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.firehoseWriter;
+package com.expedia.www.haystack.pipes.httpPoster;
 
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilderBase;
@@ -24,12 +24,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-class ProtobufToFirehoseProducer extends KafkaStreamBuilderBase {
+public class ProtobufToHttpPoster extends KafkaStreamBuilderBase {
     @Autowired
-    ProtobufToFirehoseProducer(KafkaStreamStarter kafkaStreamStarter,
-                               SpanSerdeFactory spanSerdeFactory,
-                               FirehoseAction firehoseAction,
-                               KafkaConfigurationProvider kafkaConfigurationProvider) {
-        super(kafkaStreamStarter, spanSerdeFactory, Constants.APPLICATION, kafkaConfigurationProvider, firehoseAction);
+    ProtobufToHttpPoster(KafkaStreamStarter kafkaStreamStarter,
+                         SpanSerdeFactory spanSerdeFactory,
+                         HttpPostAction httpPostAction,
+                         KafkaConfigurationProvider kafkaConfigurationProvider) {
+        super(kafkaStreamStarter, spanSerdeFactory, Constants.APPLICATION, kafkaConfigurationProvider, httpPostAction);
     }
 }

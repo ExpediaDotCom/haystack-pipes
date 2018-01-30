@@ -109,7 +109,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.expedia.www.haystack.pipes.httpPoster.HttpPosterIsActiveController</mainClass>
+                    <mainClass>com.expedia.www.haystack.pipes.httpPoster</mainClass>
                 </configuration>
             </plugin>
         </plugins>
