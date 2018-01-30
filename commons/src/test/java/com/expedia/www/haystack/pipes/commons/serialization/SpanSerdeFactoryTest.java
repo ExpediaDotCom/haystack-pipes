@@ -21,12 +21,10 @@ import org.apache.kafka.common.serialization.Serde;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Random;
-
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static org.junit.Assert.assertEquals;
 
 public class SpanSerdeFactoryTest {
-    private final static Random RANDOM = new Random();
     private final static String APPLICATION = RANDOM.nextLong() + "APPLICATION";
 
     private SpanSerdeFactory spanSerdeFactory;
