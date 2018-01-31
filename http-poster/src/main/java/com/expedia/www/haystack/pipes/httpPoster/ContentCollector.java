@@ -24,26 +24,32 @@ import org.springframework.stereotype.Component;
 class ContentCollector {
     private final int maxBytesInPost;
     private final StringBuilder postPayload;
+    private final String separator;
+    private final String bodyPrefix;
+    private final String bodySuffix;
 
     @Autowired
     ContentCollector(HttpPostConfigurationProvider httpPostConfigurationProvider) {
         this.maxBytesInPost = httpPostConfigurationProvider.maxbytes();
         postPayload = new StringBuilder(maxBytesInPost);
+        separator = httpPostConfigurationProvider.separator();
+        bodyPrefix = httpPostConfigurationProvider.bodyprefix();
+        bodySuffix = httpPostConfigurationProvider.bodysuffix();
         initialize();
     }
 
     private void initialize() {
         postPayload.setLength(0);
-        postPayload.append('[');
+        postPayload.append(bodyPrefix);
     }
 
     private boolean shouldCreateNewBatchDueToDataSize(String trimmedJsonToAdd) {
         int newPayloadLength = postPayload.length();
         if (isCommaRequired(trimmedJsonToAdd)) {
-            newPayloadLength += 1; // comma
+            newPayloadLength += separator.length();
         }
         newPayloadLength += trimmedJsonToAdd.length();
-        newPayloadLength += 1; // closing ]
+        newPayloadLength += bodySuffix.length();
         return newPayloadLength > maxBytesInPost;
     }
 
@@ -51,14 +57,14 @@ class ContentCollector {
         final String trimmedJsonToAdd = jsonToAdd.trim();
         final String jsonToPost;
         if (shouldCreateNewBatchDueToDataSize(trimmedJsonToAdd)) {
-            postPayload.append(']');
+            postPayload.append(bodySuffix);
             jsonToPost = postPayload.toString();
             initialize();
             postPayload.append(trimmedJsonToAdd);
         } else {
             jsonToPost = "";
             if (isCommaRequired(trimmedJsonToAdd)) {
-                postPayload.append(',');
+                postPayload.append(separator);
             }
             postPayload.append(trimmedJsonToAdd);
         }
