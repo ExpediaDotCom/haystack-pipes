@@ -9,3 +9,9 @@ haystack:
       replicationfactor: 1
   httppost:
     maxbytes: 1572864 # 1.5 MB
+    endpoint: "https://collector.test.expedia.com"
+    url: /haystack-spans.json?stream=true&persist=false&multilines=true
+    separator: ","  # These values for separator, bodyprefix, and bodysuffix
+    bodyprefix: "[" # are appropriate for creating an array of JSON objects
+    bodysuffix: "]" # in the body of the POST in valid JSON syntax
+    headers: Content-Type=raw,Content-Encoding=gzip

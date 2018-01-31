@@ -9,3 +9,9 @@ haystack:
       replicationfactor: 1
   httppost:
     maxbytes: 1572864 # 1.5 MB
+    endpoint: "https://collector.test.expedia.com"
+    url: /haystack-spans.json?stream=true&persist=false&multilines=true
+    separator: "\n"
+    bodyprefix: ""
+    bodysuffix: ""
+    headers: Content-Type=raw

@@ -21,28 +21,37 @@ public class ContentCollectorTest {
     private static final String PERIOD = ".";
     private static final String SPACES = "          ";
     private static final String NEW_LINE = "\n";
+    private static final String BODY_PREFIX = "[";
+    private static final String BODY_SUFFIX = "]";
+    private static final String SEPARATOR = ",";
 
     @Mock
     private HttpPostConfigurationProvider mockHttpPostConfigurationProvider;
 
     private ContentCollector contentCollector;
-    private int timesMaxBytes = 1;
+    private int timesConstructorCalled = 1;
 
     @Before
     public void setUp() {
         when(mockHttpPostConfigurationProvider.maxbytes()).thenReturn(LARGEST_POSSIBLE_MAX_BYTES);
+        when(mockHttpPostConfigurationProvider.separator()).thenReturn(SEPARATOR);
+        when(mockHttpPostConfigurationProvider.bodyprefix()).thenReturn(BODY_PREFIX);
+        when(mockHttpPostConfigurationProvider.bodysuffix()).thenReturn(BODY_SUFFIX);
         contentCollector = new ContentCollector(mockHttpPostConfigurationProvider);
     }
 
     @After
     public void tearDown() {
-        verify(mockHttpPostConfigurationProvider, times(timesMaxBytes)).maxbytes();
+        verify(mockHttpPostConfigurationProvider, times(timesConstructorCalled)).maxbytes();
+        verify(mockHttpPostConfigurationProvider, times(timesConstructorCalled)).separator();
+        verify(mockHttpPostConfigurationProvider, times(timesConstructorCalled)).bodyprefix();
+        verify(mockHttpPostConfigurationProvider, times(timesConstructorCalled)).bodysuffix();
         verifyNoMoreInteractions(mockHttpPostConfigurationProvider);
     }
 
     @Test
     public void testAddAndReturnBatchOneRecord() {
-        timesMaxBytes = 2;
+        timesConstructorCalled = 2;
         when(mockHttpPostConfigurationProvider.maxbytes()).thenReturn(SMALLEST_POSSIBLE_MAX_BYTES);
         contentCollector = new ContentCollector(mockHttpPostConfigurationProvider);
 
@@ -52,7 +61,7 @@ public class ContentCollectorTest {
 
     @Test
     public void testAddAndReturnBatchTwoRecords() {
-        timesMaxBytes = 2;
+        timesConstructorCalled = 2;
         final String expected = '[' + SMALLEST_POSSIBLE_JSON + ',' + SMALLEST_POSSIBLE_JSON + ']';
         when(mockHttpPostConfigurationProvider.maxbytes()).thenReturn(expected.length());
         contentCollector = new ContentCollector(mockHttpPostConfigurationProvider);
