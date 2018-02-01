@@ -1,0 +1,28 @@
+Configuration:
+  appenders:
+    Console:
+      name: Console
+      PatternLayout:
+        Pattern: "%%d{HH:mm:ss.SSS} %level [%thread] %X{requestid} %logger{10} %msg%n"
+      target: SYSTEM_OUT
+    EmitToGraphiteLog4jAppender:
+      name: EmitToGraphiteLog4jAppender
+      subsystem: pipes
+      host: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
+      port: 2003 # default Graphite port, rarely overridden, but can be overridden by env variable
+      pollintervalseconds: 60
+      queuesize: 10
+      sendasrate: false
+  Loggers:
+    Logger:
+      name: com.expedia.www.haystack.pipes.httpPoster.HttpPostIsActiveController
+      level: info
+      additivity: false
+      AppenderRef:
+        - ref: Console
+        - ref: EmitToGraphiteLog4jAppender
+    Root:
+      level: error
+      AppenderRef:
+        - ref: Console
+        - ref: EmitToGraphiteLog4jAppender

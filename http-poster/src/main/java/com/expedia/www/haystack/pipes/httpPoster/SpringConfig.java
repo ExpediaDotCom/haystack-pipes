@@ -4,7 +4,10 @@ import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
+import com.google.protobuf.util.JsonFormat;
 import com.netflix.servo.monitor.Counter;
+import com.netflix.servo.monitor.Timer;
+import com.netflix.servo.util.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +15,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.concurrent.TimeUnit;
+
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.httpPoster.Constants.APPLICATION;
 
 @Configuration
 @ComponentScan(basePackageClasses = SpringConfig.class)
 public class SpringConfig {
+    @VisibleForTesting
+    static final String HTTP_POST_ACTION_CLASS_SIMPLE_NAME = HttpPostAction.class.getSimpleName();
     private final MetricObjects metricObjects;
 
     /**
@@ -33,7 +40,13 @@ public class SpringConfig {
     @Bean
     Counter requestCounter() {
         return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                HttpPostAction.class.getName(), "REQUEST");
+                HTTP_POST_ACTION_CLASS_SIMPLE_NAME, "REQUEST");
+    }
+
+    @Bean
+    Timer httpPostTimer() {
+        return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
+                HTTP_POST_ACTION_CLASS_SIMPLE_NAME, "HTTP_POST", TimeUnit.MICROSECONDS);
     }
 
     @Bean
@@ -44,6 +57,11 @@ public class SpringConfig {
     @Bean
     Logger httpPostIsActiveControllerLogger() {
         return LoggerFactory.getLogger(HttpPostIsActiveController.class);
+    }
+
+    @Bean
+    Logger httpPostActionLogger() {
+        return LoggerFactory.getLogger(HttpPostAction.class);
     }
 
     // Beans without unit tests
@@ -64,6 +82,11 @@ public class SpringConfig {
     }
 
     @Bean
+    HttpPostAction.Factory httpPostActionFactory() {
+        return new HttpPostAction.Factory();
+    }
+
+    @Bean
     SpanSerdeFactory spanSerdeFactory() {
         return new SpanSerdeFactory();
     }
@@ -73,6 +96,10 @@ public class SpringConfig {
         return new KafkaConfigurationProvider();
     }
 
+    @Bean
+    JsonFormat.Printer printer() {
+        return JsonFormat.printer().omittingInsignificantWhitespace();
+    }
 
     /*
      * Spring loads this static inner class before loading the SpringConfig outer class so that its bean is available to
