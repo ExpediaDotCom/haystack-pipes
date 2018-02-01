@@ -96,6 +96,7 @@ class HttpPostAction implements ForeachAction<String, Span> {
 
     private OutputStream getOutputStream(String batch) throws IOException {
         final HttpURLConnection httpURLConnection = getUrlConnection();
+        httpURLConnection.setDoOutput(true);
         httpURLConnection.setRequestMethod("POST");
         setHeaders(batch, httpURLConnection);
         return httpURLConnection.getOutputStream();

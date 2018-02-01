@@ -5,8 +5,6 @@ import java.util.Map;
 public interface HttpPostConfig {
     int maxbytes();
 
-    String endpoint();
-
     String url();
 
     String bodyprefix();

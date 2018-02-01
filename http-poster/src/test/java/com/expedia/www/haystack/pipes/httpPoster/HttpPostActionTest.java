@@ -179,6 +179,7 @@ public class HttpPostActionTest {
         verify(mockHttpURLConnection).setRequestMethod("POST");
         verify(mockHttpURLConnection).setRequestProperty(
                 "Content-Length", Integer.toString(JSON_SPAN_STRING_WITH_FLATTENED_TAGS.length()));
+        verify(mockHttpURLConnection).setDoOutput(true);
         verify(mockHttpPostConfigurationProvider).headers();
         for (Map.Entry<String, String> header : HEADERS.entrySet()) {
             verify(mockHttpURLConnection).setRequestProperty(header.getKey(), header.getValue());

@@ -25,17 +25,10 @@ public class HttpPostConfigurationProviderTest {
     }
 
     @Test
-    public void testEndpoint() {
-        final String endpoint = httpPostConfigurationProvider.endpoint();
-
-        assertEquals("https://collector.test.expedia.com", endpoint);
-    }
-
-    @Test
     public void testUrl() {
         final String url = httpPostConfigurationProvider.url();
 
-        assertEquals("/haystack-spans.json?stream=true&persist=false&multilines=true", url);
+        assertEquals("https://collector.test.expedia.com/haystack-spans.json?stream=true&persist=false&multilines=true", url);
     }
 
     @Test

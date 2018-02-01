@@ -22,11 +22,6 @@ public class HttpPostConfigurationProvider implements HttpPostConfig {
     }
 
     @Override
-    public String endpoint() {
-        return httpPostConfig.endpoint();
-    }
-
-    @Override
     public String url() {
         return httpPostConfig.url();
     }
