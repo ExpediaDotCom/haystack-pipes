@@ -10,8 +10,8 @@ haystack:
   httppost:
     maxbytes: 1572864 # 1.5 MB
     endpoint: "https://collector.test.expedia.com"
-    url: /haystack-spans.json?stream=true&persist=false&multilines=true
-    separator: "\n"
-    bodyprefix: ""
-    bodysuffix: ""
-    headers: Content-Type=raw
+    url: "/haystack-spans.json?stream=true&persist=false&multilines=true"
+    separator: "\n" # These values for separator, bodyprefix, and bodysuffix are
+    bodyprefix: ""  # appropriate for creating a POST body that consists of newline
+    bodysuffix: ""  # newline delimited Span objects with each object in valid JSON
+    headers: "Content-Type=raw"

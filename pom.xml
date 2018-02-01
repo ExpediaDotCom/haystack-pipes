@@ -23,7 +23,7 @@
         <haystack-logback-metrics-appender-version>0.1.10</haystack-logback-metrics-appender-version>
         <haystack-log4j-metrics-appender-version>0.1.6</haystack-log4j-metrics-appender-version>
         <haystack-pipes-commons-version>1.0-SNAPSHOT</haystack-pipes-commons-version>
-        <jacoco-maven-plugin-version>0.7.9</jacoco-maven-plugin-version>
+        <jacoco-maven-plugin-version>0.8.0</jacoco-maven-plugin-version>
         <jacoco-percentage>1.0</jacoco-percentage>
         <jackson-version>2.9.1</jackson-version>
         <java-version>1.8</java-version>
@@ -34,6 +34,7 @@
         <maven-compiler-plugin-version>3.6.1</maven-compiler-plugin-version>
         <maven-jar-plugin-version>3.0.2</maven-jar-plugin-version>
         <mockito-version>1.9.5</mockito-version>
+        <mockserver-netty-version>5.3.0</mockserver-netty-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <protobuf-java-util-version>3.3.1</protobuf-java-util-version>
         <protoc-jar-maven-version>3.3.0.1</protoc-jar-maven-version>
@@ -223,6 +224,12 @@
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>${junit-version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mock-server</groupId>
+                <artifactId>mockserver-netty</artifactId>
+                <version>${mockserver-netty-version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

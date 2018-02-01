@@ -2,6 +2,7 @@ package com.expedia.www.haystack.pipes.httpPoster;
 
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
+import com.netflix.servo.monitor.Timer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,8 +11,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
+import java.util.concurrent.TimeUnit;
+
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.httpPoster.Constants.APPLICATION;
+import static com.expedia.www.haystack.pipes.httpPoster.SpringConfig.HTTP_POST_ACTION_CLASS_SIMPLE_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.verify;
@@ -39,7 +43,15 @@ public class SpringConfigTest {
         springConfig.requestCounter();
 
         verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                HttpPostAction.class.getName(), "REQUEST");
+                HttpPostAction.class.getSimpleName(), "REQUEST");
+    }
+
+    @Test
+    public void testHttpPostTimer() {
+        final Timer timer = springConfig.httpPostTimer();
+
+        verify(mockMetricObjects).createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
+                HTTP_POST_ACTION_CLASS_SIMPLE_NAME, "HTTP_POST", TimeUnit.MICROSECONDS);
     }
 
     @Test
@@ -48,6 +60,13 @@ public class SpringConfigTest {
 
         assertSame(ProtobufToHttpPoster.class, kafkaStreamStarter.containingClass);
         assertSame(APPLICATION, kafkaStreamStarter.clientId);
+    }
+
+    @Test
+    public void testHttpPostActionLogger() {
+        final Logger logger = springConfig.httpPostActionLogger();
+
+        assertEquals(HttpPostAction.class.getName(), logger.getName());
     }
 
     @Test

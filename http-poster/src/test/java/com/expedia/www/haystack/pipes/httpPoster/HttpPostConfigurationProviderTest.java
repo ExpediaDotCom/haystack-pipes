@@ -3,9 +3,9 @@ package com.expedia.www.haystack.pipes.httpPoster;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.HashMap;
 import java.util.Map;
 
+import static com.expedia.www.haystack.pipes.httpPoster.HttpPostActionTest.HEADERS;
 import static org.junit.Assert.assertEquals;
 
 public class HttpPostConfigurationProviderTest {
@@ -63,9 +63,6 @@ public class HttpPostConfigurationProviderTest {
     public void testHeaders() {
         final Map<String, String> headers = httpPostConfigurationProvider.headers();
 
-        final Map<String, String> expected = new HashMap<>();
-        expected.put("Content-Type", "raw");
-        expected.put("Content-Encoding", "gzip");
-        assertEquals(expected, headers);
+        assertEquals(HEADERS, headers);
     }
 }
