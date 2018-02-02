@@ -62,5 +62,4 @@ public class TagFlattenerTest {
         assertEquals(JSON_SPAN_STRING_WITH_NO_TAGS, flattenedTags);
     }
 
-
 }

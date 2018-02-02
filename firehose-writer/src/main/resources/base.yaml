@@ -8,9 +8,15 @@ haystack:
     streams:
       replicationfactor: 1
   graphite:
-     prefix: "haystack"
-     host: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
-     port: 2003 # default Graphite port, rarely overridden, but can be overridden by env variable
-     pollintervalseconds: 60
-     queuesize: 10
-     sendasrate: false
+    prefix: "haystack"
+    host: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
+    port: 2003 # default Graphite port, rarely overridden, but can be overridden by env variable
+    pollintervalseconds: 60
+    queuesize: 10
+    sendasrate: false
+  firehose:
+    retrycount: 3
+    url: "https://firehose.us-west-2.amazonaws.com"
+    streamname: "haystack-traces-test"
+    signingregion: "us-west-2"
+

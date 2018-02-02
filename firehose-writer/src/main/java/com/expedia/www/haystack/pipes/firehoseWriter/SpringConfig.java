@@ -16,10 +16,16 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
+import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehose;
+import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseClientBuilder;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
+import com.google.protobuf.util.JsonFormat;
+import com.google.protobuf.util.JsonFormat.Printer;
 import com.netflix.servo.monitor.Counter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +83,33 @@ class SpringConfig {
         return LoggerFactory.getLogger(FirehoseIsActiveController.class);
     }
 
+    @Bean
+    String url(FirehoseConfigurationProvider firehoseConfigurationProvider) {
+        return firehoseConfigurationProvider.url();
+    }
+
+    @Bean
+    String signingregion(FirehoseConfigurationProvider firehoseConfigurationProvider) {
+        return firehoseConfigurationProvider.signingregion();
+    }
+
+    @Bean
+    EndpointConfiguration endpointConfiguration(String url,
+                                                String signingregion) {
+        return new EndpointConfiguration(url, signingregion);
+    }
+
+    @Bean
+    @Autowired
+    AmazonKinesisFirehose amazonKinesisFirehose(EndpointConfiguration endpointConfiguration,
+                                                ClientConfiguration clientConfiguration) {
+        return AmazonKinesisFirehoseClientBuilder
+                .standard()
+                .withEndpointConfiguration(endpointConfiguration)
+                .withClientConfiguration(clientConfiguration)
+                .build();
+    }
+
     // Beans without unit tests
     @Bean
     FirehoseCollector firehoseCollector() {
@@ -94,11 +127,26 @@ class SpringConfig {
     }
 
     @Bean
+    ClientConfiguration clientConfiguration() {
+        final ClientConfiguration clientConfiguration = new ClientConfiguration();
+        clientConfiguration.setUseGzip(true);
+        return clientConfiguration;
+    }
+
+    @Bean
+    FirehoseConfigurationProvider firehoseConfigurationProvider() {
+        return new FirehoseConfigurationProvider();
+    }
+
+    @Bean
     @Autowired
-    FirehoseAction firehoseAction(Logger firehoseActionLogger,
+    FirehoseAction firehoseAction(Printer printer,
+                                  Logger firehoseActionLogger,
                                   Counter requestCounter,
-                                  FirehoseCollector firehoseCollector) {
-        return new FirehoseAction(firehoseActionLogger, requestCounter, firehoseCollector);
+                                  FirehoseCollector firehoseCollector,
+                                  AmazonKinesisFirehose amazonKinesisFirehose) {
+        return new FirehoseAction(printer, firehoseActionLogger, requestCounter, firehoseCollector,
+                amazonKinesisFirehose);
     }
 
     @Bean
@@ -115,6 +163,12 @@ class SpringConfig {
         return new ProtobufToFirehoseProducer(
                 kafkaStreamStarter, spanSerdeFactory, firehoseAction, kafkaConfigurationProvider);
     }
+
+    @Bean
+    Printer printer() {
+        return JsonFormat.printer().omittingInsignificantWhitespace();
+    }
+
 
     /**
      * Spring loads this static inner class before loading the SpringConfig outer class so that its bean is available to

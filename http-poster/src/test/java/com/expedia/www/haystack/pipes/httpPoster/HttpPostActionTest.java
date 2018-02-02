@@ -25,12 +25,13 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.expedia.www.haystack.pipes.commons.CommonConstants.PROTOBUF_ERROR_MSG;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.EXCEPTION_MESSAGE;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_FLATTENED_TAGS;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.NO_TAGS_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.httpPoster.HttpPostAction.POSTING_ERROR_MSG;
-import static com.expedia.www.haystack.pipes.httpPoster.HttpPostAction.PROTOBUF_ERROR_MSG;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
@@ -45,7 +46,6 @@ import static org.mockito.Mockito.when;
 public class HttpPostActionTest {
     private final static String KEY = RANDOM.nextLong() + "KEY";
     private static final String HTTP_LOCALHOST = "http://localhost:1080";
-    private static final String EXCEPTION_MESSAGE = "Test Exception";
     private static final IOException IO_EXCEPTION = new IOException(EXCEPTION_MESSAGE);
     private static final String IO_EXCEPTION_MESSAGE = String.format(POSTING_ERROR_MSG, EXCEPTION_MESSAGE);
     static final Map<String, String> HEADERS = new HashMap<>(2);
@@ -190,8 +190,8 @@ public class HttpPostActionTest {
 
     @Test
     public void testGetBatchInvalidProtocolBufferException() throws InvalidProtocolBufferException {
-        httpPostExternalAction = new HttpPostAction(mockPrinter, mockContentCollector, mockRequestCounter, mockHttpPostTimer,
-                mockLogger, mockHttpPostConfigurationProvider, mockFactory);
+        httpPostExternalAction = new HttpPostAction(mockPrinter, mockContentCollector, mockRequestCounter,
+                mockHttpPostTimer, mockLogger, mockHttpPostConfigurationProvider, mockFactory);
         final InvalidProtocolBufferException exception = new InvalidProtocolBufferException(EXCEPTION_MESSAGE);
         when(mockPrinter.print(any(Span.class))).thenThrow(exception);
 
