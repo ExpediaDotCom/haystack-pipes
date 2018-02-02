@@ -1,6 +1,7 @@
 package com.expedia.www.haystack.pipes.httpPoster;
 
 import com.expedia.open.tracing.Span;
+import com.expedia.www.haystack.pipes.commons.CommonConstants;
 import com.expedia.www.haystack.pipes.commons.kafka.TagFlattener;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat.Printer;
@@ -25,8 +26,6 @@ import java.util.Map;
 class HttpPostAction implements ForeachAction<String, Span> {
     @VisibleForTesting
     static final String POSTING_ERROR_MSG = "Exception posting to HTTP; received message [%s]";
-    @VisibleForTesting
-    static final String PROTOBUF_ERROR_MSG = "Exception printing Span [%s]; received message [%s]";
 
     private final TagFlattener tagFlattener = new TagFlattener();
     private final Printer printer;
@@ -82,7 +81,7 @@ class HttpPostAction implements ForeachAction<String, Span> {
             return contentCollector.addAndReturnBatch(jsonWithFlattenedTags);
         } catch (InvalidProtocolBufferException exception) {
             // Must format below because log4j2 underneath slf4j doesn't handle .error(varargs) properly
-            final String message = String.format(PROTOBUF_ERROR_MSG, span.toString(), exception.getMessage());
+            final String message = String.format(CommonConstants.PROTOBUF_ERROR_MSG, span.toString(), exception.getMessage());
             httpPostActionLogger.error(message, exception);
             return "";
         }

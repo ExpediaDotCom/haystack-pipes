@@ -31,6 +31,7 @@ public class Configuration {
     public static final String HAYSTACK_PIPE_STREAMS = "haystack.pipe.streams";
     public static final String HAYSTACK_KAFKA_CONFIG_PREFIX = "haystack.kafka";
     public static final String HAYSTACK_EXTERNAL_KAFKA_CONFIG_PREFIX = "haystack.externalkafka";
+    public static final String HAYSTACK_FIREHOSE_CONFIG_PREFIX = "haystack.firehose";
 
     public ConfigurationProvider createMergeConfigurationProvider() {
         final MergeConfigurationSource configurationSource = new MergeConfigurationSource(

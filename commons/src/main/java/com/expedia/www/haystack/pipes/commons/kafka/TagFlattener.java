@@ -26,7 +26,7 @@ public class TagFlattener {
         final String tagsKey = "tags";
         final JsonObject jsonObject = new Gson().fromJson(jsonWithOpenTracingTags, JsonObject.class);
         final JsonElement jsonElementThatMightBeJsonArray = jsonObject.get(tagsKey);
-        if(jsonElementThatMightBeJsonArray instanceof JsonArray) {
+        if (jsonElementThatMightBeJsonArray instanceof JsonArray) {
             final JsonArray jsonArray = (JsonArray) jsonObject.remove(tagsKey);
             final JsonObject flattenedTagMap = new JsonObject();
             jsonObject.add(tagsKey, flattenedTagMap);
@@ -59,7 +59,20 @@ public class TagFlattener {
                 }
             }
         }
-        return jsonObject.toString();
+        final StringBuilder stringBuilder = new StringBuilder(jsonObject.toString());
+        appendNewLineForFirehose(stringBuilder);
+        return stringBuilder.toString();
+    }
+
+    /**
+     * Appends a new line to the JSON, ito allow Firehose to recognize separate records. From Kapil Rastogi, who wrote a
+     * Lambda on which the code in firehose-writer is based, "[The] problem WITHOUT that new line was that when firehose
+     * was writing files to s3 it was not able to segregate between the records."
+     *
+     * @param stringBuilder the object to which a new line will be appended
+     */
+    private void appendNewLineForFirehose(StringBuilder stringBuilder) {
+        stringBuilder.append('\n');
     }
 
 }
