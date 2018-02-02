@@ -16,6 +16,8 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import org.junit.After;
@@ -30,13 +32,21 @@ import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SpringConfigTest {
+    private final static String URL = "https://firehose.us-west-2.amazonaws.com";
+    private final static String SIGNING_REGION = "us-west-2";
+
     @Mock
     private MetricObjects mockMetricObjects;
+
+    @Mock
+    private FirehoseConfigurationProvider mockFirehoseConfigurationProvider;
 
     private SpringConfig springConfig;
 
@@ -47,7 +57,7 @@ public class SpringConfigTest {
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockMetricObjects);
+        verifyNoMoreInteractions(mockMetricObjects, mockFirehoseConfigurationProvider);
     }
 
     @Test
@@ -80,6 +90,50 @@ public class SpringConfigTest {
         assertEquals(ProtobufToFirehoseProducer.class.getName(), logger.getName());
     }
 
+    @Test
+    public void testFirehoseIsActiveControllerLogger() {
+        final Logger logger = springConfig.firehoseIsActiveControllerLogger();
+
+        assertEquals(FirehoseIsActiveController.class.getName(), logger.getName());
+    }
+
+    @Test
+    public void testEndpointConfiguration() {
+        final EndpointConfiguration endpointConfiguration = springConfig.endpointConfiguration(URL, SIGNING_REGION);
+
+        assertEquals(URL, endpointConfiguration.getServiceEndpoint());
+        assertEquals(SIGNING_REGION, endpointConfiguration.getSigningRegion());
+    }
+
+    @Test
+    public void testUrl() {
+        when(mockFirehoseConfigurationProvider.url()).thenReturn(URL);
+
+        final String url = springConfig.url(mockFirehoseConfigurationProvider);
+
+        assertEquals(URL, url);
+        verify(mockFirehoseConfigurationProvider).url();
+    }
+
+    @Test
+    public void testSigningRegion() {
+        when(mockFirehoseConfigurationProvider.signingregion()).thenReturn(SIGNING_REGION);
+
+        final String signingRegion = springConfig.signingregion(mockFirehoseConfigurationProvider);
+
+        assertEquals(SIGNING_REGION, signingRegion);
+        verify(mockFirehoseConfigurationProvider).signingregion();
+    }
+
+    @Test
+    public void testClientConfiguration() {
+        final ClientConfiguration clientConfiguration = springConfig.clientConfiguration();
+
+        assertTrue(clientConfiguration.useGzip());
+    }
+
     // All of the other beans in SpringConfig use default constructors, or use arguments provided by other Spring beans
-    // in SpringConfig, so tests on the methods that create those beans have little value.
+    // in SpringConfig, so tests on the methods that create those beans have little value. The firehoseAction() Bean
+    // method should be tested but is difficult to test because of how deeply the AWS SDK code hides the instance
+    // variables.
 }
