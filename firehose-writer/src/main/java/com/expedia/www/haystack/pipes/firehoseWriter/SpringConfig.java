@@ -84,6 +84,12 @@ class SpringConfig {
     }
 
     @Bean
+    EndpointConfiguration endpointConfiguration(String url,
+                                                String signingregion) {
+        return new EndpointConfiguration(url, signingregion);
+    }
+
+    @Bean
     String url(FirehoseConfigurationProvider firehoseConfigurationProvider) {
         return firehoseConfigurationProvider.url();
     }
@@ -94,11 +100,13 @@ class SpringConfig {
     }
 
     @Bean
-    EndpointConfiguration endpointConfiguration(String url,
-                                                String signingregion) {
-        return new EndpointConfiguration(url, signingregion);
+    ClientConfiguration clientConfiguration() {
+        final ClientConfiguration clientConfiguration = new ClientConfiguration();
+        clientConfiguration.setUseGzip(true);
+        return clientConfiguration;
     }
 
+    // Beans without unit tests
     @Bean
     @Autowired
     AmazonKinesisFirehose amazonKinesisFirehose(EndpointConfiguration endpointConfiguration,
@@ -110,7 +118,6 @@ class SpringConfig {
                 .build();
     }
 
-    // Beans without unit tests
     @Bean
     FirehoseCollector firehoseCollector() {
         return new FirehoseCollector();
@@ -124,13 +131,6 @@ class SpringConfig {
     @Bean
     FirehoseIsActiveController.Factory firehoseIsActiveControllerFactory() {
         return new FirehoseIsActiveController.Factory();
-    }
-
-    @Bean
-    ClientConfiguration clientConfiguration() {
-        final ClientConfiguration clientConfiguration = new ClientConfiguration();
-        clientConfiguration.setUseGzip(true);
-        return clientConfiguration;
     }
 
     @Bean
@@ -168,7 +168,6 @@ class SpringConfig {
     Printer printer() {
         return JsonFormat.printer().omittingInsignificantWhitespace();
     }
-
 
     /**
      * Spring loads this static inner class before loading the SpringConfig outer class so that its bean is available to
