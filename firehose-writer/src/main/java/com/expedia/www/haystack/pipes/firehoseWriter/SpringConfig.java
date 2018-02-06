@@ -27,12 +27,15 @@ import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.Printer;
 import com.netflix.servo.monitor.Counter;
+import com.netflix.servo.monitor.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.concurrent.TimeUnit;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
@@ -48,7 +51,7 @@ class SpringConfig {
     private final MetricObjects metricObjects;
 
     /**
-     * @param metricObjects provided by a static inner class that is loaded first
+     * @param metricObjects provided by a static inner class that is loaded before this SpringConfig class
      * @see MetricObjectsSpringConfig
      */
     @Autowired
@@ -56,11 +59,29 @@ class SpringConfig {
         this.metricObjects = metricObjects;
     }
 
-    // Beans with unit tests
+    // Beans with unit tests ///////////////////////////////////////////////////////////////////////////////////////////
     @Bean
-    Counter requestCounter() {
+    Counter spanCounter() {
         return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
                 FirehoseAction.class.getName(), "REQUEST");
+    }
+
+    @Bean
+    Counter successCounter() {
+        return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
+                FirehoseAction.class.getName(), "SUCCESS");
+    }
+
+    @Bean
+    Counter failureCounter() {
+        return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
+                FirehoseAction.class.getName(), "FAILURE");
+    }
+
+    @Bean
+    Timer putBatchRequestTimer() {
+        return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, FirehoseAction.class.getName(),
+                "PUT_BATCH_REQUEST", TimeUnit.MICROSECONDS);
     }
 
     @Bean
@@ -84,17 +105,25 @@ class SpringConfig {
     }
 
     @Bean
+    Logger batchLogger() {
+        return LoggerFactory.getLogger(Batch.class);
+    }
+
+    @Bean
+    @Autowired
     EndpointConfiguration endpointConfiguration(String url,
                                                 String signingregion) {
         return new EndpointConfiguration(url, signingregion);
     }
 
     @Bean
+    @Autowired
     String url(FirehoseConfigurationProvider firehoseConfigurationProvider) {
         return firehoseConfigurationProvider.url();
     }
 
     @Bean
+    @Autowired
     String signingregion(FirehoseConfigurationProvider firehoseConfigurationProvider) {
         return firehoseConfigurationProvider.signingregion();
     }
@@ -106,7 +135,7 @@ class SpringConfig {
         return clientConfiguration;
     }
 
-    // Beans without unit tests
+    // Beans without unit tests ////////////////////////////////////////////////////////////////////////////////////////
     @Bean
     @Autowired
     AmazonKinesisFirehose amazonKinesisFirehose(EndpointConfiguration endpointConfiguration,
@@ -139,14 +168,38 @@ class SpringConfig {
     }
 
     @Bean
+    FirehoseAction.Factory firehoseActionFactory() {
+        return new FirehoseAction.Factory();
+    }
+
+    @Bean
     @Autowired
-    FirehoseAction firehoseAction(Printer printer,
-                                  Logger firehoseActionLogger,
-                                  Counter requestCounter,
-                                  FirehoseCollector firehoseCollector,
-                                  AmazonKinesisFirehose amazonKinesisFirehose) {
-        return new FirehoseAction(printer, firehoseActionLogger, requestCounter, firehoseCollector,
-                amazonKinesisFirehose);
+
+    Counters counters(Counter spanCounter,
+                      Counter successCounter,
+                      Counter failureCounter) {
+        return new Counters(spanCounter, successCounter, failureCounter);
+    }
+
+    @Bean
+    @Autowired
+    Batch batch(Printer printer,
+                FirehoseCollector firehoseCollector,
+                Logger batchLogger) {
+        return new Batch(printer, firehoseCollector, batchLogger);
+    }
+
+    @Bean
+    @Autowired
+    FirehoseAction firehoseAction(Logger firehoseActionLogger,
+                                  Counters counters,
+                                  Timer putBatchRequestTimer,
+                                  Batch batch,
+                                  AmazonKinesisFirehose amazonKinesisFirehose,
+                                  FirehoseAction.Factory firehoseActionFactory,
+                                  FirehoseConfigurationProvider firehoseConfigurationProvider) {
+        return new FirehoseAction(firehoseActionLogger, counters, putBatchRequestTimer, batch, amazonKinesisFirehose,
+                firehoseActionFactory, firehoseConfigurationProvider);
     }
 
     @Bean

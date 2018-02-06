@@ -20,6 +20,8 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
+import com.netflix.servo.monitor.Counter;
+import com.netflix.servo.monitor.Timer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,11 +30,16 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
+import java.util.concurrent.TimeUnit;
+
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -44,9 +51,12 @@ public class SpringConfigTest {
 
     @Mock
     private MetricObjects mockMetricObjects;
-
     @Mock
     private FirehoseConfigurationProvider mockFirehoseConfigurationProvider;
+    @Mock
+    private Timer mockTimer;
+    @Mock
+    private Counter mockCounter;
 
     private SpringConfig springConfig;
 
@@ -57,15 +67,51 @@ public class SpringConfigTest {
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockMetricObjects, mockFirehoseConfigurationProvider);
+        verifyNoMoreInteractions(mockMetricObjects, mockFirehoseConfigurationProvider, mockTimer, mockCounter);
     }
 
     @Test
-    public void testRequestCounter() {
-        springConfig.requestCounter();
+    public void testSpanCounter() {
+        when(mockMetricObjects.createAndRegisterResettingCounter(anyString(), anyString(), anyString(), anyString()))
+                .thenReturn(mockCounter);
+
+        assertNotNull(springConfig.spanCounter());
 
         verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
                 FirehoseAction.class.getName(), "REQUEST");
+    }
+
+    @Test
+    public void testSuccessCounter() {
+        when(mockMetricObjects.createAndRegisterResettingCounter(anyString(), anyString(), anyString(), anyString()))
+                .thenReturn(mockCounter);
+
+        assertNotNull(springConfig.successCounter());
+
+        verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
+                FirehoseAction.class.getName(), "SUCCESS");
+    }
+
+    @Test
+    public void testFailureCounter() {
+        when(mockMetricObjects.createAndRegisterResettingCounter(anyString(), anyString(), anyString(), anyString()))
+                .thenReturn(mockCounter);
+
+        assertNotNull(springConfig.failureCounter());
+
+        verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
+                FirehoseAction.class.getName(), "FAILURE");
+    }
+
+    @Test
+    public void testPutBatchRequestTimer() {
+        when(mockMetricObjects.createAndRegisterBasicTimer(anyString(), anyString(), anyString(),
+                anyString(), any(TimeUnit.class))).thenReturn(mockTimer);
+
+        assertNotNull(springConfig.putBatchRequestTimer());
+
+        verify(mockMetricObjects).createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, FirehoseAction.class.getName(),
+                "PUT_BATCH_REQUEST", TimeUnit.MICROSECONDS);
     }
 
     @Test
@@ -95,6 +141,13 @@ public class SpringConfigTest {
         final Logger logger = springConfig.firehoseIsActiveControllerLogger();
 
         assertEquals(FirehoseIsActiveController.class.getName(), logger.getName());
+    }
+
+    @Test
+    public void testBatchLogger() {
+        final Logger logger = springConfig.batchLogger();
+
+        assertEquals(Batch.class.getName(), logger.getName());
     }
 
     @Test
