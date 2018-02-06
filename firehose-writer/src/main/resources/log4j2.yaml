@@ -3,7 +3,7 @@ Configuration:
     Console:
       name: Console
       PatternLayout:
-        Pattern: "%%d{HH:mm:ss.SSS} %level [%thread] %X{requestid} %logger{10} %msg %replace{%ex}{[\n]+}{'\\n'}%nopex%n"
+        Pattern: "%%d{HH:mm:ss.SSS} %level [%thread] %X{requestid} %logger{10} %msg %replace{%ex}{[\n]+}{'\\n'}%ex{0}%n"
       target: SYSTEM_OUT
     EmitToGraphiteLog4jAppender:
       name: EmitToGraphiteLog4jAppender

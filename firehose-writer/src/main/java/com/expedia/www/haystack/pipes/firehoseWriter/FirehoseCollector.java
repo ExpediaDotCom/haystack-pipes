@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018 Expedia, Inc.
+ *
+ *       Licensed under the Apache License, Version 2.0 (the "License");
+ *       you may not use this file except in compliance with the License.
+ *       You may obtain a copy of the License at
+ *
+ *           http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *       Unless required by applicable law or agreed to in writing, software
+ *       distributed under the License is distributed on an "AS IS" BASIS,
+ *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *       See the License for the specific language governing permissions and
+ *       limitations under the License.
+ *
+ */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
 import com.amazonaws.services.kinesisfirehose.model.Record;
@@ -6,6 +22,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * This class collects records to send to Firehose until either the maximum number of records, or the maximum total size
+ * of the payload (both of which are specified by Firehose documents) is reached.
+ */
 class FirehoseCollector {
     /**
      * Maximum record size in bytes; see https://docs.aws.amazon.com/firehose/latest/dev/limits.html to read that "The
