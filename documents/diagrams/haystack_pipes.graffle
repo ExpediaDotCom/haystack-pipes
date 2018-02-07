@@ -55,7 +55,224 @@
 	<array>
 		<dict>
 			<key>Bounds</key>
-			<string>{{363, 232}, {140, 28}}</string>
+			<string>{{355.5, 308.6431884765625}, {139, 42}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>YES</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>ID</key>
+			<integer>145</integer>
+			<key>Shape</key>
+			<string>Rectangle</string>
+			<key>Style</key>
+			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Align</key>
+				<integer>0</integer>
+				<key>Pad</key>
+				<integer>0</integer>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+\cocoascreenfonts1{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs24 \cf0 Posts JSON Span objects\
+with flattened tags to\
+HTTP endpoint}</string>
+				<key>VerticalPad</key>
+				<integer>0</integer>
+			</dict>
+			<key>Wrap</key>
+			<string>NO</string>
+		</dict>
+		<dict>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>ID</key>
+			<integer>144</integer>
+			<key>OrthogonalBarAutomatic</key>
+			<true/>
+			<key>OrthogonalBarPoint</key>
+			<string>{0, 0}</string>
+			<key>OrthogonalBarPosition</key>
+			<real>-1</real>
+			<key>Points</key>
+			<array>
+				<string>{351, 306.50001144409214}</string>
+				<string>{494.5, 306.5}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>stroke</key>
+				<dict>
+					<key>HeadArrow</key>
+					<string>FilledArrow</string>
+					<key>Legacy</key>
+					<true/>
+					<key>LineType</key>
+					<integer>2</integer>
+					<key>TailArrow</key>
+					<string>0</string>
+				</dict>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{122.77244707942009, 301.02157768034562}, {74, 24}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>FitText</key>
+			<string>YES</string>
+			<key>Flow</key>
+			<string>Resize</string>
+			<key>FontInfo</key>
+			<dict>
+				<key>Color</key>
+				<dict>
+					<key>w</key>
+					<string>0</string>
+				</dict>
+				<key>Font</key>
+				<string>Helvetica</string>
+				<key>Size</key>
+				<real>12</real>
+			</dict>
+			<key>ID</key>
+			<integer>143</integer>
+			<key>Line</key>
+			<dict>
+				<key>ID</key>
+				<integer>142</integer>
+				<key>Position</key>
+				<real>0.41486963629722595</real>
+				<key>RotationType</key>
+				<integer>0</integer>
+			</dict>
+			<key>Shape</key>
+			<string>Rectangle</string>
+			<key>Style</key>
+			<dict>
+				<key>shadow</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+				<key>stroke</key>
+				<dict>
+					<key>Draws</key>
+					<string>NO</string>
+				</dict>
+			</dict>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+\cocoascreenfonts1{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc
+
+\f0\fs24 \cf0 proto-spans}</string>
+			</dict>
+			<key>Wrap</key>
+			<string>NO</string>
+		</dict>
+		<dict>
+			<key>Class</key>
+			<string>LineGraphic</string>
+			<key>Head</key>
+			<dict>
+				<key>ID</key>
+				<integer>141</integer>
+			</dict>
+			<key>ID</key>
+			<integer>142</integer>
+			<key>Points</key>
+			<array>
+				<string>{88, 318.00003492832178}</string>
+				<string>{261, 305.9999828338623}</string>
+			</array>
+			<key>Style</key>
+			<dict>
+				<key>stroke</key>
+				<dict>
+					<key>HeadArrow</key>
+					<string>FilledArrow</string>
+					<key>Legacy</key>
+					<true/>
+					<key>TailArrow</key>
+					<string>0</string>
+				</dict>
+			</dict>
+			<key>Tail</key>
+			<dict>
+				<key>ID</key>
+				<integer>42</integer>
+				<key>Info</key>
+				<integer>9</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{261, 270}, {90, 72}}</string>
+			<key>Class</key>
+			<string>ShapedGraphic</string>
+			<key>ID</key>
+			<integer>141</integer>
+			<key>Magnets</key>
+			<array>
+				<string>{-0.5962847978430259, -1.1925696134567261}</string>
+				<string>{1.9868216701487083e-08, -1.3333333730697632}</string>
+				<string>{0.59628487781105233, -1.1925696134567261}</string>
+				<string>{1.1925696134567283, -0.59628480672836304}</string>
+				<string>{1.3333333730697656, 1.5894572413799324e-07}</string>
+				<string>{1.1925696134567283, 0.59628473564567486}</string>
+				<string>{0.59628465308492307, 1.1925697326660156}</string>
+				<string>{1.1842379282265398e-15, 1.3333333730697632}</string>
+				<string>{-0.59628494889373829, 1.1925696134567261}</string>
+				<string>{-1.1925697326660156, 0.5962844398368361}</string>
+				<string>{-1.3333333730697632, -6.3578289655197295e-07}</string>
+				<string>{-1.1925696134567261, -0.59628480672836304}</string>
+			</array>
+			<key>Shape</key>
+			<string>Rectangle</string>
+			<key>Style</key>
+			<dict/>
+			<key>Text</key>
+			<dict>
+				<key>Text</key>
+				<string>{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+\cocoascreenfonts1{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\qc
+
+\f0\fs20 \cf0 http-poster}</string>
+				<key>VerticalPad</key>
+				<integer>0</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>Bounds</key>
+			<string>{{355.5, 199.59706115722656}, {118, 42}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FitText</key>
@@ -96,7 +313,8 @@
 {\colortbl;\red255\green255\blue255;}
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
 
-\f0\fs24 \cf0 Posts JSON with flattened\
+\f0\fs24 \cf0 Produces JSON Span\
+objects with flattened \
 tags to Kafka}</string>
 				<key>VerticalPad</key>
 				<integer>0</integer>
@@ -117,8 +335,8 @@ tags to Kafka}</string>
 			<real>-1</real>
 			<key>Points</key>
 			<array>
-				<string>{353, 261.71964647661696}</string>
-				<string>{505, 262}</string>
+				<string>{351, 198.00001144409214}</string>
+				<string>{494.5, 198}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -144,7 +362,7 @@ tags to Kafka}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{123.60218113660812, 109.07936672307409}, {74, 24}}</string>
+			<string>{{122.77244707942009, 144.12941241486931}, {74, 24}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FitText</key>
@@ -210,14 +428,14 @@ tags to Kafka}</string>
 				<key>ID</key>
 				<integer>69</integer>
 				<key>Info</key>
-				<integer>12</integer>
+				<integer>16</integer>
 			</dict>
 			<key>ID</key>
 			<integer>137</integer>
 			<key>Points</key>
 			<array>
-				<string>{88, 119.69221692268738}</string>
-				<string>{263, 123.03579711914062}</string>
+				<string>{88, 186.00004279613501}</string>
+				<string>{261, 114.00000286102295}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -236,12 +454,12 @@ tags to Kafka}</string>
 				<key>ID</key>
 				<integer>42</integer>
 				<key>Info</key>
-				<integer>6</integer>
+				<integer>7</integer>
 			</dict>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{263, 225.64804077148438}, {89.999999999999972, 72.1431884765625}}</string>
+			<string>{{261, 162}, {90, 72}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>ID</key>
@@ -280,7 +498,7 @@ tags to Kafka}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{126.10218635201454, 162.46495805677927}, {69, 24}}</string>
+			<string>{{125.27244707942009, 85.597052093157856}, {69, 24}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FitText</key>
@@ -346,14 +564,14 @@ tags to Kafka}</string>
 				<key>ID</key>
 				<integer>69</integer>
 				<key>Info</key>
-				<integer>10</integer>
+				<integer>20</integer>
 			</dict>
 			<key>ID</key>
 			<integer>134</integer>
 			<key>Points</key>
 			<array>
-				<string>{88, 185.3538024205518}</string>
-				<string>{263, 159.10737845721451}</string>
+				<string>{88, 120.00001722574248}</string>
+				<string>{261, 66.000005722045898}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -372,12 +590,12 @@ tags to Kafka}</string>
 				<key>ID</key>
 				<integer>42</integer>
 				<key>Info</key>
-				<integer>7</integer>
+				<integer>6</integer>
 			</dict>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{363, 352.5}, {142, 28}}</string>
+			<string>{{355.5, 415.286376953125}, {142, 42}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FitText</key>
@@ -419,7 +637,8 @@ tags to Kafka}</string>
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
 
 \f0\fs24 \cf0 Writes JSON Span objects\
-to AWS Firehose}</string>
+with flattened tags to \
+AWS Firehose}</string>
 				<key>VerticalPad</key>
 				<integer>0</integer>
 			</dict>
@@ -439,8 +658,8 @@ to AWS Firehose}</string>
 			<real>-1</real>
 			<key>Points</key>
 			<array>
-				<string>{353, 382.36769104003906}</string>
-				<string>{505, 383}</string>
+				<string>{351, 414}</string>
+				<string>{494.5, 414}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -466,7 +685,7 @@ to AWS Firehose}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{120.10218635201454, 370.35059342261644}, {81, 24}}</string>
+			<string>{{122.77244707942009, 384.44610722469019}, {74, 24}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FitText</key>
@@ -519,7 +738,7 @@ to AWS Firehose}</string>
 {\colortbl;\red255\green255\blue255;}
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\qc
 
-\f0\fs24 \cf0 proto-spans/-}</string>
+\f0\fs24 \cf0 proto-spans}</string>
 			</dict>
 			<key>Wrap</key>
 			<string>NO</string>
@@ -538,8 +757,8 @@ to AWS Firehose}</string>
 			<integer>124</integer>
 			<key>Points</key>
 			<array>
-				<string>{88, 382.33847085513116}</string>
-				<string>{263, 382.36769104003906}</string>
+				<string>{88, 384.00003099441517}</string>
+				<string>{261, 414}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -563,7 +782,7 @@ to AWS Firehose}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{123.60218635201454, 243.45623070483327}, {74, 24}}</string>
+			<string>{{122.77244707942009, 217.59705525771034}, {74, 24}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FitText</key>
@@ -635,8 +854,8 @@ to AWS Firehose}</string>
 			<integer>76</integer>
 			<key>Points</key>
 			<array>
-				<string>{88, 251.01535856541159}</string>
-				<string>{263, 261.71961780948914}</string>
+				<string>{87.999999999999986, 252.00003886222839}</string>
+				<string>{261, 197.9999828338623}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -654,11 +873,13 @@ to AWS Firehose}</string>
 			<dict>
 				<key>ID</key>
 				<integer>42</integer>
+				<key>Info</key>
+				<integer>8</integer>
 			</dict>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{263, 346.29609680175781}, {89.999999999999972, 72.1431884765625}}</string>
+			<string>{{261, 378}, {90, 72}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>ID</key>
@@ -689,33 +910,33 @@ to AWS Firehose}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{36, 54.030654907226562}, {52, 393.9693603515625}}</string>
+			<string>{{36, 54.000015258789062}, {52, 396}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>ID</key>
 			<integer>42</integer>
 			<key>Magnets</key>
 			<array>
-				<string>{-0.7396002417658688, -1.1094003915786739}</string>
-				<string>{-0.42163697454145743, -1.2649110555648797}</string>
-				<string>{1.9868215517249155e-08, -1.3333333730697625}</string>
-				<string>{0.42163710648196329, -1.2649110555648797}</string>
-				<string>{0.73960031615696309, -1.1094003915786739}</string>
-				<string>{1.1094003915786743, -0.73960025003154639}</string>
-				<string>{1.2649110555648804, -0.4216368426009538}</string>
-				<string>{1.3333333730697632, 1.5894572413799324e-07}</string>
-				<string>{1.2649110555648804, 0.42163714417925036}</string>
-				<string>{1.1094003915786743, 0.73960034921967122}</string>
-				<string>{0.73960021696883871, 1.1094003915786743}</string>
-				<string>{0.42163699339010208, 1.2649110555648804}</string>
-				<string>{0, 1.3333333730697632}</string>
-				<string>{-0.42163733062650866, 1.2649109363555908}</string>
-				<string>{-0.73960021696883771, 1.1094003915786743}</string>
-				<string>{-1.1094003915786734, 0.73960034921967122}</string>
-				<string>{-1.2649110555648793, 0.42163676720637966}</string>
-				<string>{-1.3333333730697621, -6.3578289655197295e-07}</string>
-				<string>{-1.2649109363555897, -0.4216371798373757}</string>
-				<string>{-1.109400510787963, -0.73960016419084651}</string>
+				<string>{-0.73960024176586958, -1.1094003915786741}</string>
+				<string>{-0.42163697454145854, -1.2649110555648801}</string>
+				<string>{1.9868215517249155e-08, -1.333333373069763}</string>
+				<string>{0.42163710648196329, -1.2649110555648801}</string>
+				<string>{0.73960031615696309, -1.1094003915786741}</string>
+				<string>{1.1094003915786748, -0.73960025003154672}</string>
+				<string>{1.264911055564881, -0.42163684260095363}</string>
+				<string>{1.3333333730697638, 1.5894572413799324e-07}</string>
+				<string>{1.264911055564881, 0.42163714417925036}</string>
+				<string>{1.1094003915786748, 0.73960034921967122}</string>
+				<string>{0.73960021696883871, 1.1094003915786745}</string>
+				<string>{0.42163699339010208, 1.2649110555648806}</string>
+				<string>{0, 1.3333333730697634}</string>
+				<string>{-0.42163733062650977, 1.264910936355591}</string>
+				<string>{-0.73960021696883849, 1.1094003915786745}</string>
+				<string>{-1.1094003915786743, 0.73960034921967122}</string>
+				<string>{-1.2649110555648804, 0.42163676720637966}</string>
+				<string>{-1.3333333730697632, -6.3578289655197295e-07}</string>
+				<string>{-1.2649109363555908, -0.42163717983737553}</string>
+				<string>{-1.1094005107879639, -0.73960016419084684}</string>
 			</array>
 			<key>Shape</key>
 			<string>Rectangle</string>
@@ -749,25 +970,33 @@ to AWS Firehose}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{263, 105}, {89.999999999999972, 72.1431884765625}}</string>
+			<string>{{261, 54}, {90, 72}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>ID</key>
 			<integer>69</integer>
 			<key>Magnets</key>
 			<array>
-				<string>{-0.5962847978430259, -1.1925696134567261}</string>
-				<string>{1.9868216701487083e-08, -1.3333333730697632}</string>
-				<string>{0.59628487781105233, -1.1925696134567261}</string>
-				<string>{1.1925696134567283, -0.59628480672836304}</string>
-				<string>{1.3333333730697656, 1.5894572413799324e-07}</string>
-				<string>{1.1925696134567283, 0.59628473564567486}</string>
-				<string>{0.59628465308492307, 1.1925697326660156}</string>
-				<string>{1.1842379282265398e-15, 1.3333333730697632}</string>
-				<string>{-0.59628494889373829, 1.1925696134567261}</string>
-				<string>{-1.1925697326660156, 0.5962844398368361}</string>
+				<string>{-0.7396002417658698, -1.1094003915786741}</string>
+				<string>{-0.42163697454145854, -1.2649110555648801}</string>
+				<string>{1.9868215517249155e-08, -1.333333373069763}</string>
+				<string>{0.42163710648196329, -1.2649110555648801}</string>
+				<string>{0.73960031615696309, -1.1094003915786741}</string>
+				<string>{1.1094003915786743, -0.73960025003154661}</string>
+				<string>{1.2649110555648804, -0.4216368426009538}</string>
+				<string>{1.3333333730697632, 1.5894572413799324e-07}</string>
+				<string>{1.2649110555648804, 0.42163714417925036}</string>
+				<string>{1.1094003915786743, 0.73960034921967122}</string>
+				<string>{0.73960021696883871, 1.1094003915786743}</string>
+				<string>{0.42163699339010208, 1.2649110555648804}</string>
+				<string>{0, 1.3333333730697632}</string>
+				<string>{-0.42163733062650977, 1.2649109363555908}</string>
+				<string>{-0.73960021696883871, 1.1094003915786743}</string>
+				<string>{-1.1094003915786743, 0.73960034921967122}</string>
+				<string>{-1.2649110555648804, 0.42163676720637966}</string>
 				<string>{-1.3333333730697632, -6.3578289655197295e-07}</string>
-				<string>{-1.1925696134567261, -0.59628480672836304}</string>
+				<string>{-1.2649109363555908, -0.4216371798373757}</string>
+				<string>{-1.1094005107879639, -0.73960016419084673}</string>
 			</array>
 			<key>Shape</key>
 			<string>Rectangle</string>
@@ -834,7 +1063,7 @@ to AWS Firehose}</string>
 	<key>MasterSheets</key>
 	<array/>
 	<key>ModificationDate</key>
-	<string>2017-11-28 22:54:59 +0000</string>
+	<string>2018-02-07 19:33:47 +0000</string>
 	<key>Modifier</key>
 	<string>Jeff Baker</string>
 	<key>NotesVisible</key>
@@ -915,7 +1144,7 @@ to AWS Firehose}</string>
 			</dict>
 		</array>
 		<key>Frame</key>
-		<string>{{107, 62}, {711, 815}}</string>
+		<string>{{110, 1071}, {1546, 813}}</string>
 		<key>ListView</key>
 		<true/>
 		<key>OutlineWidth</key>
@@ -929,14 +1158,14 @@ to AWS Firehose}</string>
 		<key>SidebarWidth</key>
 		<integer>120</integer>
 		<key>VisibleRegion</key>
-		<string>{{0, -84}, {576, 673}}</string>
+		<string>{{-61, 20.5}, {698.5, 335.5}}</string>
 		<key>Zoom</key>
-		<real>1</real>
+		<real>2</real>
 		<key>ZoomValues</key>
 		<array>
 			<array>
 				<string>Canvas 1</string>
-				<real>1</real>
+				<real>2</real>
 				<real>1</real>
 			</array>
 		</array>

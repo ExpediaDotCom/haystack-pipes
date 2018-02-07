@@ -33,6 +33,7 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.APPLICATION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.any;
@@ -70,7 +71,7 @@ public class ProtobufToJsonTransformerTest {
     public void testDefaultConstructor() {
         protobufToJsonTransformer = new ProtobufToJsonTransformer();
 
-        assertEquals(ProtobufToJsonTransformer.CLIENT_ID, protobufToJsonTransformer.kafkaStreamStarter.clientId);
+        assertEquals(APPLICATION, protobufToJsonTransformer.kafkaStreamStarter.clientId);
         assertEquals(ProtobufToJsonTransformer.class, protobufToJsonTransformer.kafkaStreamStarter.containingClass);
     }
 

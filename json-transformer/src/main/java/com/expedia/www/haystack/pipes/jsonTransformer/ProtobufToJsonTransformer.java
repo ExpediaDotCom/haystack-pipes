@@ -26,16 +26,16 @@ import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 
-public class ProtobufToJsonTransformer implements KafkaStreamBuilder {
-    static final String CLIENT_ID = "haystack-pipes-protobuf-to-json-transformer";
+import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.APPLICATION;
 
+public class ProtobufToJsonTransformer implements KafkaStreamBuilder {
     private static final KafkaConfigurationProvider KAFKA_CONFIGURATION_PROVIDER = new KafkaConfigurationProvider();
 
     final KafkaStreamStarter kafkaStreamStarter;
     private final SpanSerdeFactory spanSerdeFactory;
 
     ProtobufToJsonTransformer() {
-        this(new KafkaStreamStarter(ProtobufToJsonTransformer.class, CLIENT_ID), new SpanSerdeFactory());
+        this(new KafkaStreamStarter(ProtobufToJsonTransformer.class, APPLICATION), new SpanSerdeFactory());
     }
 
     ProtobufToJsonTransformer(KafkaStreamStarter kafkaStreamStarter, SpanSerdeFactory spanSerdeFactory) {
@@ -53,7 +53,7 @@ public class ProtobufToJsonTransformer implements KafkaStreamBuilder {
 
     @Override
     public void buildStreamTopology(KStreamBuilder kStreamBuilder) {
-        final Serde<Span> spanSerde = spanSerdeFactory.createSpanSerde(Constants.APPLICATION);
+        final Serde<Span> spanSerde = spanSerdeFactory.createSpanSerde(APPLICATION);
         final Serde<String> stringSerde = Serdes.String();
         final KStream<String, Span> stream = kStreamBuilder.stream(
                 stringSerde, spanSerde, KAFKA_CONFIGURATION_PROVIDER.fromtopic());

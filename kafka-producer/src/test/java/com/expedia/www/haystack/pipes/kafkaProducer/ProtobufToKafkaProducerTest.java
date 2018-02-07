@@ -30,7 +30,7 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProtobufToKafkaProducer.CLIENT_ID;
+import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -73,7 +73,7 @@ public class ProtobufToKafkaProducerTest {
     public void testDefaultConstructor() {
         protobufToKafkaProducer = new ProtobufToKafkaProducer();
 
-        assertEquals(CLIENT_ID, protobufToKafkaProducer.kafkaStreamStarter.clientId);
+        assertEquals(APPLICATION, protobufToKafkaProducer.kafkaStreamStarter.clientId);
         assertEquals(ProtobufToKafkaProducer.class, protobufToKafkaProducer.kafkaStreamStarter.containingClass);
     }
 
