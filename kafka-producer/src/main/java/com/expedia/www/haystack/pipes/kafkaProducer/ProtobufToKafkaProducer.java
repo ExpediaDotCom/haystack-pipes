@@ -27,9 +27,9 @@ import org.apache.kafka.streams.kstream.ForeachAction;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 
-public class ProtobufToKafkaProducer implements KafkaStreamBuilder {
-    static final String CLIENT_ID = "haystack-pipes-json-to-kafka-producer";
+import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
 
+public class ProtobufToKafkaProducer implements KafkaStreamBuilder {
     private static final KafkaConfigurationProvider KAFKA_CONFIGURATION_PROVIDER = new KafkaConfigurationProvider();
     static ProtobufToKafkaProducer instance = new ProtobufToKafkaProducer();
     static Factory factory = new Factory();
@@ -38,7 +38,7 @@ public class ProtobufToKafkaProducer implements KafkaStreamBuilder {
     private final SpanSerdeFactory spanSerdeFactory;
 
     ProtobufToKafkaProducer() {
-        this(new KafkaStreamStarter(ProtobufToKafkaProducer.class, CLIENT_ID), new SpanSerdeFactory());
+        this(new KafkaStreamStarter(ProtobufToKafkaProducer.class, APPLICATION), new SpanSerdeFactory());
     }
 
     ProtobufToKafkaProducer(KafkaStreamStarter kafkaStreamStarter, SpanSerdeFactory spanSerdeFactory) {
@@ -56,7 +56,7 @@ public class ProtobufToKafkaProducer implements KafkaStreamBuilder {
 
     @Override
     public void buildStreamTopology(KStreamBuilder kStreamBuilder) {
-        final Serde<Span> spanSerde = spanSerdeFactory.createSpanSerde(Constants.APPLICATION);
+        final Serde<Span> spanSerde = spanSerdeFactory.createSpanSerde(APPLICATION);
         final Serde<String> stringSerde = Serdes.String();
         final KStream<String, Span> stream = kStreamBuilder.stream(
                 stringSerde, spanSerde, KAFKA_CONFIGURATION_PROVIDER.fromtopic());

@@ -20,6 +20,8 @@ import com.expedia.www.haystack.metrics.GraphiteConfig;
 import com.expedia.www.haystack.metrics.MetricPublishing;
 import org.cfg4j.provider.ConfigurationProvider;
 
+// TODO is this class still needed? Do non-appender usages of Counters and Timers still publish to InfluxDb?
+// TODO Do these non-appender usages shut down properly?
 class Metrics {
     private final ConfigurationProvider configurationProvider;
     private final MetricPublishing metricPublishing;
