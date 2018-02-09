@@ -30,7 +30,7 @@ public class SpringConfig {
         this.metricObjects = metricObjects;
     }
 
-    // Beans with unit tests
+    // Beans with unit tests ///////////////////////////////////////////////////////////////////////////////////////////
     @Bean
     Counter produceIntoExternalKafkaActionRequestCounter() {
         return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
@@ -48,21 +48,21 @@ public class SpringConfig {
         return LoggerFactory.getLogger(ProduceIntoExternalKafkaCallback.class);
     }
 
-
-    @Bean
-    @Autowired
-    CallbackFactory callbackFactory(Logger produceIntoExternalKafkaCallbackLogger) {
-        return new CallbackFactory(produceIntoExternalKafkaCallbackLogger);
-    }
-
     @Bean
     KafkaStreamStarter kafkaStreamStarter() {
         return new KafkaStreamStarter(ProtobufToKafkaProducer.class, APPLICATION);
     }
 
+    // Beans without unit tests ////////////////////////////////////////////////////////////////////////////////////////
     @Bean
     SpanSerdeFactory spanSerdeFactory() {
         return new SpanSerdeFactory();
+    }
+
+    @Bean
+    @Autowired
+    CallbackFactory callbackFactory(Logger produceIntoExternalKafkaCallbackLogger) {
+        return new CallbackFactory(produceIntoExternalKafkaCallbackLogger);
     }
 
     @Bean
@@ -89,7 +89,8 @@ public class SpringConfig {
                                                     SpanSerdeFactory spanSerdeFactory,
                                                     ProduceIntoExternalKafkaAction produceIntoExternalKafkaAction,
                                                     KafkaConfigurationProvider kafkaConfigurationProvider) {
-        return new ProtobufToKafkaProducer(kafkaStreamStarter, spanSerdeFactory, produceIntoExternalKafkaAction, kafkaConfigurationProvider);
+        return new ProtobufToKafkaProducer(
+                kafkaStreamStarter, spanSerdeFactory, produceIntoExternalKafkaAction, kafkaConfigurationProvider);
     }
 
     /*
