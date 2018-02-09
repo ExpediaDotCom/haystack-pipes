@@ -13,9 +13,15 @@
     </appender>
     <logger name="com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter" additivity="false" level="INFO">
         <appender-ref ref="STDOUT" /><!-- Display start up message without flooding logs with other info messages -->
+        <appender-ref ref="EmitToGraphiteLogbackAppender" />
     </logger>
     <logger name="com.netflix.servo.publish.graphite.GraphiteMetricObserver" additivity="false" level="INFO">
         <appender-ref ref="STDOUT" /><!-- Display start up message without flooding logs with other info messages -->
+        <appender-ref ref="EmitToGraphiteLogbackAppender" />
+    </logger>
+    <logger name="com.expedia.www.haystack.pipes.jsonTransformer.JsonTransformerIsActiveController" additivity="false" level="INFO">
+        <appender-ref ref="STDOUT" /><!-- Display start up message without flooding logs with other info messages -->
+        <appender-ref ref="EmitToGraphiteLogbackAppender" />
     </logger>
     <root level="WARN">
         <appender-ref ref="STDOUT" />

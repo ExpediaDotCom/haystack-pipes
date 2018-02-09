@@ -23,11 +23,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
 import org.springframework.boot.SpringApplication;
 
 import java.util.Collections;
 import java.util.Set;
 
+import static com.expedia.www.haystack.pipes.jsonTransformer.JsonTransformerIsActiveController.STARTUP_MSG;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -37,7 +39,6 @@ import static org.mockito.Mockito.when;
 public class JsonTransformerIsActiveControllerTest {
     @Mock
     private Factory mockFactory;
-    private Factory realFactory;
 
     @Mock
     private ProtobufToJsonTransformer mockProtobufToJsonTransformer;
@@ -45,45 +46,49 @@ public class JsonTransformerIsActiveControllerTest {
     @Mock
     private SpringApplication mockSpringApplication;
 
+    @Mock
+    private Logger mockLogger;
+
+    private Factory factory;
+
     @Before
     public void setUp() {
-        realFactory = JsonTransformerIsActiveController.factory;
-        JsonTransformerIsActiveController.factory = mockFactory;
+        storeJsonTransformerIsActiveControllerWithMocksInStaticInstance();
+        factory = new Factory();
+    }
+
+    private void storeJsonTransformerIsActiveControllerWithMocksInStaticInstance() {
+        new JsonTransformerIsActiveController(mockProtobufToJsonTransformer, mockFactory, mockLogger);
     }
 
     @After
     public void tearDown() {
-        JsonTransformerIsActiveController.factory = realFactory;
-        verifyNoMoreInteractions(mockFactory, mockProtobufToJsonTransformer, mockSpringApplication);
+        verifyNoMoreInteractions(mockProtobufToJsonTransformer, mockFactory, mockLogger);
+        verifyNoMoreInteractions(mockSpringApplication);
+        clearJsonTransformerIsActiveControllerInStaticInstance();
+    }
+
+    @After
+    public void clearJsonTransformerIsActiveControllerInStaticInstance() {
+        JsonTransformerIsActiveController.INSTANCE.set(null);
     }
 
     @Test
     public void testMain() {
-        when(mockFactory.createProtobufToJsonTransformer()).thenReturn(mockProtobufToJsonTransformer);
         when(mockFactory.createSpringApplication()).thenReturn(mockSpringApplication);
 
         final String[] args = new String[0];
         JsonTransformerIsActiveController.main(args);
 
-        verify(mockFactory).createProtobufToJsonTransformer();
+        verify(mockLogger).info(STARTUP_MSG);
         verify(mockFactory).createSpringApplication();
         verify(mockProtobufToJsonTransformer).main();
         verify(mockSpringApplication).run(args);
     }
 
     @Test
-    public void testDefaultConstructor() {
-        new JsonTransformerIsActiveController();
-    }
-
-    @Test
-    public void testFactoryCreateProtobufToJsonTransformer() {
-        realFactory.createProtobufToJsonTransformer();
-    }
-
-    @Test
     public void testFactoryCreateSpringApplication() {
-        final SpringApplication springApplication = realFactory.createSpringApplication();
+        final SpringApplication springApplication = factory.createSpringApplication();
 
         final Set<Object> sources = springApplication.getSources();
         assertEquals(Collections.singleton(JsonTransformerIsActiveController.class), sources);
