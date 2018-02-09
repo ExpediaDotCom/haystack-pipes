@@ -24,10 +24,7 @@ import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.monitor.Timer;
 import com.netflix.servo.util.VisibleForTesting;
-import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.ObjectPool;
-import org.apache.commons.pool2.PooledObject;
-import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -37,6 +34,8 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.kstream.ForeachAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +44,7 @@ import java.util.concurrent.TimeUnit;
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
 
+@Component
 public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Span> {
     private static final ExternalKafkaConfigurationProvider EKCP = new ExternalKafkaConfigurationProvider();
     private static final String TOPIC = EKCP.totopic();
@@ -53,18 +53,18 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
     private static final JsonFormat.Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
     private static final String TOPIC_MESSAGE =
             "Loading ProduceIntoExternalKafkaAction with brokers [%s] port [%d] topic [%s]";
+    static ObjectPool<ProduceIntoExternalKafkaCallback> OBJECT_POOL = new GenericObjectPool<>(
+            new CallbackFactory(LoggerFactory.getLogger(ProduceIntoExternalKafkaCallback.class)));
 
     @VisibleForTesting static final String ERROR_MSG =
             "Exception posting JSON [%s] to Kafka; received message [%s]";
-    @VisibleForTesting static Counter REQUEST =
-            METRIC_OBJECTS.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "REQUEST");
-    @VisibleForTesting static Counter POSTS_IN_FLIGHT =
-            METRIC_OBJECTS.createAndRegisterCounter(SUBSYSTEM, APPLICATION, CLASS_NAME, "POSTS_IN_FLIGHT");
-    static ObjectPool<ProduceIntoExternalKafkaCallback> objectPool = new GenericObjectPool<>(new CallbackFactory());
-
     @VisibleForTesting static Timer KAFKA_PRODUCER_POST = METRIC_OBJECTS.createAndRegisterBasicTimer(
             SUBSYSTEM, APPLICATION, CLASS_NAME, "KAFKA_PRODUCER_POST", TimeUnit.MICROSECONDS);
     @VisibleForTesting static Logger logger = LoggerFactory.getLogger(ProduceIntoExternalKafkaAction.class);
+
+    private final Counter requestCounter;
+    private final Counter postsInFlightCounter;
+
     static
     {
         logger.info(String.format(TOPIC_MESSAGE, EKCP.brokers(), EKCP.port(), TOPIC));
@@ -75,8 +75,15 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
 
     private final TagFlattener tagFlattener = new TagFlattener();
 
+    @Autowired
+    public ProduceIntoExternalKafkaAction(Counter produceIntoExternalKafkaActionRequestCounter,
+                                          Counter postsInFlightCounter) {
+        requestCounter = produceIntoExternalKafkaActionRequestCounter;
+        this.postsInFlightCounter = postsInFlightCounter;
+    }
+
     public void apply(String key, Span value) {
-        REQUEST.increment();
+        requestCounter.increment();
         final Stopwatch stopwatch = KAFKA_PRODUCER_POST.start();
         String jsonWithFlattenedTags = "";
         try {
@@ -85,8 +92,8 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
             final ProducerRecord<String, String> producerRecord =
                     factory.createProducerRecord(key, jsonWithFlattenedTags);
 
-            final ProduceIntoExternalKafkaCallback callback = objectPool.borrowObject(); // callback must returnObject()
-            POSTS_IN_FLIGHT.increment();
+            final ProduceIntoExternalKafkaCallback callback = OBJECT_POOL.borrowObject(); // callback must returnObject()
+            postsInFlightCounter.increment();
             // TODO Put the Span value into the callback so that it can write it to Kafka for retry
 
             kafkaProducer.send(producerRecord, callback);
@@ -119,16 +126,4 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
         }
     }
 
-    static class CallbackFactory extends BasePooledObjectFactory<ProduceIntoExternalKafkaCallback> {
-        @Override
-        public ProduceIntoExternalKafkaCallback create() {
-            return new ProduceIntoExternalKafkaCallback();
-        }
-
-        @Override
-        public PooledObject<ProduceIntoExternalKafkaCallback> wrap(
-                ProduceIntoExternalKafkaCallback produceIntoExternalKafkaCallback) {
-            return new DefaultPooledObject<>(produceIntoExternalKafkaCallback);
-        }
-    }
 }

@@ -16,19 +16,26 @@
  */
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
-import org.apache.kafka.clients.producer.RecordMetadata;
-
 import org.apache.kafka.clients.producer.Callback;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.POSTS_IN_FLIGHT;
+import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.OBJECT_POOL;
 
+@Component
 public class ProduceIntoExternalKafkaCallback implements Callback {
     static final String DEBUG_MSG = "Successfully posted JSON to Kafka: topic [%s] partition [%d] offset [%d]";
     static final String ERROR_MSG_TEMPLATE = "Callback exception posting JSON to Kafka; received message [%s]";
     static final String POOL_ERROR_MSG_TEMPLATE = "Exception returning callback to pool; received message [%s]";
-    static Logger logger = LoggerFactory.getLogger(ProduceIntoExternalKafkaCallback.class);
+
+    private final Logger logger;
+
+    @Autowired
+    public ProduceIntoExternalKafkaCallback(Logger produceIntoExternalKafkaCallbackLogger) {
+        this.logger = produceIntoExternalKafkaCallbackLogger;
+    }
 
     @Override
     public void onCompletion(RecordMetadata metadata, Exception exception) {
@@ -50,8 +57,7 @@ public class ProduceIntoExternalKafkaCallback implements Callback {
 
     private void returnObjectToPoolButLogExceptionIfReturnFails() {
         try {
-            POSTS_IN_FLIGHT.increment(-1);
-            ProduceIntoExternalKafkaAction.objectPool.returnObject(this);
+            OBJECT_POOL.returnObject(this);
         } catch (Exception exception) {
             logError(exception, POOL_ERROR_MSG_TEMPLATE);
         }

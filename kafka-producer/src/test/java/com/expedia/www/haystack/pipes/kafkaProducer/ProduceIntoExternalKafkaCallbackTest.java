@@ -29,12 +29,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.POSTS_IN_FLIGHT;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.objectPool;
+import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.OBJECT_POOL;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.DEBUG_MSG;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.ERROR_MSG_TEMPLATE;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.POOL_ERROR_MSG_TEMPLATE;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.logger;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -58,7 +56,6 @@ public class ProduceIntoExternalKafkaCallbackTest {
 
     @Mock
     private Logger mockLogger;
-    private Logger realLogger;
 
     @Mock
     private Exception mockException;
@@ -69,7 +66,6 @@ public class ProduceIntoExternalKafkaCallbackTest {
 
     @Mock
     private Counter mockPostsInFlightCounter;
-    private Counter realPostsInFlightCounter;
 
     private RecordMetadata recordMetadata;
     private ProduceIntoExternalKafkaCallback produceIntoExternalKafkaCallback;
@@ -79,41 +75,26 @@ public class ProduceIntoExternalKafkaCallbackTest {
         injectMockAndSaveRealObjects();
         recordMetadata = new RecordMetadata(TOPIC_PARTITION, BASE_OFFSET, RELATIVE_OFFSET, TIMESTAMP, CHECKSUM,
                 SERIALIZED_KEY_SIZE, SERIALIZED_VALUE_SIZE);
-        produceIntoExternalKafkaCallback = new ProduceIntoExternalKafkaCallback();
+        produceIntoExternalKafkaCallback = new ProduceIntoExternalKafkaCallback(mockLogger);
     }
 
     private void injectMockAndSaveRealObjects() {
-        saveRealAndInjectMockLogger();
         saveRealAndInjectMockObjectPool();
-        saveRealAndInjectMockPostsInFlightCounter();
-    }
-
-    private void saveRealAndInjectMockLogger() {
-        realLogger = logger;
-        logger = mockLogger;
     }
 
     private void saveRealAndInjectMockObjectPool() {
-        realObjectPool = objectPool;
-        objectPool = mockObjectPool;
-    }
-
-    private void saveRealAndInjectMockPostsInFlightCounter() {
-        realPostsInFlightCounter = POSTS_IN_FLIGHT;
-        POSTS_IN_FLIGHT = mockPostsInFlightCounter;
+        realObjectPool = OBJECT_POOL;
+        OBJECT_POOL = mockObjectPool;
     }
 
     @After
     public void tearDown() {
-        verify(mockPostsInFlightCounter).increment(-1);
         restoreRealObjects();
         verifyNoMoreInteractions(mockLogger, mockException, mockObjectPool, mockPostsInFlightCounter);
     }
 
     private void restoreRealObjects() {
-        logger = realLogger;
-        objectPool = realObjectPool;
-        POSTS_IN_FLIGHT = realPostsInFlightCounter;
+        OBJECT_POOL = realObjectPool;
     }
 
     @Test
