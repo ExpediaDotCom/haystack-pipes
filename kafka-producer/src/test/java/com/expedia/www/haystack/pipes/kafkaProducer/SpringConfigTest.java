@@ -1,22 +1,33 @@
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.expedia.www.haystack.metrics.MetricObjects;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
+import com.netflix.servo.monitor.Counter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SpringConfigTest {
     @Mock
     private MetricObjects mockMetricObjects;
+
+    @Mock
+    private Counter mockCounter;
 
     private SpringConfig springConfig;
 
@@ -27,16 +38,44 @@ public class SpringConfigTest {
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockMetricObjects);
+        verifyNoMoreInteractions(mockMetricObjects, mockCounter);
     }
 
     @Test
     public void testProduceIntoExternalKafkaActionRequestCounter() {
-        springConfig.produceIntoExternalKafkaActionRequestCounter();
+        when(mockMetricObjects.createAndRegisterResettingCounter(anyString(), anyString(), anyString(), anyString()))
+                .thenReturn(mockCounter);
+
+        assertNotNull(springConfig.produceIntoExternalKafkaActionRequestCounter());
 
         verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
                 ProduceIntoExternalKafkaAction.class.getSimpleName(), "REQUEST");
     }
 
+    @Test
+    public void testPostsInFlightCounter() {
+        when(mockMetricObjects.createAndRegisterResettingCounter(anyString(), anyString(), anyString(), anyString()))
+                .thenReturn(mockCounter);
+
+        assertNotNull(springConfig.postsInFlightCounter());
+
+        verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
+                ProduceIntoExternalKafkaAction.class.getSimpleName(), "POSTS_IN_FLIGHT");
+    }
+
+    @Test
+    public void testProduceIntoExternalKafkaCallbackLogger() {
+        final Logger logger = springConfig.produceIntoExternalKafkaCallbackLogger();
+
+        assertEquals(ProduceIntoExternalKafkaCallback.class.getName(), logger.getName());
+    }
+
+    @Test
+    public void testKafkaStreamStarter() {
+        final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter();
+
+        assertSame(ProtobufToKafkaProducer.class, kafkaStreamStarter.containingClass);
+        assertSame(APPLICATION, kafkaStreamStarter.clientId);
+    }
 
 }
