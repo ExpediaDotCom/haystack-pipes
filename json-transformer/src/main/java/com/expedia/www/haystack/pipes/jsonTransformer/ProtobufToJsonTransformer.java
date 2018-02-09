@@ -25,20 +25,20 @@ import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.APPLICATION;
 
+@Component
 public class ProtobufToJsonTransformer implements KafkaStreamBuilder {
-    private static final KafkaConfigurationProvider KAFKA_CONFIGURATION_PROVIDER = new KafkaConfigurationProvider();
-
-    final KafkaStreamStarter kafkaStreamStarter;
+    private final KafkaStreamStarter kafkaStreamStarter;
     private final SpanSerdeFactory spanSerdeFactory;
+    private final KafkaConfigurationProvider kafkaConfigurationProvider = new KafkaConfigurationProvider();
 
-    ProtobufToJsonTransformer() {
-        this(new KafkaStreamStarter(ProtobufToJsonTransformer.class, APPLICATION), new SpanSerdeFactory());
-    }
-
-    ProtobufToJsonTransformer(KafkaStreamStarter kafkaStreamStarter, SpanSerdeFactory spanSerdeFactory) {
+    @Autowired
+    ProtobufToJsonTransformer(KafkaStreamStarter kafkaStreamStarter,
+                              SpanSerdeFactory spanSerdeFactory) {
         this.kafkaStreamStarter = kafkaStreamStarter;
         this.spanSerdeFactory = spanSerdeFactory;
     }
@@ -56,8 +56,8 @@ public class ProtobufToJsonTransformer implements KafkaStreamBuilder {
         final Serde<Span> spanSerde = spanSerdeFactory.createSpanSerde(APPLICATION);
         final Serde<String> stringSerde = Serdes.String();
         final KStream<String, Span> stream = kStreamBuilder.stream(
-                stringSerde, spanSerde, KAFKA_CONFIGURATION_PROVIDER.fromtopic());
-        stream.mapValues(span->span).to(stringSerde, spanSerde, KAFKA_CONFIGURATION_PROVIDER.totopic());
+                stringSerde, spanSerde, kafkaConfigurationProvider.fromtopic());
+        stream.mapValues(span->span).to(stringSerde, spanSerde, kafkaConfigurationProvider.totopic());
     }
 
 }
