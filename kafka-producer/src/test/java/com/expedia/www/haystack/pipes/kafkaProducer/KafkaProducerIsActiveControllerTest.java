@@ -23,12 +23,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
 import org.springframework.boot.SpringApplication;
 
-import java.util.Collections;
 import java.util.Set;
 
+import static com.expedia.www.haystack.pipes.kafkaProducer.KafkaProducerIsActiveController.STARTUP_MSG;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -37,7 +39,6 @@ import static org.mockito.Mockito.when;
 public class KafkaProducerIsActiveControllerTest {
     @Mock
     private Factory mockFactory;
-    private Factory realFactory;
 
     @Mock
     private ProtobufToKafkaProducer mockProtobufToKafkaProducer;
@@ -45,47 +46,51 @@ public class KafkaProducerIsActiveControllerTest {
     @Mock
     private SpringApplication mockSpringApplication;
 
+    @Mock
+    private Logger mockLogger;
+
+    private Factory factory;
+
     @Before
     public void setUp() {
-        realFactory = KafkaProducerIsActiveController.factory;
-        KafkaProducerIsActiveController.factory = mockFactory;
+        storeKafkaProducerIsActiveControllerWithMocksInStaticInstance();
+        factory = new Factory();
+    }
+
+    private void storeKafkaProducerIsActiveControllerWithMocksInStaticInstance() {
+        new KafkaProducerIsActiveController(mockProtobufToKafkaProducer, mockFactory, mockLogger);
     }
 
     @After
     public void tearDown() {
-        KafkaProducerIsActiveController.factory = realFactory;
-        verifyNoMoreInteractions(mockFactory, mockProtobufToKafkaProducer, mockSpringApplication);
+        verifyNoMoreInteractions(mockProtobufToKafkaProducer, mockFactory, mockSpringApplication, mockLogger);
+        clearKafkaProducerIsActiveControllerInStaticInstance();
+    }
+
+    private void clearKafkaProducerIsActiveControllerInStaticInstance() {
+        KafkaProducerIsActiveController.INSTANCE.set(null);
     }
 
     @Test
     public void testMain() {
-        when(mockFactory.createProtobufToKafkaProducer()).thenReturn(mockProtobufToKafkaProducer);
         when(mockFactory.createSpringApplication()).thenReturn(mockSpringApplication);
 
         final String[] args = new String[0];
         KafkaProducerIsActiveController.main(args);
 
-        verify(mockFactory).createProtobufToKafkaProducer();
+        verify(mockLogger).info(STARTUP_MSG);
         verify(mockFactory).createSpringApplication();
         verify(mockProtobufToKafkaProducer).main();
         verify(mockSpringApplication).run(args);
     }
 
     @Test
-    public void testDefaultConstructor() {
-        new KafkaProducerIsActiveController();
-    }
-
-    @Test
-    public void testFactoryCreateProtobufToKafkaProducer() {
-        realFactory.createProtobufToKafkaProducer();
-    }
-
-    @Test
     public void testFactoryCreateSpringApplication() {
-        final SpringApplication springApplication = realFactory.createSpringApplication();
+        final SpringApplication springApplication = factory.createSpringApplication();
 
         final Set<Object> sources = springApplication.getSources();
-        assertEquals(Collections.singleton(KafkaProducerIsActiveController.class), sources);
+        assertEquals(1, sources.size());
+        final Object[] objects = sources.toArray();
+        assertSame(KafkaProducerIsActiveController.class, objects[0]);
     }
 }

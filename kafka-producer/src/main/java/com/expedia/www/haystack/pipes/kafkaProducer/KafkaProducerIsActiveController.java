@@ -16,28 +16,52 @@
  */
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
+import com.netflix.servo.util.VisibleForTesting;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A very simple Spring Boot application that is intended to support only a single REST endpoint (index.html)
  * to indicate that the JVM is running.
  */
 @SpringBootApplication
+@Component
 public class KafkaProducerIsActiveController extends SpringBootServletInitializer {
-    static Factory factory = new Factory();
+    // Singleton, initialized on first constructor call, so that future instances created by Spring during unit tests
+    // will not overwrite the initial INSTANCE (with mocks) created by the unit tests.
+    @VisibleForTesting
+    static final AtomicReference<KafkaProducerIsActiveController> INSTANCE = new AtomicReference<>();
+    @VisibleForTesting static final String STARTUP_MSG = "Starting FirehoseIsActiveController";
+
+    private final ProtobufToKafkaProducer protobufToKafkaProducer;
+    private final Factory factory;
+    private final Logger logger;
+
+    @Autowired
+    KafkaProducerIsActiveController(ProtobufToKafkaProducer protobufToKafkaProducer,
+                               Factory kafkaProducerIsActiveControllerFactory,
+                               Logger firehoseIsActiveControllerLogger) {
+        this.protobufToKafkaProducer = protobufToKafkaProducer;
+        this.factory = kafkaProducerIsActiveControllerFactory;
+        this.logger = firehoseIsActiveControllerLogger;
+        INSTANCE.compareAndSet(null, this);
+    }
 
     public static void main(String[] args) {
-        factory.createProtobufToKafkaProducer().main();
-        factory.createSpringApplication().run(args);
+        new AnnotationConfigApplicationContext(SpringConfig.class);
+        INSTANCE.get().logger.info(STARTUP_MSG);
+        INSTANCE.get().protobufToKafkaProducer.main();
+        INSTANCE.get().factory.createSpringApplication().run(args);
     }
 
     static class Factory {
-        ProtobufToKafkaProducer createProtobufToKafkaProducer() {
-            return new ProtobufToKafkaProducer();
-        }
-
         SpringApplication createSpringApplication() {
             return new SpringApplication(KafkaProducerIsActiveController.class);
         }

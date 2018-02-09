@@ -18,10 +18,10 @@ package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.Factory;
-import com.netflix.servo.monitor.BasicCounter;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.monitor.Timer;
+import org.apache.commons.pool2.ObjectPool;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.After;
@@ -39,12 +39,9 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.ERROR_MSG;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.KAFKA_PRODUCER_POST;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.POSTS_IN_FLIGHT;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.REQUEST;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.factory;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.kafkaProducer;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.logger;
-import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -60,10 +57,8 @@ public class ProduceIntoExternalKafkaActionTest {
 
     @Mock
     private Counter mockRequestCounter;
-    private Counter realRequestCounter;
     @Mock
     private Counter mockPostsInFlightCounter;
-    private Counter realPostsInFlightCounter;
     @Mock
     private Timer mockTimer;
     private Timer realTimer;
@@ -76,9 +71,10 @@ public class ProduceIntoExternalKafkaActionTest {
     @Mock
     private KafkaProducer<String, String> mockKafkaProducer;
     private KafkaProducer<String, String> realKafkaProducer;
-
     @Mock
     private ProducerRecord<String, String> mockProducerRecord;
+    @Mock
+    private ObjectPool<ProduceIntoExternalKafkaCallback> mockObjectPool;
 
     @Mock
     private Stopwatch mockStopwatch;
@@ -88,33 +84,22 @@ public class ProduceIntoExternalKafkaActionTest {
     @Before
     public void setUp() {
         injectMocksAndSaveRealObjects();
-        produceIntoExternalKafkaAction = new ProduceIntoExternalKafkaAction();
+        produceIntoExternalKafkaAction = new ProduceIntoExternalKafkaAction(
+                mockRequestCounter, mockPostsInFlightCounter);
     }
 
     @After
     public void tearDown() {
         restoreRealObjects();
         verifyNoMoreInteractions(mockRequestCounter, mockPostsInFlightCounter, mockTimer, mockLogger, mockFactory,
-                mockKafkaProducer, mockProducerRecord, mockStopwatch);
+                mockKafkaProducer, mockProducerRecord, mockStopwatch, mockObjectPool);
     }
 
     private void injectMocksAndSaveRealObjects() {
-        saveRealAndInjectMockRequestCounter();
-        saveRealAndInjectMockPostsInFlightCounter();
         saveRealAndInjectMockTimer();
         saveRealAndInjectMockLogger();
         saveRealAndInjectMockFactory();
         saveRealAndInjectMockProducer();
-    }
-
-    private void saveRealAndInjectMockRequestCounter() {
-        realRequestCounter = REQUEST;
-        REQUEST = mockRequestCounter;
-    }
-
-    private void saveRealAndInjectMockPostsInFlightCounter() {
-        realPostsInFlightCounter = POSTS_IN_FLIGHT;
-        POSTS_IN_FLIGHT = mockPostsInFlightCounter;
     }
 
     private void saveRealAndInjectMockTimer() {
@@ -138,8 +123,6 @@ public class ProduceIntoExternalKafkaActionTest {
     }
 
     private void restoreRealObjects() {
-        REQUEST = realRequestCounter;
-        POSTS_IN_FLIGHT = realPostsInFlightCounter;
         KAFKA_PRODUCER_POST = realTimer;
         logger = realLogger;
         factory = realFactory;
@@ -213,9 +196,4 @@ public class ProduceIntoExternalKafkaActionTest {
         assertEquals(VALUE, producerRecord.value());
     }
 
-    @Test
-    public void testPostsInFlightCounterType() {
-        assertTrue("POSTS_IN_FLIGHT should be a BasicCounter, not a ResettingCounter",
-                realPostsInFlightCounter instanceof BasicCounter);
-    }
 }
