@@ -17,7 +17,13 @@
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.expedia.www.haystack.pipes.commons.Configuration;
+import org.apache.kafka.clients.CommonClientConfigs;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.cfg4j.provider.ConfigurationProvider;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.expedia.www.haystack.pipes.commons.Configuration.HAYSTACK_EXTERNAL_KAFKA_CONFIG_PREFIX;
 
@@ -68,4 +74,20 @@ public class ExternalKafkaConfigurationProvider implements ExternalKafkaConfig {
         final ConfigurationProvider configurationProvider = configuration.createMergeConfigurationProvider();
         externalKafkaConfig = configurationProvider.bind(HAYSTACK_EXTERNAL_KAFKA_CONFIG_PREFIX, ExternalKafkaConfig.class);
     }
+
+    Map<String, Object> getConfigurationMap() {
+        final Map<String, Object> map = new HashMap<>();
+        map.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, brokers());
+        map.put(ProducerConfig.ACKS_CONFIG, acks());
+        map.put(ProducerConfig.RETRIES_CONFIG, 3);
+        map.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, 1000);
+        map.put(ProducerConfig.BATCH_SIZE_CONFIG, batchsize());
+        map.put(ProducerConfig.LINGER_MS_CONFIG, lingerms());
+        map.put(ProducerConfig.BUFFER_MEMORY_CONFIG, buffermemory());
+        map.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        map.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        return map;
+    }
+
+
 }

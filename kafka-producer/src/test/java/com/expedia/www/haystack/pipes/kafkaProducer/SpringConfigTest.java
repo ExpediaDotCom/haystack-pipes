@@ -3,6 +3,7 @@ package com.expedia.www.haystack.pipes.kafkaProducer;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.netflix.servo.monitor.Counter;
+import com.netflix.servo.monitor.Timer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,11 +12,15 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
+import java.util.concurrent.TimeUnit;
+
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -28,6 +33,9 @@ public class SpringConfigTest {
 
     @Mock
     private Counter mockCounter;
+
+    @Mock
+    private Timer mockTimer;
 
     private SpringConfig springConfig;
 
@@ -71,11 +79,37 @@ public class SpringConfigTest {
     }
 
     @Test
+    public void testProduceIntoExternalKafkaActionLogger() {
+        final Logger logger = springConfig.produceIntoExternalKafkaActionLogger();
+
+        assertEquals(ProduceIntoExternalKafkaAction.class.getName(), logger.getName());
+    }
+
+    @Test
+    public void testKafkaProducerIsActiveControllerLogger() {
+        final Logger logger = springConfig.kafkaProducerIsActiveControllerLogger();
+
+        assertEquals(KafkaProducerIsActiveController.class.getName(), logger.getName());
+    }
+
+    @Test
     public void testKafkaStreamStarter() {
         final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter();
 
         assertSame(ProtobufToKafkaProducer.class, kafkaStreamStarter.containingClass);
         assertSame(APPLICATION, kafkaStreamStarter.clientId);
+    }
+
+    @Test
+    public void testKafkaProducerPost() {
+        when(mockMetricObjects.createAndRegisterBasicTimer(
+                anyString(), anyString(), anyString(), anyString(), any(TimeUnit.class)))
+                .thenReturn(mockTimer);
+
+        assertNotNull(springConfig.kafkaProducerPost());
+
+        verify(mockMetricObjects).createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
+                ProduceIntoExternalKafkaAction.class.getSimpleName(), "KAFKA_PRODUCER_POST", MICROSECONDS);
     }
 
 }

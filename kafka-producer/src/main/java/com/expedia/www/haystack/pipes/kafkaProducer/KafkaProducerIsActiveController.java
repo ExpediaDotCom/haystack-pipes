@@ -47,10 +47,10 @@ public class KafkaProducerIsActiveController extends SpringBootServletInitialize
     @Autowired
     KafkaProducerIsActiveController(ProtobufToKafkaProducer protobufToKafkaProducer,
                                Factory kafkaProducerIsActiveControllerFactory,
-                               Logger firehoseIsActiveControllerLogger) {
+                               Logger kafkaProducerIsActiveControllerLogger) {
         this.protobufToKafkaProducer = protobufToKafkaProducer;
         this.factory = kafkaProducerIsActiveControllerFactory;
-        this.logger = firehoseIsActiveControllerLogger;
+        this.logger = kafkaProducerIsActiveControllerLogger;
         INSTANCE.compareAndSet(null, this);
     }
 

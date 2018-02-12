@@ -5,12 +5,15 @@ import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
 import com.netflix.servo.monitor.Counter;
+import com.netflix.servo.monitor.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.concurrent.TimeUnit;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
@@ -49,8 +52,24 @@ public class SpringConfig {
     }
 
     @Bean
+    Logger produceIntoExternalKafkaActionLogger() {
+        return LoggerFactory.getLogger(ProduceIntoExternalKafkaAction.class);
+    }
+
+    @Bean
+    Logger kafkaProducerIsActiveControllerLogger() {
+        return LoggerFactory.getLogger(KafkaProducerIsActiveController.class);
+    }
+
+    @Bean
     KafkaStreamStarter kafkaStreamStarter() {
         return new KafkaStreamStarter(ProtobufToKafkaProducer.class, APPLICATION);
+    }
+
+    @Bean
+    Timer kafkaProducerPost() {
+        return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
+                ProduceIntoExternalKafkaAction.class.getSimpleName(), "KAFKA_PRODUCER_POST", TimeUnit.MICROSECONDS);
     }
 
     // Beans without unit tests ////////////////////////////////////////////////////////////////////////////////////////
@@ -71,16 +90,40 @@ public class SpringConfig {
     }
 
     @Bean
+    ExternalKafkaConfigurationProvider externalKafkaConfigurationProvider() {
+        return new ExternalKafkaConfigurationProvider();
+    }
+
+    @Bean
     KafkaProducerIsActiveController.Factory kafkaProducerIsActiveControllerFactory() {
         return new KafkaProducerIsActiveController.Factory();
     }
 
     @Bean
+    ProduceIntoExternalKafkaAction.Factory produceIntoExternalKafkaActionFactory() {
+        return new ProduceIntoExternalKafkaAction.Factory();
+    }
+
+    @Bean
+    @Autowired
+    CountersAndTimer countersAndTimer(Counter produceIntoExternalKafkaActionRequestCounter,
+                                      Counter postsInFlightCounter,
+                                      Timer kafkaProducerPost) {
+        return new CountersAndTimer(
+                produceIntoExternalKafkaActionRequestCounter, postsInFlightCounter, kafkaProducerPost);
+    }
+    @Bean
     @Autowired
     ProduceIntoExternalKafkaAction produceIntoExternalKafkaAction(
-            Counter produceIntoExternalKafkaActionRequestCounter,
-            Counter postsInFlightCounter) {
-        return new ProduceIntoExternalKafkaAction(produceIntoExternalKafkaActionRequestCounter, postsInFlightCounter);
+            ProduceIntoExternalKafkaAction.Factory produceIntoExternalKafkaActionFactoryFactory,
+            CountersAndTimer countersAndTimer,
+            Logger produceIntoExternalKafkaActionLogger,
+            ExternalKafkaConfigurationProvider externalKafkaConfigurationProvider) {
+        return new ProduceIntoExternalKafkaAction(
+                produceIntoExternalKafkaActionFactoryFactory,
+                countersAndTimer,
+                produceIntoExternalKafkaActionLogger,
+                externalKafkaConfigurationProvider);
     }
 
     @Bean
