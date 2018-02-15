@@ -1,6 +1,7 @@
 package com.expedia.www.haystack.pipes.httpPoster;
 
 import com.expedia.www.haystack.metrics.MetricObjects;
+import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
@@ -15,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
@@ -41,6 +43,12 @@ public class SpringConfig {
     Counter requestCounter() {
         return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
                 HTTP_POST_ACTION_CLASS_SIMPLE_NAME, "REQUEST");
+    }
+
+    @Bean
+    Counter filteredOutCounter() {
+        return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
+                HTTP_POST_ACTION_CLASS_SIMPLE_NAME, "FILTERED_OUT");
     }
 
     @Bean
@@ -99,6 +107,19 @@ public class SpringConfig {
     @Bean
     JsonFormat.Printer printer() {
         return JsonFormat.printer().omittingInsignificantWhitespace();
+    }
+
+    @Bean
+    Random random() {
+        return new Random();
+    }
+
+    @Bean
+    @Autowired
+    CountersAndTimer countersAndTimer(Counter requestCounter,
+                                      Counter filteredOutCounter,
+                                      Timer httpPostTimer) {
+        return new CountersAndTimer(requestCounter, filteredOutCounter, httpPostTimer);
     }
 
     /*

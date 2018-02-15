@@ -47,6 +47,14 @@ public class SpringConfigTest {
     }
 
     @Test
+    public void testFilteredOutCounter() {
+        springConfig.filteredOutCounter();
+
+        verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
+                HttpPostAction.class.getSimpleName(), "FILTERED_OUT");
+    }
+
+    @Test
     public void testHttpPostTimer() {
         final Timer timer = springConfig.httpPostTimer();
 

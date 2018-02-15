@@ -45,4 +45,9 @@ public class HttpPostConfigurationProvider implements HttpPostConfig {
     public Map<String, String> headers() {
         return httpPostConfig.headers();
     }
+
+    @Override
+    public int pollpercent() {
+        return httpPostConfig.pollpercent();
+    }
 }

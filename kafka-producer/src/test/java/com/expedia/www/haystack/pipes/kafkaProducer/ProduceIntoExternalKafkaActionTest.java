@@ -17,6 +17,7 @@
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.expedia.open.tracing.Span;
+import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
 import com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.Factory;
 import com.netflix.servo.monitor.Stopwatch;
 import org.apache.commons.pool2.ObjectPool;
@@ -167,7 +168,7 @@ public class ProduceIntoExternalKafkaActionTest {
         // TODO verify below without any() when the ProduceIntoExternalKafkaCallback object is returned by a factory
         verify(mockKafkaProducer).send(eq(mockProducerRecord), any(ProduceIntoExternalKafkaCallback.class));
         verify(mockStopwatch).stop();
-        verify(mockCountersAndTimer).incrementPostsInFlightCounter();
+        verify(mockCountersAndTimer).incrementSecondCounter();
     }
 
     @Test
