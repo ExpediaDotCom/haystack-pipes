@@ -1,4 +1,4 @@
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.commons;
 
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Stopwatch;
@@ -10,6 +10,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -17,12 +18,13 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CountersAndTimerTest {
+    private final static int VALUE = RANDOM.nextInt();
 
     @Mock
     private Counter mockRequestCounter;
 
     @Mock
-    private Counter mockPostsInFlightCounter;
+    private Counter mockSecondCounter;
 
     @Mock
     private Timer mockTimer;
@@ -34,12 +36,12 @@ public class CountersAndTimerTest {
 
     @Before
     public void setUp() {
-        countersAndTimer = new CountersAndTimer(mockRequestCounter, mockPostsInFlightCounter, mockTimer);
+        countersAndTimer = new CountersAndTimer(mockRequestCounter, mockSecondCounter, mockTimer);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockRequestCounter, mockPostsInFlightCounter, mockTimer);
+        verifyNoMoreInteractions(mockRequestCounter, mockSecondCounter, mockTimer);
         verifyNoMoreInteractions(mockStopwatch);
     }
 
@@ -51,6 +53,20 @@ public class CountersAndTimerTest {
     }
 
     @Test
+    public void testIncrementSecondCounter() {
+        countersAndTimer.incrementSecondCounter();
+
+        verify(mockSecondCounter).increment();
+    }
+
+    @Test
+    public void testIncrementSecondCounterWithValue() {
+        countersAndTimer.incrementSecondCounter(VALUE);
+
+        verify(mockSecondCounter).increment(VALUE);
+    }
+
+    @Test
     public void testStartTimer() {
         when(mockTimer.start()).thenReturn(mockStopwatch);
 
@@ -58,12 +74,5 @@ public class CountersAndTimerTest {
 
         assertSame(mockStopwatch, stopwatch);
         verify(mockTimer).start();
-    }
-
-    @Test
-    public void testIncrementPostsInFlightCounter() {
-        countersAndTimer.incrementPostsInFlightCounter();
-
-        verify(mockPostsInFlightCounter).increment();
     }
 }

@@ -58,4 +58,11 @@ public class HttpPostConfigurationProviderTest {
 
         assertEquals(HEADERS, headers);
     }
+
+    @Test
+    public void testPollPercent() {
+        final int pollPercent = httpPostConfigurationProvider.pollpercent();
+
+        assertEquals(42, pollPercent);
+    }
 }

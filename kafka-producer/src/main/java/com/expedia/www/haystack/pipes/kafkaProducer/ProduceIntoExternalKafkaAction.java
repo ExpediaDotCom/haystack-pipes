@@ -17,6 +17,7 @@
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.expedia.open.tracing.Span;
+import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
 import com.expedia.www.haystack.pipes.commons.kafka.TagFlattener;
 import com.google.protobuf.util.JsonFormat;
 import com.netflix.servo.monitor.Stopwatch;
@@ -32,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Span> {
@@ -39,6 +41,7 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
     @VisibleForTesting
     static final String TOPIC_MESSAGE =
             "Loading ProduceIntoExternalKafkaAction with brokers [%s] port [%d] topic [%s]";
+    static AtomicReference<CountersAndTimer> COUNTERS_AND_TIMER = new AtomicReference<>(null);
     static ObjectPool<ProduceIntoExternalKafkaCallback> OBJECT_POOL = new GenericObjectPool<>(
             new CallbackFactory(LoggerFactory.getLogger(ProduceIntoExternalKafkaCallback.class)));
 
@@ -48,7 +51,6 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
     private final Factory factory;
     private final CountersAndTimer countersAndTimer;
     private final Logger logger;
-    private final ExternalKafkaConfigurationProvider externalKafkaConfigurationProvider;
     private final KafkaProducer<String, String> kafkaProducer;
     private final String topic;
 
@@ -61,14 +63,14 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
                                           ExternalKafkaConfigurationProvider externalKafkaConfigurationProvider) {
         this.factory = produceIntoExternalKafkaActionFactory;
         this.countersAndTimer = countersAndTimer;
+        COUNTERS_AND_TIMER.compareAndSet(null, countersAndTimer);
         this.logger = produceIntoExternalKafkaActionLogger;
-        this.externalKafkaConfigurationProvider = externalKafkaConfigurationProvider;
 
         final Map<String, Object> configurationMap = externalKafkaConfigurationProvider.getConfigurationMap();
         this.kafkaProducer = factory.createKafkaProducer(configurationMap);
         this.topic = externalKafkaConfigurationProvider.totopic();
-        logger.info(String.format(TOPIC_MESSAGE, this.externalKafkaConfigurationProvider.brokers(),
-                this.externalKafkaConfigurationProvider.port(), topic));
+        logger.info(String.format(TOPIC_MESSAGE, externalKafkaConfigurationProvider.brokers(),
+                externalKafkaConfigurationProvider.port(), topic));
     }
 
     public void apply(String key, Span value) {
@@ -82,7 +84,7 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
                     factory.createProducerRecord(topic, key, jsonWithFlattenedTags);
 
             final ProduceIntoExternalKafkaCallback callback = OBJECT_POOL.borrowObject(); // callback must returnObject()
-            countersAndTimer.incrementPostsInFlightCounter();
+            countersAndTimer.incrementSecondCounter();
             // TODO Put the Span value into the callback so that it can write it to Kafka for retry
 
             kafkaProducer.send(producerRecord, callback);

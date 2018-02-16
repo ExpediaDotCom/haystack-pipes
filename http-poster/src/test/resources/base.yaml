@@ -7,6 +7,13 @@ haystack:
   pipe:
     streams:
       replicationfactor: 1
+  graphite:
+     prefix: "haystack"
+     host: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
+     port: 2003 # default Graphite port, rarely overridden, but can be overridden by env variable
+     pollintervalseconds: 60
+     queuesize: 10
+     sendasrate: false
   httppost:
     maxbytes: 1572864 # 1.5 MB
     url: "https://collector.test.expedia.com/haystack-spans.json?stream=true&persist=false&multilines=true"
@@ -14,3 +21,4 @@ haystack:
     bodyprefix: "[" # are appropriate for creating an array of JSON objects
     bodysuffix: "]" # in the body of the POST in valid JSON syntax
     headers: "Content-Type=raw,Content-Encoding=gzip"
+    pollpercent: 42

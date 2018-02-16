@@ -16,7 +16,9 @@
  */
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
+import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
 import com.netflix.servo.monitor.Counter;
+import com.netflix.servo.monitor.Timer;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
@@ -29,6 +31,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
+import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.COUNTERS_AND_TIMER;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.OBJECT_POOL;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.DEBUG_MSG;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.ERROR_MSG_TEMPLATE;
@@ -65,13 +68,21 @@ public class ProduceIntoExternalKafkaCallbackTest {
     private ObjectPool<ProduceIntoExternalKafkaCallback> realObjectPool;
 
     @Mock
+    private Counter mockRequestCounter;
+
+    @Mock
     private Counter mockPostsInFlightCounter;
 
+    @Mock
+    private Timer mockTimer;
+
+    private CountersAndTimer countersAndTimer;
     private RecordMetadata recordMetadata;
     private ProduceIntoExternalKafkaCallback produceIntoExternalKafkaCallback;
 
     @Before
     public void setUp() {
+        countersAndTimer = new CountersAndTimer(mockRequestCounter, mockPostsInFlightCounter, mockTimer);
         injectMockAndSaveRealObjects();
         recordMetadata = new RecordMetadata(TOPIC_PARTITION, BASE_OFFSET, RELATIVE_OFFSET, TIMESTAMP, CHECKSUM,
                 SERIALIZED_KEY_SIZE, SERIALIZED_VALUE_SIZE);
@@ -80,6 +91,7 @@ public class ProduceIntoExternalKafkaCallbackTest {
 
     private void injectMockAndSaveRealObjects() {
         saveRealAndInjectMockObjectPool();
+        COUNTERS_AND_TIMER.set(countersAndTimer);
     }
 
     private void saveRealAndInjectMockObjectPool() {
@@ -90,7 +102,9 @@ public class ProduceIntoExternalKafkaCallbackTest {
     @After
     public void tearDown() {
         restoreRealObjects();
-        verifyNoMoreInteractions(mockLogger, mockException, mockObjectPool, mockPostsInFlightCounter);
+        COUNTERS_AND_TIMER.set(null);
+        verifyNoMoreInteractions(mockLogger, mockException, mockObjectPool, mockRequestCounter,
+                mockPostsInFlightCounter, mockTimer);
     }
 
     private void restoreRealObjects() {
@@ -100,7 +114,7 @@ public class ProduceIntoExternalKafkaCallbackTest {
     @Test
     public void testOnCompletionBothNull() throws Exception {
         produceIntoExternalKafkaCallback.onCompletion(null, null);
-        verify(mockObjectPool).returnObject(produceIntoExternalKafkaCallback);
+        commonVerifiesForOnCompletion();
     }
 
     @Test
@@ -109,8 +123,8 @@ public class ProduceIntoExternalKafkaCallbackTest {
         doThrow(testException).when(mockObjectPool).returnObject(any(ProduceIntoExternalKafkaCallback.class));
 
         produceIntoExternalKafkaCallback.onCompletion(null, null);
-        verify(mockObjectPool).returnObject(produceIntoExternalKafkaCallback);
         verify(mockLogger).error(String.format(POOL_ERROR_MSG_TEMPLATE, testException.getMessage()), testException);
+        commonVerifiesForOnCompletion();
     }
 
     @Test
@@ -124,7 +138,7 @@ public class ProduceIntoExternalKafkaCallbackTest {
         } catch(Throwable e) {
             assertSame(runtimeException, e);
             verify(mockLogger).error(String.format(ERROR_MSG_TEMPLATE, testException.getMessage()), testException);
-            verify(mockObjectPool).returnObject(produceIntoExternalKafkaCallback);
+            commonVerifiesForOnCompletion();
         }
     }
 
@@ -135,7 +149,7 @@ public class ProduceIntoExternalKafkaCallbackTest {
         produceIntoExternalKafkaCallback.onCompletion(recordMetadata, null);
 
         verify(mockLogger).isDebugEnabled();
-        verify(mockObjectPool).returnObject(produceIntoExternalKafkaCallback);
+        commonVerifiesForOnCompletion();
     }
 
     @Test
@@ -146,7 +160,7 @@ public class ProduceIntoExternalKafkaCallbackTest {
 
         verify(mockLogger).isDebugEnabled();
         verify(mockLogger).debug(String.format(DEBUG_MSG, TOPIC, PARTITION, BASE_OFFSET));
-        verify(mockObjectPool).returnObject(produceIntoExternalKafkaCallback);
+        commonVerifiesForOnCompletion();
     }
 
     @Test
@@ -157,7 +171,12 @@ public class ProduceIntoExternalKafkaCallbackTest {
 
         verify(mockException).getMessage();
         verify(mockLogger).error(String.format(ERROR_MSG_TEMPLATE, MESSAGE), mockException);
+        commonVerifiesForOnCompletion();
+    }
+
+    private void commonVerifiesForOnCompletion() throws Exception {
         verify(mockObjectPool).returnObject(produceIntoExternalKafkaCallback);
+        verify(mockPostsInFlightCounter).increment(-1);
     }
 
 }
