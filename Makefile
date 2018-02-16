@@ -14,7 +14,11 @@ json-transformer:
 kafka-producer:
 	mvn package -pl kafka-producer -am
 
+http-poster:
+	mvn package -pl http-poster -am
+
 # build all and release
 release: all
 	cd json-transformer && $(MAKE) release
 	cd kafka-producer && $(MAKE) release
+	cd http-poster && $(MAKE) release
