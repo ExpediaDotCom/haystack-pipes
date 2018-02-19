@@ -91,7 +91,7 @@
     </dependencies>
 
     <build>
-        <finalName>haystack-pipes-kafka-producer</finalName>
+        <finalName>haystack-pipes-firehose-writer</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
