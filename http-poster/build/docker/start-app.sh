@@ -1,7 +1,7 @@
 #!/bin/bash
 
-[ -z "$JAVA_XMS" ] && JAVA_XMS=128m
-[ -z "$JAVA_XMX" ] && JAVA_XMX=1024m
+[ -z "$JAVA_XMS" ] && JAVA_XMS=256m
+[ -z "$JAVA_XMX" ] && JAVA_XMX=2048m
 
 set -e
 JAVA_OPTS="${JAVA_OPTS} \
