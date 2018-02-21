@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @SpringBootApplication
 @Component
-class FirehoseIsActiveController extends SpringBootServletInitializer {
+public class FirehoseIsActiveController extends SpringBootServletInitializer {
     // Singleton, initialized on first constructor call, so that future instances created by Spring during unit tests
     // will not overwrite the initial INSTANCE (with mocks) created by the unit tests.
     @VisibleForTesting static final AtomicReference<FirehoseIsActiveController> INSTANCE = new AtomicReference<>();
