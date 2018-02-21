@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 public class FirehoseAction implements ForeachAction<String, Span> {
@@ -71,6 +72,8 @@ public class FirehoseAction implements ForeachAction<String, Span> {
         int failureCount;
         if (!records.isEmpty()) {
             final String streamName = firehoseConfigurationProvider.streamname();
+            final AtomicReference<Exception> exceptionForErrorLogging = new AtomicReference<>(null);
+            final int retryCountLimitFromConfiguration = firehoseConfigurationProvider.retrycount();
             do {
                 final PutRecordBatchRequest request = factory.createPutRecordBatchRequest(streamName, records);
                 PutRecordBatchResult result = null;
@@ -78,9 +81,11 @@ public class FirehoseAction implements ForeachAction<String, Span> {
                 try {
                     factory.createSleeper().sleep(retryCount * 1000);
                     result = amazonKinesisFirehose.putRecordBatch(request);
+                    exceptionForErrorLogging.set(null); // success! clear the exception if this was a retry
                 } catch (Exception exception) {
                     final String errorMsg = String.format(PUT_RECORD_BATCH_WARN_MSG, retryCount++);
                     logger.warn(errorMsg, exception);
+                    exceptionForErrorLogging.compareAndSet(null, exception); // save the first exception
                     continue;
                 } finally {
                     stopwatch.stop();
@@ -89,11 +94,12 @@ public class FirehoseAction implements ForeachAction<String, Span> {
                 if (result == null || result.getFailedPutCount() > 0) {
                     records = batch.extractFailedRecords(request, result, retryCount++);
                 } else {
-                    retryCount = firehoseConfigurationProvider.retrycount(); // All records successfully put
+                    retryCount = retryCountLimitFromConfiguration; // All records successfully put
                 }
-            } while (retryCount < firehoseConfigurationProvider.retrycount());
-            if (failureCount != 0) {
-                logger.error(String.format(PUT_RECORD_BATCH_ERROR_MSG, failureCount, retryCount));
+            } while (retryCount < retryCountLimitFromConfiguration);
+            if (failureCount != 0 || exceptionForErrorLogging.get() != null) {
+                final String msg = String.format(PUT_RECORD_BATCH_ERROR_MSG, failureCount, retryCount);
+                logger.error(msg, exceptionForErrorLogging.get());
             }
         }
     }
