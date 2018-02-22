@@ -7,9 +7,9 @@ Configuration:
       target: SYSTEM_OUT
     EmitToGraphiteLog4jAppender:
       name: EmitToGraphiteLog4jAppender
-      subsystem: pipes
-      host: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
-      port: 2003 # default Graphite port, rarely overridden, but can be overridden by env variable
+      subsystem: pipes-http-poster
+      host: ${HAYSTACK_GRAPHITE_HOST}
+      port: 2003
       pollintervalseconds: 60
       queuesize: 10
       sendasrate: false
