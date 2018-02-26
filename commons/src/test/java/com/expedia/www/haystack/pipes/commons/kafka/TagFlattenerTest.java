@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.JSON_SPAN_STRING;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITHOUT_TAG_KEY;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_BOGUS_TAGS;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_EMPTY_TAGS;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_FLATTENED_TAGS;
@@ -51,6 +52,13 @@ public class TagFlattenerTest {
     @Test
     public void testFlattenTagsWithBogusTag() {
         final String flattenedTags = tagFlattener.flattenTags(JSON_SPAN_STRING_WITH_BOGUS_TAGS);
+
+        assertEquals(JSON_SPAN_STRING_WITH_EMPTY_TAGS, flattenedTags);
+    }
+
+    @Test
+    public void testFlattenTagsWithTagWithoutTagKey() {
+        final String flattenedTags = tagFlattener.flattenTags(JSON_SPAN_STRING_WITHOUT_TAG_KEY);
 
         assertEquals(JSON_SPAN_STRING_WITH_EMPTY_TAGS, flattenedTags);
     }

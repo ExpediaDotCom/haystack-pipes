@@ -32,30 +32,33 @@ public class TagFlattener {
             jsonObject.add(tagsKey, flattenedTagMap);
             for (final JsonElement jsonElement : jsonArray) {
                 final JsonObject tagMap = jsonElement.getAsJsonObject();
-                final String key = tagMap.get("key").getAsString();
-                final JsonElement vStr = tagMap.get("vStr");
-                if (vStr != null) {
-                    flattenedTagMap.addProperty(key, vStr.getAsString());
-                    continue;
-                }
-                final JsonElement vLong = tagMap.get("vLong");
-                if (vLong != null) {
-                    flattenedTagMap.addProperty(key, vLong.getAsLong());
-                    continue;
-                }
-                final JsonElement vDouble = tagMap.get("vDouble");
-                if (vDouble != null) {
-                    flattenedTagMap.addProperty(key, vDouble.getAsDouble());
-                    continue;
-                }
-                final JsonElement vBool = tagMap.get("vBool");
-                if (vBool != null) {
-                    flattenedTagMap.addProperty(key, vBool.getAsBoolean());
-                    continue;
-                }
-                final JsonElement vBytes = tagMap.get("vBytes");
-                if (vBytes != null) {
-                    flattenedTagMap.addProperty(key, vBytes.getAsString());
+                final JsonElement keyThatMightBeNull = tagMap.get("key");
+                if(keyThatMightBeNull != null) {
+                    final String key = keyThatMightBeNull.getAsString();
+                    final JsonElement vStr = tagMap.get("vStr");
+                    if (vStr != null) {
+                        flattenedTagMap.addProperty(key, vStr.getAsString());
+                        continue;
+                    }
+                    final JsonElement vLong = tagMap.get("vLong");
+                    if (vLong != null) {
+                        flattenedTagMap.addProperty(key, vLong.getAsLong());
+                        continue;
+                    }
+                    final JsonElement vDouble = tagMap.get("vDouble");
+                    if (vDouble != null) {
+                        flattenedTagMap.addProperty(key, vDouble.getAsDouble());
+                        continue;
+                    }
+                    final JsonElement vBool = tagMap.get("vBool");
+                    if (vBool != null) {
+                        flattenedTagMap.addProperty(key, vBool.getAsBoolean());
+                        continue;
+                    }
+                    final JsonElement vBytes = tagMap.get("vBytes");
+                    if (vBytes != null) {
+                        flattenedTagMap.addProperty(key, vBytes.getAsString());
+                    }
                 }
             }
         }
