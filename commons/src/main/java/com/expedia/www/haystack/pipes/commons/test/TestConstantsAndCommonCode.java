@@ -25,6 +25,7 @@ public interface TestConstantsAndCommonCode {
             "{\"key\":\"boolKey\",\"vBool\":true}," +
             "{\"key\":\"bytesKey\",\"vBytes\":\"AAEC/f7/\"}]}";
     String BOGUS_TAGS = "[{\"key\":\"bogusKey\",\"vBogus\":\"bogusValue\"}]}";
+    String TAGS_WITHOUT_TAG_KEY = "[{\"vBogus\":\"bogusValue\"}]}";
     String FLATTENED_TAGS = "{"
             + "\"strKey\":\"tagValue\","
             + "\"longKey\":987654321,"
@@ -46,6 +47,7 @@ public interface TestConstantsAndCommonCode {
     Span FULLY_POPULATED_SPAN = buildSpan(JSON_SPAN_STRING);
     Span NO_TAGS_SPAN = buildSpan(JSON_SPAN_STRING_WITH_NO_TAGS);
     String JSON_SPAN_STRING_WITH_BOGUS_TAGS = JSON_SPAN_STRING.replace(TAGS, BOGUS_TAGS);
+    String JSON_SPAN_STRING_WITHOUT_TAG_KEY = JSON_SPAN_STRING.replace(TAGS, TAGS_WITHOUT_TAG_KEY);
 
     static Span buildSpan(String jsonSpanString) {
         final Span.Builder builder = Span.newBuilder();
