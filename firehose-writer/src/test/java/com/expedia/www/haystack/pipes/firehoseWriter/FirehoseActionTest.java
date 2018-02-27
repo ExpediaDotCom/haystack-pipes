@@ -40,6 +40,7 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseAction.PUT_RECORD_BATCH_ERROR_MSG;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseAction.PUT_RECORD_BATCH_WARN_MSG;
+import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseAction.STARTUP_MESSAGE;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
@@ -86,9 +87,11 @@ public class FirehoseActionTest {
     private FirehoseAction firehoseAction;
     private Factory factory;
     private Sleeper sleeper;
+    private int wantedNumberOfInvocationsStreamName = 2;
 
     @Before
     public void setUp() {
+        when(mockFirehoseConfigurationProvider.streamname()).thenReturn(STREAM_NAME);
         firehoseAction = new FirehoseAction(mockLogger, mockCounters, mockTimer, mockBatch, mockAmazonKinesisFirehose,
                 mockFactory, mockFirehoseConfigurationProvider);
         factory = new Factory();
@@ -97,6 +100,8 @@ public class FirehoseActionTest {
 
     @After
     public void tearDown() {
+        verify(mockFirehoseConfigurationProvider, times(wantedNumberOfInvocationsStreamName)).streamname();
+        verify(mockLogger).info(String.format(STARTUP_MESSAGE, STREAM_NAME));
         verifyNoMoreInteractions(mockLogger, mockCounters, mockTimer, mockBatch, mockAmazonKinesisFirehose,
                 mockFactory, mockFirehoseConfigurationProvider);
         verifyNoMoreInteractions(mockRecordList, mockRequest, mockStopwatch, mockResult, mockSleeper);
@@ -104,6 +109,7 @@ public class FirehoseActionTest {
 
     @Test
     public void testApplyEmptyList() {
+        wantedNumberOfInvocationsStreamName = 1;
         when(mockBatch.getRecordList(any(Span.class))).thenReturn(mockRecordList);
         when(mockRecordList.isEmpty()).thenReturn(true);
 
@@ -206,7 +212,6 @@ public class FirehoseActionTest {
     private void commonWhensForTestApply(int retryCount) {
         when(mockBatch.getRecordList(any(Span.class))).thenReturn(mockRecordList);
         when(mockRecordList.isEmpty()).thenReturn(false);
-        when(mockFirehoseConfigurationProvider.streamname()).thenReturn(STREAM_NAME);
         when(mockFactory.createPutRecordBatchRequest(anyString(), anyListOf(Record.class))).thenReturn(mockRequest);
         when(mockTimer.start()).thenReturn(mockStopwatch);
         when(mockFactory.createSleeper()).thenReturn(mockSleeper);
@@ -222,7 +227,6 @@ public class FirehoseActionTest {
 
     private void commonVerifiesForTestApplyNotEmpty(
             int wantedNumberOfInvocations, int failedPutCountTimes) throws InterruptedException {
-        verify(mockFirehoseConfigurationProvider).streamname();
         verify(mockFactory, times(wantedNumberOfInvocations)).createPutRecordBatchRequest(STREAM_NAME, mockRecordList);
         verify(mockTimer, times(wantedNumberOfInvocations)).start();
         verify(mockFactory, times(wantedNumberOfInvocations)).createSleeper();
@@ -235,11 +239,13 @@ public class FirehoseActionTest {
 
     @Test
     public void testSleeperSleep() throws InterruptedException {
+        wantedNumberOfInvocationsStreamName = 1;
         sleeper.sleep(0);
     }
 
     @Test
     public void testFactoryCreatePutRecordBatchRequest() {
+        wantedNumberOfInvocationsStreamName = 1;
         final List<Record> records = Collections.emptyList();
         final PutRecordBatchRequest request = factory.createPutRecordBatchRequest(STREAM_NAME, records);
 
