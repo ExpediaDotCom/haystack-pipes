@@ -2,7 +2,6 @@ package com.expedia.www.haystack.pipes.httpPoster;
 
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
-import com.netflix.servo.monitor.Timer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +55,7 @@ public class SpringConfigTest {
 
     @Test
     public void testHttpPostTimer() {
-        final Timer timer = springConfig.httpPostTimer();
+        springConfig.httpPostTimer();
 
         verify(mockMetricObjects).createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
                 HTTP_POST_ACTION_CLASS_SIMPLE_NAME, "HTTP_POST", TimeUnit.MICROSECONDS);

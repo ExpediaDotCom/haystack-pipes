@@ -77,7 +77,7 @@ public class FirehoseAction implements ForeachAction<String, Span> {
         if (!records.isEmpty()) {
             final String streamName = firehoseConfigurationProvider.streamname();
             final AtomicReference<Exception> exceptionForErrorLogging = new AtomicReference<>(null);
-            final int retryCountLimitFromConfiguration = firehoseConfigurationProvider.retrycount();
+            final int retryCountLimitFromConfiguration = Integer.parseInt(firehoseConfigurationProvider.retrycount());
             do {
                 final PutRecordBatchRequest request = factory.createPutRecordBatchRequest(streamName, records);
                 PutRecordBatchResult result = null;

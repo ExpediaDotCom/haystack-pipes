@@ -15,7 +15,7 @@ haystack:
     queuesize: 10
     sendasrate: false
   firehose:
-    retrycount: 3
+    retrycount: "3"
     url: "https://firehose.us-west-2.amazonaws.com"
     streamname: "haystack-traces-test"
     signingregion: "us-west-2"

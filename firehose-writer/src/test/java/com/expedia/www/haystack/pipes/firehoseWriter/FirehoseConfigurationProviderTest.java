@@ -31,7 +31,7 @@ public class FirehoseConfigurationProviderTest {
 
     @Test
     public void testRetryCount() {
-        assertEquals(3, firehoseConfigurationProvider.retrycount());
+        assertEquals("3", firehoseConfigurationProvider.retrycount());
     }
 
     @Test

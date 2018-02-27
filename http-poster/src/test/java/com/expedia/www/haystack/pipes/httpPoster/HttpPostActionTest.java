@@ -94,7 +94,7 @@ public class HttpPostActionTest {
     @Before
     public void setUp() {
         when(mockHttpPostConfigurationProvider.url()).thenReturn(HTTP_LOCALHOST);
-        when(mockHttpPostConfigurationProvider.pollpercent()).thenReturn(ONE_HUNDRED_PERCENT);
+        when(mockHttpPostConfigurationProvider.pollpercent()).thenReturn(Integer.toString(ONE_HUNDRED_PERCENT));
         final Printer realPrinter = JsonFormat.printer().omittingInsignificantWhitespace();
         httpPostExternalAction = new HttpPostAction(realPrinter, mockContentCollector, mockCountersAndTimer,
                 mockLogger, mockHttpPostConfigurationProvider, mockFactory, mockRandom);
@@ -131,7 +131,7 @@ public class HttpPostActionTest {
     public void testApplyFilteredOut() {
         wantedNumberOfInvocationsUrl = 1;
         wantedNumberOfInvocationsPollPercent = 2;
-        when(mockHttpPostConfigurationProvider.pollpercent()).thenReturn(0);
+        when(mockHttpPostConfigurationProvider.pollpercent()).thenReturn("0");
 
         httpPostExternalAction.apply(KEY, FULLY_POPULATED_SPAN);
 

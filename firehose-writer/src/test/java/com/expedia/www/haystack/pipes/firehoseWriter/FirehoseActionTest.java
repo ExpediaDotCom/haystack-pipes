@@ -215,7 +215,7 @@ public class FirehoseActionTest {
         when(mockFactory.createPutRecordBatchRequest(anyString(), anyListOf(Record.class))).thenReturn(mockRequest);
         when(mockTimer.start()).thenReturn(mockStopwatch);
         when(mockFactory.createSleeper()).thenReturn(mockSleeper);
-        when(mockFirehoseConfigurationProvider.retrycount()).thenReturn(retryCount);
+        when(mockFirehoseConfigurationProvider.retrycount()).thenReturn(Integer.toString(retryCount));
     }
 
     private void commonVerifiesForTestApply() {

@@ -29,7 +29,7 @@ public class FirehoseConfigurationProvider implements FirehoseConfig {
     }
 
     @Override
-    public int retrycount() {
+    public String retrycount() {
         return firehoseConfig.retrycount();
     }
 
