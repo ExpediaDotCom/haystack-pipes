@@ -2,12 +2,15 @@ package com.expedia.www.haystack.pipes.httpPoster;
 
 import java.util.Map;
 
+/**
+ * Configurations that are integers return String because configurations in environment variables can only be Strings.
+ */
 public interface HttpPostConfig {
     /**
      * The maximum number of bytes to buffer before posting
      * @return maximum bytes
      */
-    int maxbytes();
+    String maxbytes();
 
     /**
      * The URL to which the POST will be sent
@@ -43,5 +46,5 @@ public interface HttpPostConfig {
      * The percentage of Span objects that will be posted to the HTTP endpoint.
      * @return percentage to use, between 0 and 100 inclusive
      */
-    int pollpercent();
+    String pollpercent();
 }

@@ -5,6 +5,9 @@ import org.cfg4j.provider.ConfigurationProvider;
 
 import java.util.Map;
 
+/**
+ * Configurations that are integers return String because configurations in environment variables can only be Strings.
+ */
 public class HttpPostConfigurationProvider implements HttpPostConfig {
     private static final String HAYSTACK_HTTPPOST_CONFIG_PREFIX = "haystack.httppost";
 
@@ -17,7 +20,7 @@ public class HttpPostConfigurationProvider implements HttpPostConfig {
     }
 
     @Override
-    public int maxbytes() {
+    public String maxbytes() {
         return httpPostConfig.maxbytes();
     }
 
@@ -47,7 +50,7 @@ public class HttpPostConfigurationProvider implements HttpPostConfig {
     }
 
     @Override
-    public int pollpercent() {
+    public String pollpercent() {
         return httpPostConfig.pollpercent();
     }
 }

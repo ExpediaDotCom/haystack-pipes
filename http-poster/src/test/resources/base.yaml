@@ -21,4 +21,4 @@ haystack:
     bodyprefix: "[" # are appropriate for creating an array of JSON objects
     bodysuffix: "]" # in the body of the POST in valid JSON syntax
     headers: "Content-Type=raw,Content-Encoding=gzip"
-    pollpercent: 42
+    pollpercent: "42"

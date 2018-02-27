@@ -30,7 +30,7 @@ class ContentCollector {
 
     @Autowired
     ContentCollector(HttpPostConfigurationProvider httpPostConfigurationProvider) {
-        this.maxBytesInPost = httpPostConfigurationProvider.maxbytes();
+        this.maxBytesInPost = Integer.parseInt(httpPostConfigurationProvider.maxbytes());
         postPayload = new StringBuilder(maxBytesInPost);
         separator = httpPostConfigurationProvider.separator();
         bodyPrefix = httpPostConfigurationProvider.bodyprefix();

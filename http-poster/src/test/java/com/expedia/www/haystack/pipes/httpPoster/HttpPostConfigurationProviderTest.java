@@ -9,7 +9,7 @@ import static com.expedia.www.haystack.pipes.httpPoster.HttpPostActionTest.HEADE
 import static org.junit.Assert.assertEquals;
 
 public class HttpPostConfigurationProviderTest {
-    static final int LARGEST_POSSIBLE_MAX_BYTES = (1024 + 512) * 1024; // 1.5 MB
+    static final String LARGEST_POSSIBLE_MAX_BYTES = Integer.toString((1024 + 512) * 1024); // 1.5 MB
     private HttpPostConfigurationProvider httpPostConfigurationProvider;
 
     @Before
@@ -19,7 +19,7 @@ public class HttpPostConfigurationProviderTest {
 
     @Test
     public void testMaxBytes() {
-        final int maxBytes = httpPostConfigurationProvider.maxbytes();
+        final String maxBytes = httpPostConfigurationProvider.maxbytes();
 
         assertEquals(LARGEST_POSSIBLE_MAX_BYTES, maxBytes);
     }
@@ -61,7 +61,7 @@ public class HttpPostConfigurationProviderTest {
 
     @Test
     public void testPollPercent() {
-        final int pollPercent = httpPostConfigurationProvider.pollpercent();
+        final int pollPercent = Integer.parseInt(httpPostConfigurationProvider.pollpercent());
 
         assertEquals(42, pollPercent);
     }

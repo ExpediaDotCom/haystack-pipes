@@ -25,7 +25,7 @@ import java.util.Random;
 @Component
 class HttpPostAction implements ForeachAction<String, Span> {
     @VisibleForTesting
-    static final String STARTUP_MESSAGE = "Instantiating HttpPostAction into URL [%s] with filtering of [%d] percent";
+    static final String STARTUP_MESSAGE = "Instantiating HttpPostAction into URL [%s] with filtering of [%s] percent";
     @VisibleForTesting
     static final String POSTING_ERROR_MSG = "Exception posting to HTTP; received message [%s]";
     @VisibleForTesting
@@ -64,7 +64,7 @@ class HttpPostAction implements ForeachAction<String, Span> {
     @Override
     public void apply(String key, Span span) {
         countersAndTimer.incrementRequestCounter();
-        if(random.nextInt(ONE_HUNDRED_PERCENT) < httpPostConfigurationProvider.pollpercent()) {
+        if(random.nextInt(ONE_HUNDRED_PERCENT) < Integer.parseInt(httpPostConfigurationProvider.pollpercent())) {
             final String batch = getBatch(span);
             if (!StringUtils.isEmpty(batch)) {
                 final Stopwatch stopwatch = countersAndTimer.startTimer();

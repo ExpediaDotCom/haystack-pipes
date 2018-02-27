@@ -81,6 +81,7 @@ public class ProtobufToFirehoseProducerTest {
         verify(mockKafkaStreamStarter).createAndStartStream(protobufToFirehoseProducer);
     }
 
+    @SuppressWarnings("Duplicates")
     @Test
     public void testBuildStreamTopology() {
         when(mockSpanSerdeFactory.createSpanSerde(anyString())).thenReturn(mockSpanSerde);

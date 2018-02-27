@@ -52,7 +52,7 @@ public class ContentCollectorTest {
     @Test
     public void testAddAndReturnBatchOneRecord() {
         timesConstructorCalled = 2;
-        when(mockHttpPostConfigurationProvider.maxbytes()).thenReturn(SMALLEST_POSSIBLE_MAX_BYTES);
+        when(mockHttpPostConfigurationProvider.maxbytes()).thenReturn(Integer.toString(SMALLEST_POSSIBLE_MAX_BYTES));
         contentCollector = new ContentCollector(mockHttpPostConfigurationProvider);
 
         assertEquals("", contentCollector.addAndReturnBatch(SMALLEST_POSSIBLE_JSON));
@@ -63,7 +63,7 @@ public class ContentCollectorTest {
     public void testAddAndReturnBatchTwoRecords() {
         timesConstructorCalled = 2;
         final String expected = '[' + SMALLEST_POSSIBLE_JSON + ',' + SMALLEST_POSSIBLE_JSON + ']';
-        when(mockHttpPostConfigurationProvider.maxbytes()).thenReturn(expected.length());
+        when(mockHttpPostConfigurationProvider.maxbytes()).thenReturn(Integer.toString(expected.length()));
         contentCollector = new ContentCollector(mockHttpPostConfigurationProvider);
 
         assertEquals("", contentCollector.addAndReturnBatch(SPACES));

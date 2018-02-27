@@ -21,4 +21,4 @@ haystack:
     bodyprefix: ""  # are appropriate for creating a POST body that consists of
     bodysuffix: ""  # newline-delimited Span objects with each object in valid JSON
     headers: "Content-Type=raw"
-    pollpercent: 100
+    pollpercent: "100"
