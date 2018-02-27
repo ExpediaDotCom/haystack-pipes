@@ -16,7 +16,7 @@ haystack:
      sendasrate: false
   httppost:
     maxbytes: 1572864 # 1.5 MB
-    url: ""
+    url: "http://localhost"
     separator: ","  # These values for separator, bodyprefix, and bodysuffix
     bodyprefix: "[" # are appropriate for creating an array of JSON objects
     bodysuffix: "]" # in the body of the POST in valid JSON syntax

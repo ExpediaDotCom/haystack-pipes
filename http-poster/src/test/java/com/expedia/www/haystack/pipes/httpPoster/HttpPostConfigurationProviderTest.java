@@ -28,7 +28,7 @@ public class HttpPostConfigurationProviderTest {
     public void testUrl() {
         final String url = httpPostConfigurationProvider.url();
 
-        assertEquals("https://collector.test.expedia.com/haystack-spans.json?stream=true&persist=false&multilines=true", url);
+        assertEquals("http://localhost", url);
     }
 
     @Test
