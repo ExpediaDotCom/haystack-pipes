@@ -25,6 +25,8 @@ import java.util.Random;
 @Component
 class HttpPostAction implements ForeachAction<String, Span> {
     @VisibleForTesting
+    static final String STARTUP_MESSAGE = "Instantiating HttpPostAction into URL [%s] with filtering of [%d] percent";
+    @VisibleForTesting
     static final String POSTING_ERROR_MSG = "Exception posting to HTTP; received message [%s]";
     @VisibleForTesting
     static final int ONE_HUNDRED_PERCENT = 100;
@@ -53,6 +55,10 @@ class HttpPostAction implements ForeachAction<String, Span> {
         this.httpPostConfigurationProvider = httpPostConfigurationProvider;
         this.factory = httpPostActionFactory;
         this.random = random;
+
+        String msg = String.format(STARTUP_MESSAGE,
+                this.httpPostConfigurationProvider.url(), this.httpPostConfigurationProvider.pollpercent());
+        this.httpPostActionLogger.info(msg);
     }
 
     @Override

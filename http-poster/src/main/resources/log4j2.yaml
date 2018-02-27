@@ -21,6 +21,13 @@ Configuration:
       AppenderRef:
         - ref: Console
         - ref: EmitToGraphiteLog4jAppender
+    Logger:
+      name: com.expedia.www.haystack.pipes.httpPoster.HttpPostAction
+      level: info
+      additivity: false
+      AppenderRef:
+        - ref: Console
+        - ref: EmitToGraphiteLog4jAppender
     Root:
       level: error
       AppenderRef:

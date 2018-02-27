@@ -35,6 +35,8 @@ import java.util.concurrent.atomic.AtomicReference;
 @Component
 public class FirehoseAction implements ForeachAction<String, Span> {
     @VisibleForTesting
+    static final String STARTUP_MESSAGE = "Instantiating FirehoseAction into stream name [%s]";
+    @VisibleForTesting
     static final String PUT_RECORD_BATCH_WARN_MSG = "putRecordBatch() failed; retryCount=%d";
     @VisibleForTesting
     static final String PUT_RECORD_BATCH_ERROR_MSG = "putRecordBatch() could not put %d records after %d tries";
@@ -62,6 +64,8 @@ public class FirehoseAction implements ForeachAction<String, Span> {
         this.amazonKinesisFirehose = amazonKinesisFirehose;
         this.factory = firehoseActionFactory;
         this.firehoseConfigurationProvider = firehoseConfigurationProvider;
+
+        this.logger.info(String.format(STARTUP_MESSAGE, firehoseConfigurationProvider.streamname()));
     }
 
     @Override
