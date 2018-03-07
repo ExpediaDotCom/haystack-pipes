@@ -1,17 +1,90 @@
 <jmxtrans-agent>
     <queries>
+
+        <!-- JVM -->
+        <query objectName="java.lang:type=Memory" attribute="HeapMemoryUsage" key="used"
+               resultAlias="jvm.heapMemoryUsage.used"/>
+        <query objectName="java.lang:type=Memory" attribute="HeapMemoryUsage" key="committed"
+               resultAlias="jvm.heapMemoryUsage.committed"/>
+        <query objectName="java.lang:type=Memory" attribute="NonHeapMemoryUsage" key="used"
+               resultAlias="jvm.nonHeapMemoryUsage.used"/>
+        <query objectName="java.lang:type=Memory" attribute="NonHeapMemoryUsage" key="committed"
+               resultAlias="jvm.nonHeapMemoryUsage.committed"/>
+        <query objectName="java.lang:type=GarbageCollector,name=ParNew" resultAlias="gc.young.#attribute#"/>
+        <query objectName="java.lang:type=GarbageCollector,name=ConcurrentMarkSweep" resultAlias="gc.old.#attribute#"/>
+        <query objectName="java.lang:type=ClassLoading" attribute="LoadedClassCount" resultAlias="jvm.loadedClasses"/>
+        <query objectName="java.lang:type=Threading" attribute="ThreadCount" resultAlias="jvm.thread"/>
+
+        <!-- kafka consumer metrics -->
+        <query objectName="kafka.consumer:type=consumer-metrics,client-id=*" attribute="request-rate"
+               resultAlias="kafka-consumer.request.rate"/>
+        <query objectName="kafka.consumer:type=consumer-metrics,client-id=*" attribute="response-rate"
+               resultAlias="kafka-consumer.response.rate"/>
+        <query objectName="kafka.consumer:type=consumer-metrics,client-id=*" attribute="incoming-byte-rate"
+               resultAlias="kafka-consumer.incoming-byte.rate"/>
+        <query objectName="kafka.consumer:type=consumer-fetch-manager-metrics,client-id=*" attribute="records-lag-max"
+               resultAlias="kafka-consumer.records-lag.max"/>
+        <query objectName="kafka.consumer:type=consumer-fetch-manager-metrics,client-id=*"
+               attribute="records-consumed-rate" resultAlias="kafka-consumer.records-consumed.rate"/>
+
         <!-- kafka streams mbeans -->
-        <query objectName="kafka.streams:type=stream-metrics,client-id=*" attribute="poll-rate" resultAlias="kstreams.poll.rate"/>
-        <query objectName="kafka.streams:type=stream-metrics,client-id=*" attribute="commit-rate" resultAlias="kstreams.commit.rate"/>
-        <query objectName="kafka.streams:type=stream-metrics,client-id=*" attribute="punctuate-rate" resultAlias="kstreams.punctuate.rate"/>
-        <query objectName="kafka.streams:type=stream-metrics,client-id=*" attribute="process-rate" resultAlias="kstreams.process.rate"/>
-        <query objectName="kafka.streams:type=stream-metrics,client-id=*" attribute="process-latency-avg" resultAlias="kstreams.process.latency_avg"/>
-        <query objectName="kafka.streams:type=stream-metrics,client-id=*" attribute="process-latency-max" resultAlias="kstreams.process.latency_max"/>
+        <query objectName="kafka.streams:type=stream-metrics,client-id=*" attribute="poll-rate"
+               resultAlias="kstreams.poll.rate"/>
+        <query objectName="kafka.streams:type=stream-metrics,client-id=*" attribute="commit-rate"
+               resultAlias="kstreams.commit.rate"/>
+        <query objectName="kafka.streams:type=stream-metrics,client-id=*" attribute="punctuate-rate"
+               resultAlias="kstreams.punctuate.rate"/>
+        <query objectName="kafka.streams:type=stream-metrics,client-id=*" attribute="process-rate"
+               resultAlias="kstreams.process.rate"/>
+        <query objectName="kafka.streams:type=stream-metrics,client-id=*" attribute="process-latency-avg"
+               resultAlias="kstreams.process.latency_avg"/>
+        <query objectName="kafka.streams:type=stream-metrics,client-id=*" attribute="process-latency-max"
+               resultAlias="kstreams.process.latency_max"/>
+
+        <!-- service mbeans -->
+        <query objectName="metrics:name=metricpoint.deser.failure" attributes="FiveMinuteRate,MeanRate"
+               resultAlias="metricpoint.deser.failure.#attribute#"/>
+        <query objectName="metrics:name=metricpoint.ser.failure" attributes="FiveMinuteRate,MeanRate"
+               resultAlias="metricpoint.ser.failure.#attribute#"/>
+        <query objectName="metrics:name=metricpoint.ser.success" attributes="FiveMinuteRate,MeanRate"
+               resultAlias="metricpoint.ser.success.#attribute#"/>
+        <query objectName="metrics:name=metricpoints.disordered" attributes="FiveMinuteRate,MeanRate"
+               resultAlias="metricpoint.disordered.#attribute#"/>
+        <query objectName="metrics:name=metricpoints.compute.failure" attributes="FiveMinuteRate,MeanRate"
+               resultAlias="metricpoint.compute.failure.#attribute#"/>
+        <query objectName="metrics:name=metricpoints.invalid" attributes="FiveMinuteRate,MeanRate"
+               resultAlias="metricpoint.invalid.#attribute#"/>
+        <query objectName="metrics:name=metricpoint.kafka-external.success" attributes="FiveMinuteRate,MeanRate"
+               resultAlias="metricpoint.kafka-external.success.#attribute#"/>
+        <query objectName="metrics:name=metricpoint.kafka-external.failure" attributes="FiveMinuteRate,MeanRate"
+               resultAlias="metricpoint.kafka-external.failure.#attribute#"/>
+
+        <query objectName="metrics:name=trendmetric.deser.failure" attributes="FiveMinuteRate,MeanRate"
+               resultAlias="trend-metric.deser.failure.#attribute#"/>
+        <query objectName="metrics:name=trendmetric.ser.success" attributes="FiveMinuteRate,MeanRate"
+               resultAlias="trend-metric.ser.success.#attribute#"/>
+        <query objectName="metrics:name=trendmetric.deser.success" attributes="FiveMinuteRate,MeanRate"
+               resultAlias="trend-metric.deser.success.#attribute#"/>
+        <query objectName="metrics:name=trendmetric.compute.time"
+               attributes="50thPercentile,99thPercentile,FiveMinuteRate"
+               resultAlias="trend-metric.compute.time.#attribute#"/>
+
+        <query objectName="metrics:name=histogram.metric.compute.time"
+               attributes="50thPercentile,99thPercentile,FiveMinuteRate"
+               resultAlias="histogram-metric.compute.time.#attribute#"/>
+
+        <query objectName="metrics:name=count.metric.compute.time"
+               attributes="50thPercentile,99thPercentile,FiveMinuteRate"
+               resultAlias="count-metric.compute.time.#attribute#"/>
+
+        <query objectName="metrics:name=metricprocessor.trendcount"
+               resultAlias="metricprocessor.trendcount.#attribute#"/>
+
     </queries>
     <outputWriter class="org.jmxtrans.agent.GraphitePlainTextTcpOutputWriter">
         <host>${HAYSTACK_GRAPHITE_HOST:monitoring-influxdb-graphite.kube-system.svc}</host>
         <port>${HAYSTACK_GRAPHITE_PORT:2003}</port>
         <namePrefix>haystack.pipes.json-transformer.#hostname#.</namePrefix>
     </outputWriter>
-    <collectIntervalInSeconds>60</collectIntervalInSeconds>
+    <collectIntervalInSeconds>300</collectIntervalInSeconds>
 </jmxtrans-agent>
