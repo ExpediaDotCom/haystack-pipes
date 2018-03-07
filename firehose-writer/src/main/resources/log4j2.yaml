@@ -10,7 +10,7 @@ Configuration:
       subsystem: pipes-firehose-writer
       host: ${HAYSTACK_GRAPHITE_HOST}
       port: 2003
-      pollintervalseconds: 60
+      pollintervalseconds: 300
       queuesize: 10
       sendasrate: false
   Loggers:

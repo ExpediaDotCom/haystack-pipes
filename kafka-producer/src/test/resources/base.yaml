@@ -11,7 +11,7 @@ haystack:
      prefix: "haystack"
      host: "localhost"
      port: 2003
-     pollintervalseconds: 60
+     pollintervalseconds: 300
      queuesize: 10
   externalkafka:
     brokers: "localhost:9092"

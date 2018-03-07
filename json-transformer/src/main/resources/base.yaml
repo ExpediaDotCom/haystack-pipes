@@ -11,6 +11,6 @@ haystack:
      prefix: "haystack"
      host: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
      port: 2003 # default Graphite port, rarely overridden, but can be overridden by env variable
-     pollintervalseconds: 60
+     pollintervalseconds: 300
      queuesize: 10
      sendasrate: true
