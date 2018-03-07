@@ -39,6 +39,7 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.NO_TAGS_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.ERROR_MSG;
+import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.POSTS_IN_FLIGHT_COUNTER_INDEX;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.TOPIC_MESSAGE;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -168,7 +169,7 @@ public class ProduceIntoExternalKafkaActionTest {
         // TODO verify below without any() when the ProduceIntoExternalKafkaCallback object is returned by a factory
         verify(mockKafkaProducer).send(eq(mockProducerRecord), any(ProduceIntoExternalKafkaCallback.class));
         verify(mockStopwatch).stop();
-        verify(mockCountersAndTimer).incrementSecondCounter();
+        verify(mockCountersAndTimer).incrementCounter(POSTS_IN_FLIGHT_COUNTER_INDEX);
     }
 
     @Test

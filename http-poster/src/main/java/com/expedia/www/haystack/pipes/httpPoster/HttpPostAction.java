@@ -31,6 +31,11 @@ class HttpPostAction implements ForeachAction<String, Span> {
     @VisibleForTesting
     static final int ONE_HUNDRED_PERCENT = 100;
 
+    @VisibleForTesting
+    final static int FILTERED_OUT_COUNTER_INDEX = 0;
+    @VisibleForTesting
+    final static int FILTERED_IN_COUNTER_INDEX = 1;
+
     private final TagFlattener tagFlattener = new TagFlattener();
     private final Printer printer;
     private final ContentCollector contentCollector;
@@ -65,6 +70,7 @@ class HttpPostAction implements ForeachAction<String, Span> {
     public void apply(String key, Span span) {
         countersAndTimer.incrementRequestCounter();
         if(random.nextInt(ONE_HUNDRED_PERCENT) < Integer.parseInt(httpPostConfigurationProvider.pollpercent())) {
+            countersAndTimer.incrementCounter(FILTERED_IN_COUNTER_INDEX);
             final String batch = getBatch(span);
             if (!StringUtils.isEmpty(batch)) {
                 final Stopwatch stopwatch = countersAndTimer.startTimer();
@@ -79,7 +85,7 @@ class HttpPostAction implements ForeachAction<String, Span> {
                 }
             }
         } else {
-            countersAndTimer.incrementSecondCounter();
+            countersAndTimer.incrementCounter(FILTERED_OUT_COUNTER_INDEX);
         }
     }
 

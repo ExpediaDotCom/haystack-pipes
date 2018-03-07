@@ -36,7 +36,7 @@ public class CountersAndTimerTest {
 
     @Before
     public void setUp() {
-        countersAndTimer = new CountersAndTimer(mockRequestCounter, mockSecondCounter, mockTimer);
+        countersAndTimer = new CountersAndTimer(mockTimer, mockRequestCounter, mockSecondCounter);
     }
 
     @After
@@ -54,14 +54,14 @@ public class CountersAndTimerTest {
 
     @Test
     public void testIncrementSecondCounter() {
-        countersAndTimer.incrementSecondCounter();
+        countersAndTimer.incrementCounter(0);
 
         verify(mockSecondCounter).increment();
     }
 
     @Test
     public void testIncrementSecondCounterWithValue() {
-        countersAndTimer.incrementSecondCounter(VALUE);
+        countersAndTimer.incrementCounter(0, VALUE);
 
         verify(mockSecondCounter).increment(VALUE);
     }

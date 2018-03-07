@@ -31,6 +31,8 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_FLATTENED_TAGS;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.NO_TAGS_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
+import static com.expedia.www.haystack.pipes.httpPoster.HttpPostAction.FILTERED_IN_COUNTER_INDEX;
+import static com.expedia.www.haystack.pipes.httpPoster.HttpPostAction.FILTERED_OUT_COUNTER_INDEX;
 import static com.expedia.www.haystack.pipes.httpPoster.HttpPostAction.ONE_HUNDRED_PERCENT;
 import static com.expedia.www.haystack.pipes.httpPoster.HttpPostAction.POSTING_ERROR_MSG;
 import static com.expedia.www.haystack.pipes.httpPoster.HttpPostAction.STARTUP_MESSAGE;
@@ -124,6 +126,7 @@ public class HttpPostActionTest {
 
         verify(mockRandom).nextInt(ONE_HUNDRED_PERCENT);
         verify(mockCountersAndTimer).incrementRequestCounter();
+        verify(mockCountersAndTimer).incrementCounter(FILTERED_IN_COUNTER_INDEX);
         verify(mockContentCollector).addAndReturnBatch(JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
     }
 
@@ -137,7 +140,7 @@ public class HttpPostActionTest {
 
         verify(mockRandom).nextInt(ONE_HUNDRED_PERCENT);
         verify(mockCountersAndTimer).incrementRequestCounter();
-        verify(mockCountersAndTimer).incrementSecondCounter();
+        verify(mockCountersAndTimer).incrementCounter(FILTERED_OUT_COUNTER_INDEX);
     }
 
     @Test
@@ -148,6 +151,7 @@ public class HttpPostActionTest {
 
         verify(mockOutputStream).write(JSON_SPAN_STRING_WITH_FLATTENED_TAGS.getBytes());
         verify(mockOutputStream).close();
+        verify(mockCountersAndTimer, times(2)).incrementCounter(FILTERED_IN_COUNTER_INDEX);
     }
 
     @Test
@@ -156,6 +160,7 @@ public class HttpPostActionTest {
 
         testApply();
 
+        verify(mockCountersAndTimer, times(2)).incrementCounter(FILTERED_IN_COUNTER_INDEX);
         verify(mockLogger).error(IO_EXCEPTION_MESSAGE, IO_EXCEPTION);
     }
 
@@ -169,6 +174,7 @@ public class HttpPostActionTest {
         verify(mockOutputStream).write(JSON_SPAN_STRING_WITH_FLATTENED_TAGS.getBytes());
         verify(mockOutputStream).close();
         verify(mockLogger).error(IO_EXCEPTION_MESSAGE, IO_EXCEPTION);
+        verify(mockCountersAndTimer, times(2)).incrementCounter(FILTERED_IN_COUNTER_INDEX);
     }
 
     @Test
@@ -182,6 +188,7 @@ public class HttpPostActionTest {
         verify(mockOutputStream).write(JSON_SPAN_STRING_WITH_FLATTENED_TAGS.getBytes());
         verify(mockOutputStream).close();
         verify(mockLogger).error(IO_EXCEPTION_MESSAGE, IO_EXCEPTION);
+        verify(mockCountersAndTimer, times(2)).incrementCounter(FILTERED_IN_COUNTER_INDEX);
     }
 
     private void testApply() throws IOException {

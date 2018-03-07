@@ -111,7 +111,7 @@ public class SpringConfig {
                                       Counter postsInFlightCounter,
                                       Timer kafkaProducerPost) {
         return new CountersAndTimer(
-                produceIntoExternalKafkaActionRequestCounter, postsInFlightCounter, kafkaProducerPost);
+                kafkaProducerPost, produceIntoExternalKafkaActionRequestCounter, postsInFlightCounter);
     }
     @Bean
     @Autowired
