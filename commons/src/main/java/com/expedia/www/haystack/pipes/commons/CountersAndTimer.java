@@ -5,26 +5,26 @@ import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.monitor.Timer;
 
 public class CountersAndTimer {
-    private final Counter requestCounter;
-    private final Counter secondCounter;
     private final Timer timer;
+    private final Counter requestCounter;
+    private final Counter [] counters;
 
-    public CountersAndTimer(Counter requestCounter, Counter secondCounter, Timer timer) {
-        this.requestCounter = requestCounter;
-        this.secondCounter = secondCounter;
+    public CountersAndTimer(Timer timer, Counter requestCounter, Counter...counters) {
         this.timer = timer;
+        this.requestCounter = requestCounter;
+        this.counters = counters;
     }
 
     public void incrementRequestCounter() {
         requestCounter.increment();
     }
 
-    public void incrementSecondCounter() {
-        secondCounter.increment();
+    public void incrementCounter(int index) {
+        counters[index].increment();
     }
 
-    public void incrementSecondCounter(int value) {
-        secondCounter.increment(value);
+    public void incrementCounter(int index, int value) {
+        counters[index].increment(value);
     }
 
     public Stopwatch startTimer() {

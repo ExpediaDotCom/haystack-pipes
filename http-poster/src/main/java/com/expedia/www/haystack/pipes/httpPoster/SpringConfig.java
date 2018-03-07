@@ -52,6 +52,12 @@ public class SpringConfig {
     }
 
     @Bean
+    Counter filteredInCounter() {
+        return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
+                HTTP_POST_ACTION_CLASS_SIMPLE_NAME, "FILTERED_IN");
+    }
+
+    @Bean
     Timer httpPostTimer() {
         return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
                 HTTP_POST_ACTION_CLASS_SIMPLE_NAME, "HTTP_POST", TimeUnit.MICROSECONDS);
@@ -118,8 +124,9 @@ public class SpringConfig {
     @Autowired
     CountersAndTimer countersAndTimer(Counter requestCounter,
                                       Counter filteredOutCounter,
+                                      Counter filteredInCounter,
                                       Timer httpPostTimer) {
-        return new CountersAndTimer(requestCounter, filteredOutCounter, httpPostTimer);
+        return new CountersAndTimer(httpPostTimer, requestCounter, filteredOutCounter, filteredInCounter);
     }
 
     /*

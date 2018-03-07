@@ -47,7 +47,7 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
 
     @VisibleForTesting static final String ERROR_MSG =
             "Exception posting JSON [%s] to Kafka; received message [%s]";
-
+    @VisibleForTesting static final int POSTS_IN_FLIGHT_COUNTER_INDEX = 0;
     private final Factory factory;
     private final CountersAndTimer countersAndTimer;
     private final Logger logger;
@@ -84,7 +84,7 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
                     factory.createProducerRecord(topic, key, jsonWithFlattenedTags);
 
             final ProduceIntoExternalKafkaCallback callback = OBJECT_POOL.borrowObject(); // callback must returnObject()
-            countersAndTimer.incrementSecondCounter();
+            countersAndTimer.incrementCounter(POSTS_IN_FLIGHT_COUNTER_INDEX);
             // TODO Put the Span value into the callback so that it can write it to Kafka for retry
 
             kafkaProducer.send(producerRecord, callback);

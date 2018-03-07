@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.COUNTERS_AND_TIMER;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.OBJECT_POOL;
+import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.POSTS_IN_FLIGHT_COUNTER_INDEX;
 
 @Component
 public class ProduceIntoExternalKafkaCallback implements Callback {
@@ -58,7 +59,7 @@ public class ProduceIntoExternalKafkaCallback implements Callback {
 
     private void returnObjectToPoolButLogExceptionIfReturnFails() {
         try {
-            COUNTERS_AND_TIMER.get().incrementSecondCounter(-1);
+            COUNTERS_AND_TIMER.get().incrementCounter(POSTS_IN_FLIGHT_COUNTER_INDEX, -1);
             OBJECT_POOL.returnObject(this);
         } catch (Exception exception) {
             logError(exception, POOL_ERROR_MSG_TEMPLATE);

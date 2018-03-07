@@ -82,7 +82,7 @@ public class ProduceIntoExternalKafkaCallbackTest {
 
     @Before
     public void setUp() {
-        countersAndTimer = new CountersAndTimer(mockRequestCounter, mockPostsInFlightCounter, mockTimer);
+        countersAndTimer = new CountersAndTimer(mockTimer, mockRequestCounter, mockPostsInFlightCounter);
         injectMockAndSaveRealObjects();
         recordMetadata = new RecordMetadata(TOPIC_PARTITION, BASE_OFFSET, RELATIVE_OFFSET, TIMESTAMP, CHECKSUM,
                 SERIALIZED_KEY_SIZE, SERIALIZED_VALUE_SIZE);
