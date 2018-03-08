@@ -83,7 +83,7 @@ public class FirehoseAction implements ForeachAction<String, Span> {
                 PutRecordBatchResult result = null;
                 final Stopwatch stopwatch = putBatchRequestTimer.start();
                 try {
-                    factory.createSleeper().sleep(retryCount * 1000);
+                    factory.createSleeper().sleep(((1 << retryCount) * 1000) - 1000); // 0s,1s,3s,7s,15s,31s...
                     result = amazonKinesisFirehose.putRecordBatch(request);
                     exceptionForErrorLogging.set(null); // success! clear the exception if this was a retry
                 } catch (Exception exception) {

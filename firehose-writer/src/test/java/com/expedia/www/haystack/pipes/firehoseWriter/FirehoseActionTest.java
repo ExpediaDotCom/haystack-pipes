@@ -150,7 +150,7 @@ public class FirehoseActionTest {
     @Test
     public void testApplyExceptionAlways() throws InterruptedException {
         final RuntimeException testException = new RuntimeException("testApplyExceptionAlways");
-        final int retryCount = 3;
+        final int retryCount = 4;
         commonWhensForTestApply(retryCount);
         when(mockAmazonKinesisFirehose.putRecordBatch(any(PutRecordBatchRequest.class)))
                 .thenThrow(testException);
@@ -160,7 +160,8 @@ public class FirehoseActionTest {
         commonVerifiesForTestApply();
         commonVerifiesForTestApplyNotEmpty(retryCount, 0);
         verify(mockSleeper).sleep(1000);
-        verify(mockSleeper).sleep(2000);
+        verify(mockSleeper).sleep(3000);
+        verify(mockSleeper).sleep(7000);
         for(int i = 0 ; i < retryCount ; i++) {
             verify(mockLogger).warn(String.format(PUT_RECORD_BATCH_WARN_MSG, i), testException);
         }
