@@ -103,7 +103,6 @@ public class SystemExitUncaughtExceptionHandlerTest {
         verify(mockFactory).getRuntime();
         verify(mockFactory).getILoggerFactory();
         verify(mockRuntime).exit(SYSTEM_EXIT_STATUS);
-        verify(mockKafkaStreams).close();
     }
 
     @Test

@@ -52,7 +52,6 @@ public class SystemExitUncaughtExceptionHandler implements Thread.UncaughtExcept
     @Override
     public void uncaughtException(Thread thread, Throwable throwable) {
         logger.error(String.format(ERROR_MSG, thread), throwable);
-        kafkaStreams.close();
         shutdownLogger(LOGBACK_METHOD_NAME, LOG4J_METHOD_NAME);
         factory.getRuntime().exit(SYSTEM_EXIT_STATUS);
     }
