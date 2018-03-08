@@ -47,7 +47,7 @@ class FirehoseCollector {
     }
 
     private void initialize() {
-        records = new ArrayList<>();
+        records = new ArrayList<>(MAX_RECORDS_IN_BATCH);
         totalDataSizeOfRecords = 0;
     }
 
