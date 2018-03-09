@@ -17,6 +17,7 @@
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
 import com.amazonaws.services.kinesisfirehose.model.Record;
+import com.netflix.servo.util.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,24 +52,25 @@ class FirehoseCollector {
         totalDataSizeOfRecords = 0;
     }
 
-    boolean shouldCreateNewBatchDueToRecordCount() {
-        return (records.size() + 1) == MAX_RECORDS_IN_BATCH;
+    private boolean shouldCreateNewBatchDueToRecordCount() {
+        return records.size() == MAX_RECORDS_IN_BATCH;
     }
 
-    boolean shouldCreateNewBatchDueToDataSize(Record record) {
+    private boolean shouldCreateNewBatchDueToDataSize(Record record) {
         return (totalDataSizeOfRecords + record.getData().array().length) > MAX_BYTES_IN_BATCH;
+    }
+
+    @VisibleForTesting
+    boolean shouldCreateNewBatch(Record record) {
+        return shouldCreateNewBatchDueToDataSize(record) || shouldCreateNewBatchDueToRecordCount();
     }
 
     List<Record> addRecordAndReturnBatch(Record record) {
         final List<Record> records;
-        if (shouldCreateNewBatchDueToDataSize(record)) {
+        if (shouldCreateNewBatch(record)) {
             records = this.records;
             initialize();
             addRecord(record);
-        } else if (shouldCreateNewBatchDueToRecordCount()) {
-            addRecord(record);
-            records = this.records;
-            initialize();
         } else {
             records = Collections.emptyList();
             addRecord(record);
