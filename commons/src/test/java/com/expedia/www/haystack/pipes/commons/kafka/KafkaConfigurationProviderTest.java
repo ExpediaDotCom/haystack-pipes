@@ -19,6 +19,7 @@ package com.expedia.www.haystack.pipes.commons.kafka;
 import org.junit.Before;
 import org.junit.Test;
 
+import static com.expedia.www.haystack.pipes.commons.ConfigurationTest.THREAD_COUNT_CONFIGURATION_IN_TEST_BASE_DOT_YAML;
 import static org.junit.Assert.assertEquals;
 
 public class KafkaConfigurationProviderTest {
@@ -47,5 +48,10 @@ public class KafkaConfigurationProviderTest {
     @Test
     public void testToTopic() {
         assertEquals("haystack.kafka.totopic", kafkaConfigurationProvider.totopic());
+    }
+
+    @Test
+    public void testThreadCount() {
+        assertEquals(THREAD_COUNT_CONFIGURATION_IN_TEST_BASE_DOT_YAML, kafkaConfigurationProvider.threadcount());
     }
 }

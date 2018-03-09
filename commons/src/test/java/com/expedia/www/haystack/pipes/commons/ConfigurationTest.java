@@ -26,10 +26,13 @@ import java.util.Properties;
 import static org.junit.Assert.assertEquals;
 
 public class ConfigurationTest {
+    public final static int THREAD_COUNT_CONFIGURATION_IN_TEST_BASE_DOT_YAML = 42;
+
     private final static String HAYSTACK_KAFKA_BROKERS = "haystack.kafka.brokers";
     private final static String HAYSTACK_KAFKA_FROM_TOPIC = "haystack.kafka.fromtopic";
     private final static String HAYSTACK_KAFKA_PORT = "haystack.kafka.port";
     private final static String HAYSTACK_KAFKA_TO_TOPIC = "haystack.kafka.totopic";
+    private final static String HAYSTACK_KAFKA_THREAD_COUNT = "haystack.kafka.threadcount";
     private final static String HAYSTACK_PIPE_STREAMS_REPLICATION_FACTOR = "haystack.pipe.streams.replicationfactor";
     private final static String HAYSTACK_GRAPHITE_PREFIX = "haystack.graphite.prefix";
     private final static String HAYSTACK_GRAPHITE_HOST = "haystack.graphite.host";
@@ -41,6 +44,7 @@ public class ConfigurationTest {
             {HAYSTACK_KAFKA_FROM_TOPIC, HAYSTACK_KAFKA_FROM_TOPIC},
             {HAYSTACK_KAFKA_PORT, 65534},
             {HAYSTACK_KAFKA_TO_TOPIC, HAYSTACK_KAFKA_TO_TOPIC},
+            {HAYSTACK_KAFKA_THREAD_COUNT, THREAD_COUNT_CONFIGURATION_IN_TEST_BASE_DOT_YAML},
             {HAYSTACK_PIPE_STREAMS_REPLICATION_FACTOR, 2147483645},
             {HAYSTACK_GRAPHITE_PREFIX, HAYSTACK_GRAPHITE_PREFIX},
             {HAYSTACK_GRAPHITE_HOST, HAYSTACK_GRAPHITE_HOST},

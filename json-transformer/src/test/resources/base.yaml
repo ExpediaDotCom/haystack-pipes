@@ -4,6 +4,7 @@ haystack:
      port: 9092 # default Kafka port, rarely overridden, but can be overridden by env variable
      fromtopic: "proto-spans"
      totopic: "json-spans"
+     threadcount: 1
   pipe:
     streams:
       replicationfactor: 1

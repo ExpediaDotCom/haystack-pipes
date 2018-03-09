@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import static com.expedia.www.haystack.pipes.commons.ConfigurationTest.THREAD_COUNT_CONFIGURATION_IN_TEST_BASE_DOT_YAML;
 import static com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.STARTED_MSG;
 import static com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.STARTING_MSG;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
@@ -118,12 +119,13 @@ public class KafkaStreamStarterTest {
     @Test
     public void testGetProperties() {
         final Properties properties = kafkaStreamStarter.getProperties();
-        assertEquals(6, properties.size());
+        assertEquals(7, properties.size());
         assertEquals(CLIENT_ID, properties.get(StreamsConfig.CLIENT_ID_CONFIG));
         assertEquals(mockKafkaStreamBuilder.getClass().getName(), properties.get(ConsumerConfig.GROUP_ID_CONFIG));
         assertEquals(mockKafkaStreamBuilder.getClass().getSimpleName(), properties.get(StreamsConfig.APPLICATION_ID_CONFIG));
         assertEquals(KAFKA_IP_AND_PORT, properties.get(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG));
         assertEquals(2147483645, properties.get(StreamsConfig.REPLICATION_FACTOR_CONFIG));
+        assertEquals(THREAD_COUNT_CONFIGURATION_IN_TEST_BASE_DOT_YAML, properties.get(StreamsConfig.NUM_STREAM_THREADS_CONFIG));
         assertEquals(WallclockTimestampExtractor.class, properties.get(StreamsConfig.TIMESTAMP_EXTRACTOR_CLASS_CONFIG));
     }
 
@@ -141,11 +143,11 @@ public class KafkaStreamStarterTest {
 
         realFactory.createKafkaStreams(mockKStreamBuilder, kafkaStreamStarter);
 
-        verify(mockKStreamBuilder).latestResetTopicsPattern();
-        verify(mockKStreamBuilder).earliestResetTopicsPattern();
+        verify(mockKStreamBuilder, times(THREAD_COUNT_CONFIGURATION_IN_TEST_BASE_DOT_YAML)).latestResetTopicsPattern();
+        verify(mockKStreamBuilder, times(THREAD_COUNT_CONFIGURATION_IN_TEST_BASE_DOT_YAML)).earliestResetTopicsPattern();
         verify(mockKStreamBuilder, times(2)).globalStateStores();
         verify(mockKStreamBuilder).buildGlobalStateTopology();
-        verify(mockKStreamBuilder).sourceTopicPattern();
+        verify(mockKStreamBuilder, times(THREAD_COUNT_CONFIGURATION_IN_TEST_BASE_DOT_YAML)).sourceTopicPattern();
     }
 
     @Test

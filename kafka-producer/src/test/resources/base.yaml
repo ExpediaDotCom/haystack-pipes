@@ -4,6 +4,7 @@ haystack:
      port: 9092
      fromtopic: "json-spans"
      totopic: ""
+     threadcount: 1
   pipe:
     streams:
       replicationfactor: 1

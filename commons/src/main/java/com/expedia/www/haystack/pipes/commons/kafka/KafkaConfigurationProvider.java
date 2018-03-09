@@ -49,4 +49,9 @@ public class KafkaConfigurationProvider implements KafkaConfig {
     public String totopic() {
         return kafkaConfig.totopic();
     }
+
+    @Override
+    public int threadcount() {
+        return kafkaConfig.threadcount();
+    }
 }
