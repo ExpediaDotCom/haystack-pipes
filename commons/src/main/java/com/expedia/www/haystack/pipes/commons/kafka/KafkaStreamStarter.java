@@ -71,6 +71,7 @@ public class KafkaStreamStarter {
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, containingClass.getSimpleName());
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, getKafkaIpAnPort());
         props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, getReplicationFactor());
+        props.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, getThreadCount());
         props.put(StreamsConfig.TIMESTAMP_EXTRACTOR_CLASS_CONFIG, WallclockTimestampExtractor.class);
         return props;
     }
@@ -88,6 +89,11 @@ public class KafkaStreamStarter {
     private String getKafkaToTopic() {
         final KafkaConfig kafkaConfig = getKafkaConfig();
         return kafkaConfig.totopic();
+    }
+
+    private int getThreadCount() {
+        final KafkaConfig kafkaConfig = getKafkaConfig();
+        return kafkaConfig.threadcount();
     }
 
     private int getReplicationFactor() {

@@ -4,6 +4,7 @@ haystack:
      port: 65534
      fromtopic: "haystack.kafka.fromtopic"
      totopic: "haystack.kafka.totopic"
+     threadcount: 42
   pipe:
     streams:
       replicationfactor: 2147483645

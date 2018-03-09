@@ -24,4 +24,6 @@ public interface KafkaConfig {
     String fromtopic();
 
     String totopic();
+
+    int threadcount();
 }
