@@ -41,6 +41,8 @@ public class FirehoseProcessor implements Processor<String, Span> {
     static final String PUT_RECORD_BATCH_WARN_MSG = "putRecordBatch() failed; retryCount=%d";
     @VisibleForTesting
     static final String PUT_RECORD_BATCH_ERROR_MSG = "putRecordBatch() could not put %d records after %d tries";
+    @VisibleForTesting
+    static final int SLEEP_STEP = 100;
 
     private final Logger logger;
     private final Counters counters;
@@ -101,7 +103,7 @@ public class FirehoseProcessor implements Processor<String, Span> {
                 PutRecordBatchResult result = null;
                 final Stopwatch stopwatch = putBatchRequestTimer.start();
                 try {
-                    factory.createSleeper().sleep(((1 << retryCount) * 1000) - 1000); // 0s,1s,3s,7s,15s,31s...
+                    factory.createSleeper().sleep(((1 << retryCount) * SLEEP_STEP) - SLEEP_STEP); // 0s,1s,3s,7s,15s,31s...
                     result = amazonKinesisFirehose.putRecordBatch(request);
                     exceptionForErrorLogging.set(null); // success! clear the exception if this was a retry
                 } catch (Exception exception) {

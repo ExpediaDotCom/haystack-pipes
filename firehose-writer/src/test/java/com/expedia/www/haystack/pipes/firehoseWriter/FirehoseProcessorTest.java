@@ -41,6 +41,7 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.PUT_RECORD_BATCH_ERROR_MSG;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.PUT_RECORD_BATCH_WARN_MSG;
+import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.SLEEP_STEP;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.STARTUP_MESSAGE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
@@ -167,7 +168,7 @@ public class FirehoseProcessorTest {
 
         commonVerifiesForTestApply(1);
         commonVerifiesForTestApplyNotEmpty(2, 1);
-        verify(mockSleeper).sleep(1000);
+        verify(mockSleeper).sleep(SLEEP_STEP);
         verify(mockLogger).warn(String.format(PUT_RECORD_BATCH_WARN_MSG, 0), testException);
         verify(mockCounters).countSuccessesAndFailures(mockRequest, null);
         verify(mockCounters).countSuccessesAndFailures(mockRequest, mockResult);
@@ -185,9 +186,9 @@ public class FirehoseProcessorTest {
 
         commonVerifiesForTestApply(1);
         commonVerifiesForTestApplyNotEmpty(retryCount, 0);
-        verify(mockSleeper).sleep(1000);
-        verify(mockSleeper).sleep(3000);
-        verify(mockSleeper).sleep(7000);
+        verify(mockSleeper).sleep(SLEEP_STEP);
+        verify(mockSleeper).sleep(3 * SLEEP_STEP);
+        verify(mockSleeper).sleep(7 * SLEEP_STEP);
         for(int i = 0 ; i < retryCount ; i++) {
             verify(mockLogger).warn(String.format(PUT_RECORD_BATCH_WARN_MSG, i), testException);
         }
@@ -210,7 +211,7 @@ public class FirehoseProcessorTest {
 
         commonVerifiesForTestApply(1);
         commonVerifiesForTestApplyNotEmpty(2, 2);
-        verify(mockSleeper).sleep(1000);
+        verify(mockSleeper).sleep(SLEEP_STEP);
         verify(mockCounters, times(2)).countSuccessesAndFailures(mockRequest, mockResult);
         verify(mockBatch).extractFailedRecords(mockRequest, mockResult, 0);
         verify(mockBatch).extractFailedRecords(mockRequest, mockResult, 1);
@@ -230,7 +231,7 @@ public class FirehoseProcessorTest {
 
         commonVerifiesForTestApply(1);
         commonVerifiesForTestApplyNotEmpty(2, 1);
-        verify(mockSleeper).sleep(1000);
+        verify(mockSleeper).sleep(SLEEP_STEP);
         verify(mockCounters).countSuccessesAndFailures(mockRequest, null);
         verify(mockCounters).countSuccessesAndFailures(mockRequest, mockResult);
         verify(mockBatch).extractFailedRecords(mockRequest, null, 0);
