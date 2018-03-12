@@ -71,7 +71,9 @@ public class FirehoseProcessor implements Processor<String, Span> {
 
     @Override
     public void init(ProcessorContext context) {
-        // nothing to do
+        final Thread shutdownHook = factory.createShutdownHook(this);
+        final Runtime runtime = factory.getRuntime();
+        runtime.addShutdownHook(shutdownHook);
     }
 
     @Override
@@ -155,6 +157,27 @@ public class FirehoseProcessor implements Processor<String, Span> {
         Sleeper createSleeper() {
             return new SleeperImpl();
         }
+
+        Runtime getRuntime() {
+            return Runtime.getRuntime();
+        }
+
+        Thread createShutdownHook(FirehoseProcessor firehoseProcessor) {
+            final ShutdownHook shutdownHook = new ShutdownHook(firehoseProcessor);
+            return new Thread(shutdownHook);
+        }
     }
 
+    static class ShutdownHook implements Runnable {
+        private final FirehoseProcessor firehoseProcessor;
+
+        ShutdownHook(FirehoseProcessor firehoseProcessor) {
+            this.firehoseProcessor = firehoseProcessor;
+        }
+
+        @Override
+        public void run() {
+            firehoseProcessor.close();
+        }
+    }
 }

@@ -43,6 +43,7 @@ import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.PU
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.PUT_RECORD_BATCH_WARN_MSG;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.STARTUP_MESSAGE;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyListOf;
@@ -87,6 +88,12 @@ public class FirehoseProcessorTest {
     private Sleeper mockSleeper;
     @Mock
     private ProcessorContext mockProcessorContext;
+    @Mock
+    private FirehoseProcessor mockFirehoseProcessor;
+    @Mock
+    private Thread mockThread;
+    @Mock
+    private Runtime mockRuntime;
 
     private FirehoseProcessor firehoseProcessor;
     private Factory factory;
@@ -108,7 +115,8 @@ public class FirehoseProcessorTest {
         verify(mockLogger).info(String.format(STARTUP_MESSAGE, STREAM_NAME));
         verifyNoMoreInteractions(mockLogger, mockCounters, mockTimer, mockBatch, mockAmazonKinesisFirehose,
                 mockFactory, mockFirehoseConfigurationProvider, mockProcessorContext);
-        verifyNoMoreInteractions(mockRecordList, mockRequest, mockStopwatch, mockResult, mockSleeper);
+        verifyNoMoreInteractions(mockRecordList, mockRequest, mockStopwatch, mockResult, mockSleeper,
+                mockFirehoseProcessor, mockThread, mockRuntime);
     }
 
     @Test
@@ -259,7 +267,14 @@ public class FirehoseProcessorTest {
     @Test
     public void testInit() {
         wantedNumberOfInvocationsStreamName = 1;
+        when(mockFactory.createShutdownHook(any(FirehoseProcessor.class))).thenReturn(mockThread);
+        when(mockFactory.getRuntime()).thenReturn(mockRuntime);
+
         firehoseProcessor.init(mockProcessorContext);
+
+        verify(mockFactory).createShutdownHook(firehoseProcessor);
+        verify(mockFactory).getRuntime();
+        verify(mockRuntime).addShutdownHook(mockThread);
     }
 
     @Test
@@ -282,5 +297,20 @@ public class FirehoseProcessorTest {
 
         assertEquals(STREAM_NAME, request.getDeliveryStreamName());
         assertEquals(records, request.getRecords());
+    }
+
+    @Test
+    public void testFactoryGetRuntime() {
+        wantedNumberOfInvocationsStreamName = 1;
+        assertSame(Runtime.getRuntime(), factory.getRuntime());
+    }
+
+    @Test
+    public void testFactoryCreateShutdownHookAndShutdownHookClass() {
+        wantedNumberOfInvocationsStreamName = 1;
+        final Thread shutdownHook = factory.createShutdownHook(mockFirehoseProcessor);
+        shutdownHook.run();
+
+        verify(mockFirehoseProcessor).close();
     }
 }
