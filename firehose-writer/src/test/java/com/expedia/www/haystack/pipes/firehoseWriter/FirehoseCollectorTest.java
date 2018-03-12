@@ -104,4 +104,14 @@ public class FirehoseCollectorTest {
 
         verify(mockRecord, times(2 * recordCount + 1)).getData();
     }
+
+    @Test
+    public void testReturnIncompleteBatch() {
+        testShouldCreateNewBatch(MAX_RECORDS_IN_BATCH / 2, false);
+
+        final List<Record> batch = firehoseCollector.returnIncompleteBatch();
+
+        assertEquals(MAX_RECORDS_IN_BATCH / 2, batch.size());
+        assertEquals(0, firehoseCollector.returnIncompleteBatch().size());
+    }
 }

@@ -78,6 +78,12 @@ class FirehoseCollector {
         return records;
     }
 
+    List<Record> returnIncompleteBatch() {
+        final List<Record> records = this.records;
+        initialize();
+        return records;
+    }
+
     private void addRecord(Record record) {
         records.add(record);
         totalDataSizeOfRecords += record.getData().array().length;

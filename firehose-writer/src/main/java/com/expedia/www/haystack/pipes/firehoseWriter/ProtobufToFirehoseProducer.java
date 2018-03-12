@@ -23,13 +23,15 @@ import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
+
 @Component
 class ProtobufToFirehoseProducer extends KafkaStreamBuilderBase {
     @Autowired
     ProtobufToFirehoseProducer(KafkaStreamStarter kafkaStreamStarter,
                                SpanSerdeFactory spanSerdeFactory,
-                               FirehoseAction firehoseAction,
+                               FirehoseProcessorSupplier firehoseProcessorSupplier,
                                KafkaConfigurationProvider kafkaConfigurationProvider) {
-        super(kafkaStreamStarter, spanSerdeFactory, Constants.APPLICATION, kafkaConfigurationProvider, firehoseAction);
+        super(kafkaStreamStarter, spanSerdeFactory, APPLICATION, kafkaConfigurationProvider, firehoseProcessorSupplier);
     }
 }
