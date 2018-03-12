@@ -174,7 +174,6 @@ class SpringConfig {
 
     @Bean
     @Autowired
-
     Counters counters(Counter spanCounter,
                       Counter successCounter,
                       Counter failureCounter) {
@@ -187,19 +186,6 @@ class SpringConfig {
                 FirehoseCollector firehoseCollector,
                 Logger batchLogger) {
         return new Batch(printer, firehoseCollector, batchLogger);
-    }
-
-    @Bean
-    @Autowired
-    FirehoseProcessor firehoseProcessor(Logger firehoseProcessorLogger,
-                                        Counters counters,
-                                        Timer putBatchRequestTimer,
-                                        Batch batch,
-                                        AmazonKinesisFirehose amazonKinesisFirehose,
-                                        FirehoseProcessor.Factory firehoseProcessorFactory,
-                                        FirehoseConfigurationProvider firehoseConfigurationProvider) {
-        return new FirehoseProcessor(firehoseProcessorLogger, counters, putBatchRequestTimer, batch,
-                amazonKinesisFirehose, firehoseProcessorFactory, firehoseConfigurationProvider);
     }
 
     @Bean
