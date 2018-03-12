@@ -63,24 +63,24 @@ class SpringConfig {
     @Bean
     Counter spanCounter() {
         return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                FirehoseAction.class.getName(), "REQUEST");
+                FirehoseProcessor.class.getName(), "REQUEST");
     }
 
     @Bean
     Counter successCounter() {
         return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                FirehoseAction.class.getName(), "SUCCESS");
+                FirehoseProcessor.class.getName(), "SUCCESS");
     }
 
     @Bean
     Counter failureCounter() {
         return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                FirehoseAction.class.getName(), "FAILURE");
+                FirehoseProcessor.class.getName(), "FAILURE");
     }
 
     @Bean
     Timer putBatchRequestTimer() {
-        return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, FirehoseAction.class.getName(),
+        return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, FirehoseProcessor.class.getName(),
                 "PUT_BATCH_REQUEST", TimeUnit.MICROSECONDS);
     }
 
@@ -90,8 +90,8 @@ class SpringConfig {
     }
 
     @Bean
-    Logger firehoseActionLogger() {
-        return LoggerFactory.getLogger(FirehoseAction.class);
+    Logger firehoseProcessorLogger() {
+        return LoggerFactory.getLogger(FirehoseProcessor.class);
     }
 
     @Bean
@@ -168,8 +168,8 @@ class SpringConfig {
     }
 
     @Bean
-    FirehoseAction.Factory firehoseActionFactory() {
-        return new FirehoseAction.Factory();
+    FirehoseProcessor.Factory firehoseProcessorFactory() {
+        return new FirehoseProcessor.Factory();
     }
 
     @Bean
@@ -191,15 +191,28 @@ class SpringConfig {
 
     @Bean
     @Autowired
-    FirehoseAction firehoseAction(Logger firehoseActionLogger,
-                                  Counters counters,
-                                  Timer putBatchRequestTimer,
-                                  Batch batch,
-                                  AmazonKinesisFirehose amazonKinesisFirehose,
-                                  FirehoseAction.Factory firehoseActionFactory,
-                                  FirehoseConfigurationProvider firehoseConfigurationProvider) {
-        return new FirehoseAction(firehoseActionLogger, counters, putBatchRequestTimer, batch, amazonKinesisFirehose,
-                firehoseActionFactory, firehoseConfigurationProvider);
+    FirehoseProcessor firehoseProcessor(Logger firehoseProcessorLogger,
+                                        Counters counters,
+                                        Timer putBatchRequestTimer,
+                                        Batch batch,
+                                        AmazonKinesisFirehose amazonKinesisFirehose,
+                                        FirehoseProcessor.Factory firehoseProcessorFactory,
+                                        FirehoseConfigurationProvider firehoseConfigurationProvider) {
+        return new FirehoseProcessor(firehoseProcessorLogger, counters, putBatchRequestTimer, batch,
+                amazonKinesisFirehose, firehoseProcessorFactory, firehoseConfigurationProvider);
+    }
+
+    @Bean
+    @Autowired
+    FirehoseProcessorSupplier firehoseProcessorSupplier(Logger firehoseProcessorLogger,
+                                                        Counters counters,
+                                                        Timer putBatchRequestTimer,
+                                                        Batch batch,
+                                                        AmazonKinesisFirehose amazonKinesisFirehose,
+                                                        FirehoseProcessor.Factory firehoseProcessorFactory,
+                                                        FirehoseConfigurationProvider firehoseConfigurationProvider) {
+        return new FirehoseProcessorSupplier(firehoseProcessorLogger, counters, putBatchRequestTimer, batch,
+                amazonKinesisFirehose, firehoseProcessorFactory, firehoseConfigurationProvider);
     }
 
     @Bean
@@ -211,10 +224,10 @@ class SpringConfig {
     @Autowired
     ProtobufToFirehoseProducer protobufToFirehoseProducer(KafkaStreamStarter kafkaStreamStarter,
                                                           SpanSerdeFactory spanSerdeFactory,
-                                                          FirehoseAction firehoseAction,
+                                                          FirehoseProcessorSupplier firehoseProcessorSupplier,
                                                           KafkaConfigurationProvider kafkaConfigurationProvider) {
         return new ProtobufToFirehoseProducer(
-                kafkaStreamStarter, spanSerdeFactory, firehoseAction, kafkaConfigurationProvider);
+                kafkaStreamStarter, spanSerdeFactory, firehoseProcessorSupplier, kafkaConfigurationProvider);
     }
 
     @Bean

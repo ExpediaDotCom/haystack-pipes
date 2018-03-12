@@ -24,7 +24,8 @@ import com.expedia.open.tracing.Span;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.monitor.Timer;
 import com.netflix.servo.util.VisibleForTesting;
-import org.apache.kafka.streams.kstream.ForeachAction;
+import org.apache.kafka.streams.processor.Processor;
+import org.apache.kafka.streams.processor.ProcessorContext;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -33,7 +34,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Component
-public class FirehoseAction implements ForeachAction<String, Span> {
+public class FirehoseProcessor implements Processor<String, Span> {
     @VisibleForTesting
     static final String STARTUP_MESSAGE = "Instantiating FirehoseAction into stream name [%s]";
     @VisibleForTesting
@@ -50,28 +51,43 @@ public class FirehoseAction implements ForeachAction<String, Span> {
     private final FirehoseConfigurationProvider firehoseConfigurationProvider;
 
     @Autowired
-    FirehoseAction(Logger firehoseActionLogger,
-                   Counters counters,
-                   Timer putBatchRequestTimer,
-                   Batch batch,
-                   AmazonKinesisFirehose amazonKinesisFirehose,
-                   Factory firehoseActionFactory,
-                   FirehoseConfigurationProvider firehoseConfigurationProvider) {
-        this.logger = firehoseActionLogger;
+    FirehoseProcessor(Logger firehoseProcessorLogger,
+                      Counters counters,
+                      Timer putBatchRequestTimer,
+                      Batch batch,
+                      AmazonKinesisFirehose amazonKinesisFirehose,
+                      Factory firehoseProcessorFactory,
+                      FirehoseConfigurationProvider firehoseConfigurationProvider) {
+        this.logger = firehoseProcessorLogger;
         this.counters = counters;
         this.putBatchRequestTimer = putBatchRequestTimer;
         this.batch = batch;
         this.amazonKinesisFirehose = amazonKinesisFirehose;
-        this.factory = firehoseActionFactory;
+        this.factory = firehoseProcessorFactory;
         this.firehoseConfigurationProvider = firehoseConfigurationProvider;
 
         this.logger.info(String.format(STARTUP_MESSAGE, firehoseConfigurationProvider.streamname()));
     }
 
     @Override
-    public void apply(String key, Span span) {
+    public void init(ProcessorContext context) {
+        // nothing to do
+    }
+
+    @Override
+    public void process(String key, Span span) {
         counters.incrementSpanCounter();
-        List<Record> records = batch.getRecordList(span);
+        final List<Record> records = batch.getRecordList(span);
+        sendRecordsToS3(records);
+    }
+
+    @Override
+    public void close() {
+        final List<Record> records = batch.getRecordListForShutdown();
+        sendRecordsToS3(records);
+    }
+
+    private void sendRecordsToS3(List<Record> records) {
         int retryCount = 0;
         int failureCount;
         if (!records.isEmpty()) {
@@ -106,6 +122,11 @@ public class FirehoseAction implements ForeachAction<String, Span> {
                 logger.error(msg, exceptionForErrorLogging.get());
             }
         }
+    }
+
+    @Override
+    public void punctuate(long timestamp) {
+        // There is nothing to do; FirehoseProcessor does not schedule itself with the context provided in init() above.
     }
 
     /**

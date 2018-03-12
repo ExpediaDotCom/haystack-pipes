@@ -78,7 +78,7 @@ public class SpringConfigTest {
         assertNotNull(springConfig.spanCounter());
 
         verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                FirehoseAction.class.getName(), "REQUEST");
+                FirehoseProcessor.class.getName(), "REQUEST");
     }
 
     @Test
@@ -89,7 +89,7 @@ public class SpringConfigTest {
         assertNotNull(springConfig.successCounter());
 
         verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                FirehoseAction.class.getName(), "SUCCESS");
+                FirehoseProcessor.class.getName(), "SUCCESS");
     }
 
     @Test
@@ -100,7 +100,7 @@ public class SpringConfigTest {
         assertNotNull(springConfig.failureCounter());
 
         verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                FirehoseAction.class.getName(), "FAILURE");
+                FirehoseProcessor.class.getName(), "FAILURE");
     }
 
     @Test
@@ -110,7 +110,7 @@ public class SpringConfigTest {
 
         assertNotNull(springConfig.putBatchRequestTimer());
 
-        verify(mockMetricObjects).createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, FirehoseAction.class.getName(),
+        verify(mockMetricObjects).createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, FirehoseProcessor.class.getName(),
                 "PUT_BATCH_REQUEST", TimeUnit.MICROSECONDS);
     }
 
@@ -124,9 +124,9 @@ public class SpringConfigTest {
 
     @Test
     public void testFirehoseActionLogger() {
-        final Logger logger = springConfig.firehoseActionLogger();
+        final Logger logger = springConfig.firehoseProcessorLogger();
 
-        assertEquals(FirehoseAction.class.getName(), logger.getName());
+        assertEquals(FirehoseProcessor.class.getName(), logger.getName());
     }
 
     @Test
@@ -186,7 +186,7 @@ public class SpringConfigTest {
     }
 
     // All of the other beans in SpringConfig use default constructors, or use arguments provided by other Spring beans
-    // in SpringConfig, so tests on the methods that create those beans have little value. The firehoseAction() Bean
+    // in SpringConfig, so tests on the methods that create those beans have little value. The firehoseProcessor() Bean
     // method should be tested but is difficult to test because of how deeply the AWS SDK code hides the instance
     // variables.
 }

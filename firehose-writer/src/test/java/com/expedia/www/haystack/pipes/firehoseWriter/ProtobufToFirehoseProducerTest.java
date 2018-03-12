@@ -50,7 +50,7 @@ public class ProtobufToFirehoseProducerTest {
     @Mock
     private SpanSerdeFactory mockSpanSerdeFactory;
     @Mock
-    private FirehoseAction mockFirehoseAction;
+    private FirehoseProcessorSupplier mockFirehoseProcessorSupplier;
     @Mock
     private KafkaConfigurationProvider mockKafkaConfigurationProvider;
     @Mock
@@ -64,13 +64,13 @@ public class ProtobufToFirehoseProducerTest {
 
     @Before
     public void setUp() {
-        protobufToFirehoseProducer = new ProtobufToFirehoseProducer(
-                mockKafkaStreamStarter, mockSpanSerdeFactory, mockFirehoseAction, mockKafkaConfigurationProvider);
+        protobufToFirehoseProducer = new ProtobufToFirehoseProducer(mockKafkaStreamStarter, mockSpanSerdeFactory,
+                mockFirehoseProcessorSupplier, mockKafkaConfigurationProvider);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSpanSerdeFactory, mockFirehoseAction,
+        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSpanSerdeFactory, mockFirehoseProcessorSupplier,
                 mockKafkaConfigurationProvider, mockKStreamBuilder, mockKStream, mockSpanSerde);
     }
 
@@ -94,6 +94,6 @@ public class ProtobufToFirehoseProducerTest {
         verify(mockSpanSerdeFactory).createSpanSerde(APPLICATION);
         verify(mockKafkaConfigurationProvider).fromtopic();
         verify(mockKStreamBuilder).stream(any(Serdes.StringSerde.class), eq(mockSpanSerde), eq(FROM_TOPIC));
-        verify(mockKStream).foreach(mockFirehoseAction);
+        verify(mockKStream).process(mockFirehoseProcessorSupplier);
     }
 }

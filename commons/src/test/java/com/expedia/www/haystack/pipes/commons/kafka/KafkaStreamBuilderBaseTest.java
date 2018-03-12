@@ -6,6 +6,7 @@ import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.kstream.ForeachAction;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
+import org.apache.kafka.streams.processor.ProcessorSupplier;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,24 +36,35 @@ public class KafkaStreamBuilderBaseTest {
     @Mock
     private ForeachAction<String, Span> mockForeachAction;
     @Mock
+    private ProcessorSupplier<String, Span> mockProcessorSupplier;
+    @Mock
     private KStreamBuilder mockKStreamBuilder;
     @Mock
     private Serde<Span> mockSerdeSpan;
     @Mock
     private KStream<String, Span> mockKStream;
 
-    class KafkaStreamBuilderBaseImpl extends KafkaStreamBuilderBase {
-        public KafkaStreamBuilderBaseImpl() {
+    class KafkaStreamBuilderBaseForeachActionImpl extends KafkaStreamBuilderBase {
+        public KafkaStreamBuilderBaseForeachActionImpl() {
             super(mockKafkaStreamStarter, mockSpanSerdeFactory, APPLICATION, mockKafkaConfigurationProvider,
                     mockForeachAction);
         }
     }
 
-    private KafkaStreamBuilderBase kafkaStreamBuilderBase;
+    class KafkaStreamBuilderBaseProcessorSupplierImpl extends KafkaStreamBuilderBase {
+        public KafkaStreamBuilderBaseProcessorSupplierImpl() {
+            super(mockKafkaStreamStarter, mockSpanSerdeFactory, APPLICATION, mockKafkaConfigurationProvider,
+                    mockProcessorSupplier);
+        }
+    }
+
+    private KafkaStreamBuilderBase kafkaStreamBuilderBaseForeachAction;
+    private KafkaStreamBuilderBase kafkaStreamBuilderBaseProcessorSupplier;
 
     @Before
     public void setUp() {
-        kafkaStreamBuilderBase = new KafkaStreamBuilderBaseImpl();
+        kafkaStreamBuilderBaseForeachAction = new KafkaStreamBuilderBaseForeachActionImpl();
+        kafkaStreamBuilderBaseProcessorSupplier = new KafkaStreamBuilderBaseProcessorSupplierImpl();
     }
 
     @After
@@ -62,24 +74,42 @@ public class KafkaStreamBuilderBaseTest {
     }
 
     @Test
-    public void testBuildStreamTopology() {
-        when(mockSpanSerdeFactory.createSpanSerde(anyString())).thenReturn(mockSerdeSpan);
-        when(mockKafkaConfigurationProvider.fromtopic()).thenReturn(FROM_TOPIC);
-        when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
-                .thenReturn(mockKStream);
+    public void testBuildStreamTopologyForeachAction() {
+        whensForBuildStreamTopology();
 
-        kafkaStreamBuilderBase.buildStreamTopology(mockKStreamBuilder);
+        kafkaStreamBuilderBaseForeachAction.buildStreamTopology(mockKStreamBuilder);
 
-        verify(mockSpanSerdeFactory).createSpanSerde(APPLICATION);
-        verify(mockKafkaConfigurationProvider).fromtopic();
-        verify(mockKStreamBuilder).stream(Matchers.<Serde<String>>any(), Matchers.<Serde<String>>any(), eq(FROM_TOPIC));
+        verifiesForBuildStreamTopology();
         verify(mockKStream).foreach(mockForeachAction);
     }
 
     @Test
-    public void testMain() {
-        kafkaStreamBuilderBase.main();
+    public void testBuildStreamTopologyProcessorSupplier() {
+        whensForBuildStreamTopology();
 
-        verify(mockKafkaStreamStarter).createAndStartStream(kafkaStreamBuilderBase);
+        kafkaStreamBuilderBaseProcessorSupplier.buildStreamTopology(mockKStreamBuilder);
+
+        verifiesForBuildStreamTopology();
+        verify(mockKStream).process(mockProcessorSupplier);
+    }
+
+    private void whensForBuildStreamTopology() {
+        when(mockSpanSerdeFactory.createSpanSerde(anyString())).thenReturn(mockSerdeSpan);
+        when(mockKafkaConfigurationProvider.fromtopic()).thenReturn(FROM_TOPIC);
+        when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
+                .thenReturn(mockKStream);
+    }
+
+    private void verifiesForBuildStreamTopology() {
+        verify(mockSpanSerdeFactory).createSpanSerde(APPLICATION);
+        verify(mockKafkaConfigurationProvider).fromtopic();
+        verify(mockKStreamBuilder).stream(Matchers.<Serde<String>>any(), Matchers.<Serde<String>>any(), eq(FROM_TOPIC));
+    }
+
+    @Test
+    public void testMain() {
+        kafkaStreamBuilderBaseForeachAction.main();
+
+        verify(mockKafkaStreamStarter).createAndStartStream(kafkaStreamBuilderBaseForeachAction);
     }
 }

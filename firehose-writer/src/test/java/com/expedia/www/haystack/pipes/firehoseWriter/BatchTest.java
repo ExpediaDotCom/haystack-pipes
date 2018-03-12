@@ -120,6 +120,15 @@ public class BatchTest {
         assertArrayEquals(JSON_SPAN_STRING_WITH_NO_TAGS.getBytes(), byteBuffer.array());
     }
 
+    @Test
+    public void testGetRecordListForShutdown() {
+        when(mockFirehoseCollector.returnIncompleteBatch()).thenReturn(mockRecordList);
+
+        assertSame(mockRecordList, batch.getRecordListForShutdown());
+
+        verify(mockFirehoseCollector).returnIncompleteBatch();
+    }
+
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     public void testExtractFailedRecordsNonNullResult() {

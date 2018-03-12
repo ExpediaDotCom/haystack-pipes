@@ -74,6 +74,10 @@ class Batch {
         }
     }
 
+    List<Record> getRecordListForShutdown() {
+        return firehoseCollector.returnIncompleteBatch();
+    }
+
     List<Record> extractFailedRecords(
             PutRecordBatchRequest request, PutRecordBatchResult result, int retryCount) {
         final List<Record> recordsNeedingRetry;
