@@ -40,9 +40,7 @@ public class FirehoseProcessor implements Processor<String, Span> {
     @VisibleForTesting
     static final String PUT_RECORD_BATCH_WARN_MSG = "putRecordBatch() failed; retryCount=%d";
     @VisibleForTesting
-    static final String PUT_RECORD_BATCH_ERROR_MSG = "putRecordBatch() could not put %d records after %d tries";
-    @VisibleForTesting
-    static final int SLEEP_STEP = 100;
+    static final String PUT_RECORD_BATCH_ERROR_MSG = "putRecordBatch() could not put %d records after %d tries, but will continue trying...";
 
     private final Logger logger;
     private final Counters counters;
@@ -91,19 +89,54 @@ public class FirehoseProcessor implements Processor<String, Span> {
         sendRecordsToS3(records);
     }
 
+    private class RetryCalculator {
+        final int initialRetrySleep;
+        final int maxRetrySleep;
+        int boundedTryCount; // never increments more than one step past the value that causes the exponential backoff
+                             // time calculation to exceed maxRetrySleep; this avoids problems for > 31 tries.
+        private RetryCalculator(int initialRetrySleep, int maxRetrySleep) {
+            this.initialRetrySleep = initialRetrySleep;
+            this.maxRetrySleep = maxRetrySleep;
+        }
+
+        /**
+         * Calculates the number of milliseconds to sleep. The first time this method is called, it returns 0.
+         * The second time it returns 1 * initialRetrySleep, the third time it returns 2 * initialRetrySleep,
+         * the fourth time it returns 4 * initialRetrySleep, the fifth time it returns 8 * initialRetrySleep, etc.
+         * But the returned value is bounded by maxRetrySleep; it will never return a number larger than maxRetrySleep.
+         * @return msec to sleep
+         */
+        private int calculateSleepMillis() {
+            final int sleepMillisPerTryCount = (1 << (boundedTryCount - 1)) * initialRetrySleep;
+            final int sleepMillis;
+            if(sleepMillisPerTryCount > maxRetrySleep) {
+                sleepMillis = maxRetrySleep;
+            } else {
+                sleepMillis = sleepMillisPerTryCount;
+                ++boundedTryCount;
+            }
+            return Math.min(sleepMillis, maxRetrySleep);
+        }
+    }
+
     private void sendRecordsToS3(List<Record> records) {
         int retryCount = 0;
         int failureCount;
         if (!records.isEmpty()) {
             final String streamName = firehoseConfigurationProvider.streamname();
             final AtomicReference<Exception> exceptionForErrorLogging = new AtomicReference<>(null);
-            final int retryCountLimitFromConfiguration = Integer.parseInt(firehoseConfigurationProvider.retrycount());
+            final int maxRetrySleep = firehoseConfigurationProvider.maxretrysleep();
+            final RetryCalculator retryCalculator = new RetryCalculator(
+                    firehoseConfigurationProvider.initialretrysleep(), maxRetrySleep);
+            boolean allRecordsPutSuccessfully = false;
+            final Sleeper sleeper = factory.createSleeper();
             do {
                 final PutRecordBatchRequest request = factory.createPutRecordBatchRequest(streamName, records);
                 PutRecordBatchResult result = null;
                 final Stopwatch stopwatch = putBatchRequestTimer.start();
+                final int sleepMillis = retryCalculator.calculateSleepMillis();
                 try {
-                    factory.createSleeper().sleep(((1 << retryCount) * SLEEP_STEP) - SLEEP_STEP); // 0s,1s,3s,7s,15s,31s...
+                    sleeper.sleep(sleepMillis);
                     result = amazonKinesisFirehose.putRecordBatch(request);
                     exceptionForErrorLogging.set(null); // success! clear the exception if this was a retry
                 } catch (Exception exception) {
@@ -115,17 +148,40 @@ public class FirehoseProcessor implements Processor<String, Span> {
                     stopwatch.stop();
                     failureCount = counters.countSuccessesAndFailures(request, result);
                 }
-                if (result == null || result.getFailedPutCount() > 0) {
+                if (result == null || areThereRecordsThatFirehoseHasNotProcessed(result.getFailedPutCount())) {
                     records = batch.extractFailedRecords(request, result, retryCount++);
                 } else {
-                    retryCount = retryCountLimitFromConfiguration; // All records successfully put
+                    allRecordsPutSuccessfully = true;
                 }
-            } while (retryCount < retryCountLimitFromConfiguration);
-            if (failureCount != 0 || exceptionForErrorLogging.get() != null) {
-                final String msg = String.format(PUT_RECORD_BATCH_ERROR_MSG, failureCount, retryCount);
-                logger.error(msg, exceptionForErrorLogging.get());
-            }
+                if (shouldLogErrorMessage(failureCount, exceptionForErrorLogging, maxRetrySleep, sleepMillis)) {
+                    final String msg = String.format(PUT_RECORD_BATCH_ERROR_MSG, failureCount, retryCount);
+                    System.out.println(msg);
+                    logger.error(msg, exceptionForErrorLogging.get());
+                }
+            } while (!allRecordsPutSuccessfully);
         }
+    }
+
+    @VisibleForTesting
+    boolean shouldLogErrorMessage(int failureCount,
+                                  AtomicReference<Exception> exceptionForErrorLogging,
+                                  int maxRetrySleep,
+                                  int sleepMillis) {
+        return hasSleepMillisReachedItsLimit(maxRetrySleep, sleepMillis)
+                && (areThereRecordsThatFirehoseHasNotProcessed(failureCount)
+                 || wasAnExceptionThrownByFirehose(exceptionForErrorLogging));
+    }
+
+    private boolean hasSleepMillisReachedItsLimit(int maxRetrySleep, int sleepMillis) {
+        return sleepMillis == maxRetrySleep;
+    }
+
+    private boolean areThereRecordsThatFirehoseHasNotProcessed(int failureCount) {
+        return failureCount > 0;
+    }
+
+    private boolean wasAnExceptionThrownByFirehose(AtomicReference<Exception> exceptionForErrorLogging) {
+        return exceptionForErrorLogging.get() != null;
     }
 
     @Override

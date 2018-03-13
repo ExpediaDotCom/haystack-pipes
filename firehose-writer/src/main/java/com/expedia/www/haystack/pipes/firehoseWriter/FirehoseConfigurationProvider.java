@@ -29,11 +29,6 @@ public class FirehoseConfigurationProvider implements FirehoseConfig {
     }
 
     @Override
-    public String retrycount() {
-        return firehoseConfig.retrycount();
-    }
-
-    @Override
     public String url() {
         return firehoseConfig.url();
     }
@@ -46,6 +41,16 @@ public class FirehoseConfigurationProvider implements FirehoseConfig {
     @Override
     public String signingregion() {
         return firehoseConfig.signingregion();
+    }
+
+    @Override
+    public int initialretrysleep() {
+        return firehoseConfig.initialretrysleep();
+    }
+
+    @Override
+    public int maxretrysleep() {
+        return firehoseConfig.maxretrysleep();
     }
 
     private void reload() {

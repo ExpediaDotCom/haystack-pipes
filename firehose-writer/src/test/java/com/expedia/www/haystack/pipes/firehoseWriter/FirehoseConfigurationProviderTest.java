@@ -30,8 +30,13 @@ public class FirehoseConfigurationProviderTest {
     }
 
     @Test
-    public void testRetryCount() {
-        assertEquals("3", firehoseConfigurationProvider.retrycount());
+    public void testInitialRetrySleep() {
+        assertEquals(42, firehoseConfigurationProvider.initialretrysleep());
+    }
+
+    @Test
+    public void testMaxRetrySleep() {
+        assertEquals(314159, firehoseConfigurationProvider.maxretrysleep());
     }
 
     @Test
