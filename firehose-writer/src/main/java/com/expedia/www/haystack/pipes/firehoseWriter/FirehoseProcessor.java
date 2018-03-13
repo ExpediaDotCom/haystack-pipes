@@ -163,14 +163,17 @@ public class FirehoseProcessor implements Processor<String, Span> {
     }
 
     @VisibleForTesting
-    boolean shouldLogErrorMessage(int failureCount, AtomicReference<Exception> exceptionForErrorLogging, int maxRetrySleep, int sleepMillis) {
-        return !hasSleepMillisReachedItsLimit(maxRetrySleep, sleepMillis)
+    boolean shouldLogErrorMessage(int failureCount,
+                                  AtomicReference<Exception> exceptionForErrorLogging,
+                                  int maxRetrySleep,
+                                  int sleepMillis) {
+        return hasSleepMillisReachedItsLimit(maxRetrySleep, sleepMillis)
                 && (areThereRecordsThatFirehoseHasNotProcessed(failureCount)
                  || wasAnExceptionThrownByFirehose(exceptionForErrorLogging));
     }
 
     private boolean hasSleepMillisReachedItsLimit(int maxRetrySleep, int sleepMillis) {
-        return sleepMillis != maxRetrySleep;
+        return sleepMillis == maxRetrySleep;
     }
 
     private boolean areThereRecordsThatFirehoseHasNotProcessed(int failureCount) {
