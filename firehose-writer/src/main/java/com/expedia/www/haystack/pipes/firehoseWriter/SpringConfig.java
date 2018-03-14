@@ -79,6 +79,12 @@ class SpringConfig {
     }
 
     @Bean
+    Counter exceptionCounter() {
+        return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
+                FirehoseProcessor.class.getName(), "EXCEPTION");
+    }
+
+    @Bean
     Timer putBatchRequestTimer() {
         return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, FirehoseProcessor.class.getName(),
                 "PUT_BATCH_REQUEST", TimeUnit.MICROSECONDS);
@@ -174,10 +180,13 @@ class SpringConfig {
 
     @Bean
     @Autowired
-    Counters counters(Counter spanCounter,
-                      Counter successCounter,
-                      Counter failureCounter) {
-        return new Counters(spanCounter, successCounter, failureCounter);
+    FirehoseCountersAndTimer counters(Timer putBatchRequestTimer,
+                                      Counter spanCounter,
+                                      Counter successCounter,
+                                      Counter failureCounter,
+                                      Counter exceptionCounter) {
+        return new FirehoseCountersAndTimer(
+                putBatchRequestTimer, spanCounter, successCounter, failureCounter, exceptionCounter);
     }
 
     @Bean
@@ -191,13 +200,12 @@ class SpringConfig {
     @Bean
     @Autowired
     FirehoseProcessorSupplier firehoseProcessorSupplier(Logger firehoseProcessorLogger,
-                                                        Counters counters,
-                                                        Timer putBatchRequestTimer,
+                                                        FirehoseCountersAndTimer firehoseCountersAndTimer,
                                                         Batch batch,
                                                         AmazonKinesisFirehose amazonKinesisFirehose,
                                                         FirehoseProcessor.Factory firehoseProcessorFactory,
                                                         FirehoseConfigurationProvider firehoseConfigurationProvider) {
-        return new FirehoseProcessorSupplier(firehoseProcessorLogger, counters, putBatchRequestTimer, batch,
+        return new FirehoseProcessorSupplier(firehoseProcessorLogger, firehoseCountersAndTimer, batch,
                 amazonKinesisFirehose, firehoseProcessorFactory, firehoseConfigurationProvider);
     }
 

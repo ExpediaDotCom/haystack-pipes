@@ -20,6 +20,7 @@ import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchRequest;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResult;
 import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.netflix.servo.monitor.Counter;
+import com.netflix.servo.monitor.Timer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,11 +36,13 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CountersTest {
+public class FirehoseCountersAndTimerTest {
     private static final int FAILURES = RANDOM.nextInt(Byte.MAX_VALUE);
     private static final int SUCCESSES = RANDOM.nextInt(Byte.MAX_VALUE);
     private static final int SIZE = FAILURES + SUCCESSES;
 
+    @Mock
+    private Timer mockTimer;
     @Mock
     private Counter mockSpanCounter;
     @Mock
@@ -47,30 +50,33 @@ public class CountersTest {
     @Mock
     private Counter mockFailureCounter;
     @Mock
+    private Counter mockExceptionCounter;
+    @Mock
     private PutRecordBatchRequest mockRequest;
     @Mock
     private PutRecordBatchResult mockResult;
     @Mock
     private List<Record> mockRecordList;
 
-    private Counters counters;
+    private FirehoseCountersAndTimer firehoseCountersAndTimer;
 
     @Before
     public void setUp() {
-        counters = new Counters(mockSpanCounter, mockSuccessCounter, mockFailureCounter);
+        firehoseCountersAndTimer = new FirehoseCountersAndTimer(
+                mockTimer, mockSpanCounter, mockSuccessCounter, mockFailureCounter, mockExceptionCounter);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(
-                mockSpanCounter, mockSuccessCounter, mockFailureCounter, mockRequest, mockResult, mockRecordList);
+        verifyNoMoreInteractions(mockSpanCounter, mockSuccessCounter, mockFailureCounter, mockExceptionCounter,
+                mockRequest, mockResult, mockRecordList);
     }
 
     @Test
     public void testCountersCountSuccessesAndFailuresNullResult() {
         commonWhensForTestCountersCountSuccessesAndFailures();
 
-        counters.countSuccessesAndFailures(mockRequest, null);
+        firehoseCountersAndTimer.countSuccessesAndFailures(mockRequest, null);
 
         commonVerifiesForTestCountersCountSuccessesAndFailures(0, SIZE);
     }
@@ -80,7 +86,7 @@ public class CountersTest {
         commonWhensForTestCountersCountSuccessesAndFailures();
         when(mockResult.getFailedPutCount()).thenReturn(FAILURES);
 
-        counters.countSuccessesAndFailures(mockRequest, mockResult);
+        firehoseCountersAndTimer.countSuccessesAndFailures(mockRequest, mockResult);
 
         commonVerifiesForTestCountersCountSuccessesAndFailures(SUCCESSES, FAILURES);
         verify(mockResult).getFailedPutCount();
@@ -100,9 +106,15 @@ public class CountersTest {
 
     @Test
     public void testCountersIncrementSpanCounter() {
-        counters.incrementSpanCounter();
+        firehoseCountersAndTimer.incrementRequestCounter();
 
         verify(mockSpanCounter).increment();
     }
 
+    @Test
+    public void testCounterIncrementExceptionCounter() {
+        firehoseCountersAndTimer.incrementExceptionCounter();
+
+        verify(mockExceptionCounter).increment();
+    }
 }

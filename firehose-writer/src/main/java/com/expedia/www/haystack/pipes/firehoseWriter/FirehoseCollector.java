@@ -65,7 +65,8 @@ class FirehoseCollector {
         return shouldCreateNewBatchDueToDataSize(record) || shouldCreateNewBatchDueToRecordCount();
     }
 
-    synchronized List<Record> addRecordAndReturnBatch(Record record) {
+    @VisibleForTesting
+    List<Record> addRecordAndReturnBatch(Record record) {
         final List<Record> records;
         if (shouldCreateNewBatch(record)) {
             records = this.records;

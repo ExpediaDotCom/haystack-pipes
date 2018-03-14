@@ -24,7 +24,6 @@ import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.Factory;
 import com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.Sleeper;
 import com.netflix.servo.monitor.Stopwatch;
-import com.netflix.servo.monitor.Timer;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.junit.After;
 import org.junit.Before;
@@ -67,9 +66,7 @@ public class FirehoseProcessorTest {
     @Mock
     private Logger mockLogger;
     @Mock
-    private Counters mockCounters;
-    @Mock
-    private Timer mockTimer;
+    private FirehoseCountersAndTimer mockFirehoseCountersAndTimer;
     @Mock
     private Batch mockBatch;
     @Mock
@@ -106,7 +103,7 @@ public class FirehoseProcessorTest {
     @Before
     public void setUp() {
         when(mockFirehoseConfigurationProvider.streamname()).thenReturn(STREAM_NAME);
-        firehoseProcessor = new FirehoseProcessor(mockLogger, mockCounters, mockTimer, mockBatch, mockAmazonKinesisFirehose,
+        firehoseProcessor = new FirehoseProcessor(mockLogger, mockFirehoseCountersAndTimer, mockBatch, mockAmazonKinesisFirehose,
                 mockFactory, mockFirehoseConfigurationProvider);
         factory = new Factory();
         sleeper = factory.createSleeper();
@@ -116,7 +113,7 @@ public class FirehoseProcessorTest {
     public void tearDown() {
         verify(mockFirehoseConfigurationProvider, times(wantedNumberOfInvocationsStreamName)).streamname();
         verify(mockLogger).info(String.format(STARTUP_MESSAGE, STREAM_NAME));
-        verifyNoMoreInteractions(mockLogger, mockCounters, mockTimer, mockBatch, mockAmazonKinesisFirehose,
+        verifyNoMoreInteractions(mockLogger, mockFirehoseCountersAndTimer, mockBatch, mockAmazonKinesisFirehose,
                 mockFactory, mockFirehoseConfigurationProvider, mockProcessorContext);
         verifyNoMoreInteractions(mockRecordList, mockRequest, mockStopwatch, mockResult, mockSleeper,
                 mockFirehoseProcessor, mockThread, mockRuntime);
@@ -142,7 +139,7 @@ public class FirehoseProcessorTest {
 
         commonVerifiesForTestApply(1);
         commonVerifiesForTestApplyNotEmpty(1, 1);
-        verify(mockCounters).countSuccessesAndFailures(mockRequest, mockResult);
+        verify(mockFirehoseCountersAndTimer).countSuccessesAndFailures(mockRequest, mockResult);
     }
 
     @Test
@@ -155,7 +152,7 @@ public class FirehoseProcessorTest {
 
         commonVerifiesForTestApply(0);
         commonVerifiesForTestApplyNotEmpty(1, 1);
-        verify(mockCounters).countSuccessesAndFailures(mockRequest, mockResult);
+        verify(mockFirehoseCountersAndTimer).countSuccessesAndFailures(mockRequest, mockResult);
         verify(mockBatch).getRecordListForShutdown();
     }
 
@@ -172,8 +169,9 @@ public class FirehoseProcessorTest {
         commonVerifiesForTestApplyNotEmpty(2, 1);
         verify(mockSleeper).sleep(INITIAL_RETRY_SLEEP);
         verify(mockLogger).warn(String.format(PUT_RECORD_BATCH_WARN_MSG, 0), testException);
-        verify(mockCounters).countSuccessesAndFailures(mockRequest, null);
-        verify(mockCounters).countSuccessesAndFailures(mockRequest, mockResult);
+        verify(mockFirehoseCountersAndTimer).countSuccessesAndFailures(mockRequest, null);
+        verify(mockFirehoseCountersAndTimer).countSuccessesAndFailures(mockRequest, mockResult);
+        verify(mockFirehoseCountersAndTimer).incrementExceptionCounter();
     }
 
     @Test
@@ -194,8 +192,9 @@ public class FirehoseProcessorTest {
         for(int i = 0 ; i < retryCount - 1 ; i++) {
             verify(mockLogger).warn(String.format(PUT_RECORD_BATCH_WARN_MSG, i), testException);
         }
-        verify(mockCounters, times(retryCount - 1)).countSuccessesAndFailures(mockRequest, null);
-        verify(mockCounters).countSuccessesAndFailures(mockRequest, mockResult);
+        verify(mockFirehoseCountersAndTimer, times(retryCount - 1)).countSuccessesAndFailures(mockRequest, null);
+        verify(mockFirehoseCountersAndTimer).countSuccessesAndFailures(mockRequest, mockResult);
+        verify(mockFirehoseCountersAndTimer, times(retryCount - 1)).incrementExceptionCounter();
     }
 
     @Test
@@ -207,7 +206,7 @@ public class FirehoseProcessorTest {
                 .thenReturn(mockRecordList);
         when(mockResult.getFailedPutCount())
                 .thenReturn(1).thenReturn(1).thenReturn(1).thenReturn(1).thenReturn(1).thenReturn(1).thenReturn(0);
-        when(mockCounters.countSuccessesAndFailures(any(PutRecordBatchRequest.class), any(PutRecordBatchResult.class)))
+        when(mockFirehoseCountersAndTimer.countSuccessesAndFailures(any(PutRecordBatchRequest.class), any(PutRecordBatchResult.class)))
                 .thenReturn(1).thenReturn(1).thenReturn(1).thenReturn(1).thenReturn(1).thenReturn(1).thenReturn(0);
 
         firehoseProcessor.process(KEY, FULLY_POPULATED_SPAN);
@@ -219,7 +218,7 @@ public class FirehoseProcessorTest {
         verify(mockSleeper).sleep(4 * INITIAL_RETRY_SLEEP);
         verify(mockSleeper).sleep(8 * INITIAL_RETRY_SLEEP);
         verify(mockSleeper, times(2)).sleep(MAX_RETRY_SLEEP);
-        verify(mockCounters, times(7)).countSuccessesAndFailures(mockRequest, mockResult);
+        verify(mockFirehoseCountersAndTimer, times(7)).countSuccessesAndFailures(mockRequest, mockResult);
         verify(mockBatch).extractFailedRecords(mockRequest, mockResult, 0);
         verify(mockBatch).extractFailedRecords(mockRequest, mockResult, 1);
         verify(mockBatch).extractFailedRecords(mockRequest, mockResult, 2);
@@ -243,8 +242,8 @@ public class FirehoseProcessorTest {
         commonVerifiesForTestApply(1);
         commonVerifiesForTestApplyNotEmpty(2, 1);
         verify(mockSleeper).sleep(INITIAL_RETRY_SLEEP);
-        verify(mockCounters).countSuccessesAndFailures(mockRequest, null);
-        verify(mockCounters).countSuccessesAndFailures(mockRequest, mockResult);
+        verify(mockFirehoseCountersAndTimer).countSuccessesAndFailures(mockRequest, null);
+        verify(mockFirehoseCountersAndTimer).countSuccessesAndFailures(mockRequest, mockResult);
         verify(mockBatch).extractFailedRecords(mockRequest, null, 0);
     }
 
@@ -252,14 +251,14 @@ public class FirehoseProcessorTest {
         when(mockBatch.getRecordList(any(Span.class))).thenReturn(mockRecordList);
         when(mockRecordList.isEmpty()).thenReturn(false);
         when(mockFactory.createPutRecordBatchRequest(anyString(), anyListOf(Record.class))).thenReturn(mockRequest);
-        when(mockTimer.start()).thenReturn(mockStopwatch);
+        when(mockFirehoseCountersAndTimer.startTimer()).thenReturn(mockStopwatch);
         when(mockFactory.createSleeper()).thenReturn(mockSleeper);
         when(mockFirehoseConfigurationProvider.initialretrysleep()).thenReturn(INITIAL_RETRY_SLEEP);
         when(mockFirehoseConfigurationProvider.maxretrysleep()).thenReturn(MAX_RETRY_SLEEP);
     }
 
     private void commonVerifiesForTestApply(int processTimes) {
-        verify(mockCounters, times(processTimes)).incrementSpanCounter();
+        verify(mockFirehoseCountersAndTimer, times(processTimes)).incrementRequestCounter();
         verify(mockBatch, times(processTimes)).getRecordList(FULLY_POPULATED_SPAN);
         //noinspection ResultOfMethodCallIgnored
         verify(mockRecordList).isEmpty();
@@ -268,7 +267,7 @@ public class FirehoseProcessorTest {
     private void commonVerifiesForTestApplyNotEmpty(
             int wantedNumberOfInvocations, int failedPutCountTimes) throws InterruptedException {
         verify(mockFactory, times(wantedNumberOfInvocations)).createPutRecordBatchRequest(STREAM_NAME, mockRecordList);
-        verify(mockTimer, times(wantedNumberOfInvocations)).start();
+        verify(mockFirehoseCountersAndTimer, times(wantedNumberOfInvocations)).startTimer();
         verify(mockFactory).createSleeper();
         verify(mockSleeper).sleep(0);
         verify(mockAmazonKinesisFirehose, times(wantedNumberOfInvocations)).putRecordBatch(mockRequest);

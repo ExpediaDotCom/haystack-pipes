@@ -24,7 +24,7 @@ public class FirehoseProcessorSupplierTest {
     @Mock
     private Logger mockFirehoseProcessorLogger;
     @Mock
-    private Counters mockCounters;
+    private FirehoseCountersAndTimer mockFirehoseCountersAndTimer;
     @Mock
     private Timer mockTimer;
     @Mock
@@ -40,13 +40,13 @@ public class FirehoseProcessorSupplierTest {
 
     @Before
     public void setUp() {
-        firehoseProcessorSupplier = new FirehoseProcessorSupplier(mockFirehoseProcessorLogger, mockCounters, mockTimer,
+        firehoseProcessorSupplier = new FirehoseProcessorSupplier(mockFirehoseProcessorLogger, mockFirehoseCountersAndTimer,
                 mockBatch, mockAmazonKinesisFirehose, mockFirehoseProcessorFactory, mockFirehoseConfigurationProvider);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockFirehoseProcessorLogger, mockCounters, mockTimer, mockBatch,
+        verifyNoMoreInteractions(mockFirehoseProcessorLogger, mockFirehoseCountersAndTimer, mockTimer, mockBatch,
                 mockAmazonKinesisFirehose, mockFirehoseProcessorFactory, mockFirehoseConfigurationProvider);
     }
 

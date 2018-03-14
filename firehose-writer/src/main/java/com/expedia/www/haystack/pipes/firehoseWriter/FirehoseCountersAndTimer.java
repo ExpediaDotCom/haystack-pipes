@@ -18,36 +18,37 @@ package com.expedia.www.haystack.pipes.firehoseWriter;
 
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchRequest;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResult;
+import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
 import com.netflix.servo.monitor.Counter;
+import com.netflix.servo.monitor.Timer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-class Counters {
-    private final Counter spanCounter;
-    private final Counter successCounter;
-    private final Counter failureCounter;
+class FirehoseCountersAndTimer extends CountersAndTimer {
+    private static final int SUCCESS_COUNTER_INDEX = 0;
+    private static final int FAILURE_COUNTER_INDEX = 1;
+    private static final int EXCEPTION_COUNTER_INDEX = 2;
 
     @Autowired
-    Counters(Counter spanCounter,
-             Counter successCounter,
-             Counter failureCounter) {
-        this.spanCounter = spanCounter;
-        this.successCounter = successCounter;
-        this.failureCounter = failureCounter;
+    FirehoseCountersAndTimer(Timer putBatchRequestTimer,
+                             Counter spanCounter,
+                             Counter successCounter,
+                             Counter failureCounter,
+                             Counter exceptionCounter) {
+        super(putBatchRequestTimer, spanCounter, successCounter, failureCounter, exceptionCounter);
     }
 
     int countSuccessesAndFailures(PutRecordBatchRequest request, PutRecordBatchResult result) {
         final int recordCount = request.getRecords().size();
         final int failureCount = result == null ? recordCount : result.getFailedPutCount();
         final int successCount = recordCount - failureCount;
-        successCounter.increment(successCount);
-        failureCounter.increment(failureCount);
+        incrementCounter(SUCCESS_COUNTER_INDEX, successCount);
+        incrementCounter(FAILURE_COUNTER_INDEX, failureCount);
         return failureCount;
     }
 
-    void incrementSpanCounter() {
-        spanCounter.increment();
+    void incrementExceptionCounter() {
+        incrementCounter(EXCEPTION_COUNTER_INDEX);
     }
-
 }
