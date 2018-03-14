@@ -22,7 +22,6 @@ import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResult;
 import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.expedia.open.tracing.Span;
 import com.netflix.servo.monitor.Stopwatch;
-import com.netflix.servo.monitor.Timer;
 import com.netflix.servo.util.VisibleForTesting;
 import org.apache.kafka.streams.processor.Processor;
 import org.apache.kafka.streams.processor.ProcessorContext;
@@ -43,8 +42,7 @@ public class FirehoseProcessor implements Processor<String, Span> {
     static final String PUT_RECORD_BATCH_ERROR_MSG = "putRecordBatch() could not put %d records after %d tries, but will continue trying...";
 
     private final Logger logger;
-    private final Counters counters;
-    private final Timer putBatchRequestTimer;
+    private final FirehoseCountersAndTimer firehoseCountersAndTimer;
     private final Batch batch;
     private final AmazonKinesisFirehose amazonKinesisFirehose;
     private final Factory factory;
@@ -52,15 +50,13 @@ public class FirehoseProcessor implements Processor<String, Span> {
 
     @Autowired
     FirehoseProcessor(Logger firehoseProcessorLogger,
-                      Counters counters,
-                      Timer putBatchRequestTimer,
+                      FirehoseCountersAndTimer firehoseCountersAndTimer,
                       Batch batch,
                       AmazonKinesisFirehose amazonKinesisFirehose,
                       Factory firehoseProcessorFactory,
                       FirehoseConfigurationProvider firehoseConfigurationProvider) {
         this.logger = firehoseProcessorLogger;
-        this.counters = counters;
-        this.putBatchRequestTimer = putBatchRequestTimer;
+        this.firehoseCountersAndTimer = firehoseCountersAndTimer;
         this.batch = batch;
         this.amazonKinesisFirehose = amazonKinesisFirehose;
         this.factory = firehoseProcessorFactory;
@@ -78,7 +74,7 @@ public class FirehoseProcessor implements Processor<String, Span> {
 
     @Override
     public void process(String key, Span span) {
-        counters.incrementSpanCounter();
+        firehoseCountersAndTimer.incrementRequestCounter();
         final List<Record> records = batch.getRecordList(span);
         sendRecordsToS3(records);
     }
@@ -104,7 +100,7 @@ public class FirehoseProcessor implements Processor<String, Span> {
          * The second time it returns 1 * initialRetrySleep, the third time it returns 2 * initialRetrySleep,
          * the fourth time it returns 4 * initialRetrySleep, the fifth time it returns 8 * initialRetrySleep, etc.
          * But the returned value is bounded by maxRetrySleep; it will never return a number larger than maxRetrySleep.
-         * @return msec to sleep
+         * @return milliseconds to sleep
          */
         private int calculateSleepMillis() {
             final int sleepMillisPerTryCount = (1 << (boundedTryCount - 1)) * initialRetrySleep;
@@ -133,20 +129,21 @@ public class FirehoseProcessor implements Processor<String, Span> {
             do {
                 final PutRecordBatchRequest request = factory.createPutRecordBatchRequest(streamName, records);
                 PutRecordBatchResult result = null;
-                final Stopwatch stopwatch = putBatchRequestTimer.start();
+                final Stopwatch stopwatch = firehoseCountersAndTimer.startTimer();
                 final int sleepMillis = retryCalculator.calculateSleepMillis();
                 try {
                     sleeper.sleep(sleepMillis);
                     result = amazonKinesisFirehose.putRecordBatch(request);
                     exceptionForErrorLogging.set(null); // success! clear the exception if this was a retry
                 } catch (Exception exception) {
+                    firehoseCountersAndTimer.incrementExceptionCounter();
                     final String errorMsg = String.format(PUT_RECORD_BATCH_WARN_MSG, retryCount++);
                     logger.warn(errorMsg, exception);
                     exceptionForErrorLogging.compareAndSet(null, exception); // save the first exception
                     continue;
                 } finally {
                     stopwatch.stop();
-                    failureCount = counters.countSuccessesAndFailures(request, result);
+                    failureCount = firehoseCountersAndTimer.countSuccessesAndFailures(request, result);
                 }
                 if (result == null || areThereRecordsThatFirehoseHasNotProcessed(result.getFailedPutCount())) {
                     records = batch.extractFailedRecords(request, result, retryCount++);
@@ -155,7 +152,6 @@ public class FirehoseProcessor implements Processor<String, Span> {
                 }
                 if (shouldLogErrorMessage(failureCount, exceptionForErrorLogging, maxRetrySleep, sleepMillis)) {
                     final String msg = String.format(PUT_RECORD_BATCH_ERROR_MSG, failureCount, retryCount);
-                    System.out.println(msg);
                     logger.error(msg, exceptionForErrorLogging.get());
                 }
             } while (!allRecordsPutSuccessfully);

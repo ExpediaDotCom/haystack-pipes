@@ -2,7 +2,6 @@ package com.expedia.www.haystack.pipes.firehoseWriter;
 
 import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehose;
 import com.expedia.open.tracing.Span;
-import com.netflix.servo.monitor.Timer;
 import org.apache.kafka.streams.processor.Processor;
 import org.apache.kafka.streams.processor.ProcessorSupplier;
 import org.slf4j.Logger;
@@ -12,8 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class FirehoseProcessorSupplier implements ProcessorSupplier<String, Span> {
     private final Logger firehoseProcessorLogger;
-    private final Counters counters;
-    private final Timer timer;
+    private final FirehoseCountersAndTimer firehoseCountersAndTimer;
     private final Batch batch;
     private final AmazonKinesisFirehose amazonKinesisFirehose;
     private final FirehoseProcessor.Factory firehoseProcessorFactory;
@@ -21,15 +19,13 @@ public class FirehoseProcessorSupplier implements ProcessorSupplier<String, Span
 
     @Autowired
     public FirehoseProcessorSupplier(Logger firehoseProcessorLogger,
-                                     Counters counters,
-                                     Timer timer,
+                                     FirehoseCountersAndTimer firehoseCountersAndTimer,
                                      Batch batch,
                                      AmazonKinesisFirehose amazonKinesisFirehose,
                                      FirehoseProcessor.Factory firehoseProcessorFactory,
                                      FirehoseConfigurationProvider firehoseConfigurationProvider) {
         this.firehoseProcessorLogger = firehoseProcessorLogger;
-        this.counters = counters;
-        this.timer = timer;
+        this.firehoseCountersAndTimer = firehoseCountersAndTimer;
         this.batch = batch;
         this.amazonKinesisFirehose = amazonKinesisFirehose;
         this.firehoseProcessorFactory = firehoseProcessorFactory;
@@ -38,7 +34,7 @@ public class FirehoseProcessorSupplier implements ProcessorSupplier<String, Span
 
     @Override
     public Processor<String, Span> get() {
-        return new FirehoseProcessor(firehoseProcessorLogger, counters, timer, batch, amazonKinesisFirehose,
+        return new FirehoseProcessor(firehoseProcessorLogger, firehoseCountersAndTimer, batch, amazonKinesisFirehose,
                 firehoseProcessorFactory, firehoseConfigurationProvider);
     }
 }
