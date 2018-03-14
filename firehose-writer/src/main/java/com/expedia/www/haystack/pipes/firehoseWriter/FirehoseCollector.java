@@ -66,7 +66,7 @@ class FirehoseCollector {
     }
 
     @VisibleForTesting
-    List<Record> addRecordAndReturnBatch(Record record) {
+    synchronized List<Record> addRecordAndReturnBatch(Record record) {
         final List<Record> records;
         if (shouldCreateNewBatch(record)) {
             records = this.records;
@@ -79,7 +79,8 @@ class FirehoseCollector {
         return records;
     }
 
-    List<Record> returnIncompleteBatch() {
+    @VisibleForTesting
+    synchronized List<Record> returnIncompleteBatch() {
         final List<Record> records = this.records;
         initialize();
         return records;
