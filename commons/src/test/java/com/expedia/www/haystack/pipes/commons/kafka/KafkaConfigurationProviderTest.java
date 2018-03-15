@@ -54,4 +54,9 @@ public class KafkaConfigurationProviderTest {
     public void testThreadCount() {
         assertEquals(THREAD_COUNT_CONFIGURATION_IN_TEST_BASE_DOT_YAML, kafkaConfigurationProvider.threadcount());
     }
+
+    @Test
+    public void testSessionTimeout() {
+        assertEquals(15000, kafkaConfigurationProvider.sessiontimeout());
+    }
 }

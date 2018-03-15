@@ -24,7 +24,7 @@
         <haystack-log4j-metrics-appender-version>0.1.12</haystack-log4j-metrics-appender-version>
         <haystack-pipes-commons-version>1.0-SNAPSHOT</haystack-pipes-commons-version>
         <jacoco-maven-plugin-version>0.8.0</jacoco-maven-plugin-version>
-        <jacoco-percentage>0.9</jacoco-percentage>
+        <jacoco-percentage>1.0</jacoco-percentage>
         <jackson-version>2.9.1</jackson-version>
         <java-version>1.8</java-version>
         <junit-version>4.12</junit-version>
