@@ -36,7 +36,6 @@ import org.slf4j.Logger;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
@@ -171,7 +170,7 @@ public class FirehoseProcessorTest {
         commonVerifiesForTestApply(1);
         commonVerifiesForTestApplyNotEmpty(2, 1);
         verify(mockSleeper).sleep(INITIAL_RETRY_SLEEP);
-        verify(mockLogger).warn(String.format(PUT_RECORD_BATCH_WARN_MSG, 0), testException);
+        verify(mockLogger).error(String.format(PUT_RECORD_BATCH_WARN_MSG, 0), testException);
         verify(mockFirehoseCountersAndTimer).countSuccessesAndFailures(mockRequest, null);
         verify(mockFirehoseCountersAndTimer).countSuccessesAndFailures(mockRequest, mockResult);
         verify(mockFirehoseCountersAndTimer).incrementExceptionCounter();
@@ -193,7 +192,7 @@ public class FirehoseProcessorTest {
         verify(mockSleeper).sleep(2 * INITIAL_RETRY_SLEEP);
         verify(mockSleeper).sleep(4 * INITIAL_RETRY_SLEEP);
         for(int i = 0 ; i < retryCount - 1 ; i++) {
-            verify(mockLogger).warn(String.format(PUT_RECORD_BATCH_WARN_MSG, i), testException);
+            verify(mockLogger).error(String.format(PUT_RECORD_BATCH_WARN_MSG, i), testException);
         }
         verify(mockFirehoseCountersAndTimer, times(retryCount - 1)).countSuccessesAndFailures(mockRequest, null);
         verify(mockFirehoseCountersAndTimer).countSuccessesAndFailures(mockRequest, mockResult);
@@ -228,7 +227,7 @@ public class FirehoseProcessorTest {
         verify(mockBatch).extractFailedRecords(mockRequest, mockResult, 3);
         verify(mockBatch).extractFailedRecords(mockRequest, mockResult, 4);
         verify(mockBatch).extractFailedRecords(mockRequest, mockResult, 5);
-        verify(mockLogger).error(String.format(PUT_RECORD_BATCH_ERROR_MSG, 1, 6), (Throwable) null);
+        verify(mockLogger).error(String.format(PUT_RECORD_BATCH_ERROR_MSG, 1, 6));
     }
 
     @Test
@@ -323,13 +322,5 @@ public class FirehoseProcessorTest {
         shutdownHook.run();
 
         verify(mockFirehoseProcessor).close();
-    }
-
-    @Test
-    public void testShouldLogErrorMessageNonNullException() {
-        wantedNumberOfInvocationsStreamName = 1;
-        final AtomicReference<Exception> exceptionForErrorLogging = new AtomicReference<>(new RuntimeException());
-
-        assertTrue(firehoseProcessor.shouldLogErrorMessage(0, exceptionForErrorLogging, 0, 0));
     }
 }

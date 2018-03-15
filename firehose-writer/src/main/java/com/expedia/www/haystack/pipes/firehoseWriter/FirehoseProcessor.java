@@ -119,7 +119,6 @@ public class FirehoseProcessor implements Processor<String, Span> {
         int failureCount;
         if (!records.isEmpty()) {
             final String streamName = firehoseConfigurationProvider.streamname();
-            final AtomicReference<Exception> exceptionForErrorLogging = new AtomicReference<>(null);
             final int maxRetrySleep = firehoseConfigurationProvider.maxretrysleep();
             final RetryCalculator retryCalculator = new RetryCalculator(
                     firehoseConfigurationProvider.initialretrysleep(), maxRetrySleep);
@@ -133,12 +132,10 @@ public class FirehoseProcessor implements Processor<String, Span> {
                 try {
                     sleeper.sleep(sleepMillis);
                     result = amazonKinesisFirehose.putRecordBatch(request);
-                    exceptionForErrorLogging.set(null); // success! clear the exception if this was a retry
                 } catch (Exception exception) {
                     firehoseCountersAndTimer.incrementExceptionCounter();
                     final String errorMsg = String.format(PUT_RECORD_BATCH_WARN_MSG, retryCount++);
-                    logger.warn(errorMsg, exception);
-                    exceptionForErrorLogging.compareAndSet(null, exception); // save the first exception
+                    logger.error(errorMsg, exception);
                     continue;
                 } finally {
                     stopwatch.stop();
@@ -149,22 +146,16 @@ public class FirehoseProcessor implements Processor<String, Span> {
                 } else {
                     allRecordsPutSuccessfully = true;
                 }
-                if (shouldLogErrorMessage(failureCount, exceptionForErrorLogging, maxRetrySleep, sleepMillis)) {
-                    final String msg = String.format(PUT_RECORD_BATCH_ERROR_MSG, failureCount, retryCount);
-                    logger.error(msg, exceptionForErrorLogging.get());
+                if (shouldLogErrorMessage(failureCount, maxRetrySleep, sleepMillis)) {
+                    logger.error(String.format(PUT_RECORD_BATCH_ERROR_MSG, failureCount, retryCount));
                 }
             } while (!allRecordsPutSuccessfully);
         }
     }
 
-    @VisibleForTesting
-    boolean shouldLogErrorMessage(int failureCount,
-                                  AtomicReference<Exception> exceptionForErrorLogging,
-                                  int maxRetrySleep,
-                                  int sleepMillis) {
+    private boolean shouldLogErrorMessage(int failureCount, int maxRetrySleep, int sleepMillis) {
         return hasSleepMillisReachedItsLimit(maxRetrySleep, sleepMillis)
-                && (areThereRecordsThatFirehoseHasNotProcessed(failureCount)
-                 || wasAnExceptionThrownByFirehose(exceptionForErrorLogging));
+                && (areThereRecordsThatFirehoseHasNotProcessed(failureCount));
     }
 
     private boolean hasSleepMillisReachedItsLimit(int maxRetrySleep, int sleepMillis) {
@@ -173,10 +164,6 @@ public class FirehoseProcessor implements Processor<String, Span> {
 
     private boolean areThereRecordsThatFirehoseHasNotProcessed(int failureCount) {
         return failureCount > 0;
-    }
-
-    private boolean wasAnExceptionThrownByFirehose(AtomicReference<Exception> exceptionForErrorLogging) {
-        return exceptionForErrorLogging.get() != null;
     }
 
     @Override
