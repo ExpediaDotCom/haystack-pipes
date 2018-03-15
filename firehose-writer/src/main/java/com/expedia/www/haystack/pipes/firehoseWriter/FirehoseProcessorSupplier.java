@@ -8,11 +8,13 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.function.Supplier;
+
 @Component
 public class FirehoseProcessorSupplier implements ProcessorSupplier<String, Span> {
     private final Logger firehoseProcessorLogger;
     private final FirehoseCountersAndTimer firehoseCountersAndTimer;
-    private final Batch batch;
+    private final Supplier<Batch> batch;
     private final AmazonKinesisFirehose amazonKinesisFirehose;
     private final FirehoseProcessor.Factory firehoseProcessorFactory;
     private final FirehoseConfigurationProvider firehoseConfigurationProvider;
@@ -20,7 +22,7 @@ public class FirehoseProcessorSupplier implements ProcessorSupplier<String, Span
     @Autowired
     public FirehoseProcessorSupplier(Logger firehoseProcessorLogger,
                                      FirehoseCountersAndTimer firehoseCountersAndTimer,
-                                     Batch batch,
+                                     Supplier<Batch> batch,
                                      AmazonKinesisFirehose amazonKinesisFirehose,
                                      FirehoseProcessor.Factory firehoseProcessorFactory,
                                      FirehoseConfigurationProvider firehoseConfigurationProvider) {

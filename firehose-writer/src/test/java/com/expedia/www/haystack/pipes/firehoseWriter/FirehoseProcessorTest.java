@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
@@ -67,8 +68,10 @@ public class FirehoseProcessorTest {
     private Logger mockLogger;
     @Mock
     private FirehoseCountersAndTimer mockFirehoseCountersAndTimer;
+
     @Mock
     private Batch mockBatch;
+
     @Mock
     private AmazonKinesisFirehose mockAmazonKinesisFirehose;
     @Mock
@@ -103,7 +106,7 @@ public class FirehoseProcessorTest {
     @Before
     public void setUp() {
         when(mockFirehoseConfigurationProvider.streamname()).thenReturn(STREAM_NAME);
-        firehoseProcessor = new FirehoseProcessor(mockLogger, mockFirehoseCountersAndTimer, mockBatch, mockAmazonKinesisFirehose,
+        firehoseProcessor = new FirehoseProcessor(mockLogger, mockFirehoseCountersAndTimer, () -> mockBatch, mockAmazonKinesisFirehose,
                 mockFactory, mockFirehoseConfigurationProvider);
         factory = new Factory();
         sleeper = factory.createSleeper();
@@ -282,12 +285,7 @@ public class FirehoseProcessorTest {
         wantedNumberOfInvocationsStreamName = 1;
         when(mockFactory.createShutdownHook(any(FirehoseProcessor.class))).thenReturn(mockThread);
         when(mockFactory.getRuntime()).thenReturn(mockRuntime);
-
         firehoseProcessor.init(mockProcessorContext);
-
-        verify(mockFactory).createShutdownHook(firehoseProcessor);
-        verify(mockFactory).getRuntime();
-        verify(mockRuntime).addShutdownHook(mockThread);
     }
 
     @Test

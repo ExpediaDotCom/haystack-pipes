@@ -34,8 +34,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
@@ -154,8 +156,8 @@ class SpringConfig {
     }
 
     @Bean
-    FirehoseCollector firehoseCollector() {
-        return new FirehoseCollector();
+    Supplier<FirehoseCollector> firehoseCollector() {
+        return FirehoseCollector::new;
     }
 
     @Bean
@@ -191,17 +193,17 @@ class SpringConfig {
 
     @Bean
     @Autowired
-    Batch batch(Printer printer,
-                FirehoseCollector firehoseCollector,
-                Logger batchLogger) {
-        return new Batch(printer, firehoseCollector, batchLogger);
+    Supplier<Batch> batch(Printer printer,
+                          Supplier<FirehoseCollector> firehoseCollector,
+                          Logger batchLogger) {
+        return () -> new Batch(printer, firehoseCollector, batchLogger);
     }
 
     @Bean
     @Autowired
     FirehoseProcessorSupplier firehoseProcessorSupplier(Logger firehoseProcessorLogger,
                                                         FirehoseCountersAndTimer firehoseCountersAndTimer,
-                                                        Batch batch,
+                                                        Supplier<Batch> batch,
                                                         AmazonKinesisFirehose amazonKinesisFirehose,
                                                         FirehoseProcessor.Factory firehoseProcessorFactory,
                                                         FirehoseConfigurationProvider firehoseConfigurationProvider) {

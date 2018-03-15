@@ -31,6 +31,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 @Component
 public class FirehoseProcessor implements Processor<String, Span> {
@@ -51,13 +52,13 @@ public class FirehoseProcessor implements Processor<String, Span> {
     @Autowired
     FirehoseProcessor(Logger firehoseProcessorLogger,
                       FirehoseCountersAndTimer firehoseCountersAndTimer,
-                      Batch batch,
+                      Supplier<Batch> batch,
                       AmazonKinesisFirehose amazonKinesisFirehose,
                       Factory firehoseProcessorFactory,
                       FirehoseConfigurationProvider firehoseConfigurationProvider) {
         this.logger = firehoseProcessorLogger;
         this.firehoseCountersAndTimer = firehoseCountersAndTimer;
-        this.batch = batch;
+        this.batch = batch.get();
         this.amazonKinesisFirehose = amazonKinesisFirehose;
         this.factory = firehoseProcessorFactory;
         this.firehoseConfigurationProvider = firehoseConfigurationProvider;
@@ -67,9 +68,7 @@ public class FirehoseProcessor implements Processor<String, Span> {
 
     @Override
     public void init(ProcessorContext context) {
-        final Thread shutdownHook = factory.createShutdownHook(this);
-        final Runtime runtime = factory.getRuntime();
-        runtime.addShutdownHook(shutdownHook);
+        /* do nothing */
     }
 
     @Override
