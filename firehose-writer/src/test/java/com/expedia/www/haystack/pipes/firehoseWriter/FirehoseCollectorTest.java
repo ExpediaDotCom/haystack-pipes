@@ -25,6 +25,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.nio.ByteBuffer;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.List;
 
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseCollector.MAX_BYTES_IN_BATCH;
@@ -50,7 +53,7 @@ public class FirehoseCollectorTest {
 
     @Before
     public void setUp() {
-        firehoseCollector = new FirehoseCollector();
+        firehoseCollector = new FirehoseCollector(Clock.fixed(Instant.now().plusSeconds(10000), ZoneId.systemDefault()));
     }
 
     @After

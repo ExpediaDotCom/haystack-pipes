@@ -19,6 +19,7 @@ package com.expedia.www.haystack.pipes.firehoseWriter;
 import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.netflix.servo.util.VisibleForTesting;
 
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -48,15 +49,23 @@ class FirehoseCollector {
     private int totalDataSizeOfRecords;
     private List<Record> records;
     private long batchLastCreatedAt;
+    private final Clock clock;
 
     FirehoseCollector() {
+        this(Clock.systemUTC());
+    }
+
+
+    FirehoseCollector(Clock clock) {
+        this.clock = clock;
         initialize();
     }
 
     private void initialize() {
         records = new ArrayList<>(MAX_RECORDS_IN_BATCH);
         totalDataSizeOfRecords = 0;
-        batchLastCreatedAt = System.currentTimeMillis();
+
+        batchLastCreatedAt = clock.millis();
     }
 
     private boolean shouldCreateNewBatchDueToRecordCount() {
@@ -73,8 +82,7 @@ class FirehoseCollector {
 
     @VisibleForTesting
     boolean shouldCreateNewBatch(Record record) {
-        return records.size() > 0 &&
-                (shouldCreateNewBatchDueToDataSize(record) || shouldCreateNewBatchDueToRecordCount() || batchCreationTimedout());
+        return shouldCreateNewBatchDueToDataSize(record) || shouldCreateNewBatchDueToRecordCount() || batchCreationTimedout();
     }
 
     @VisibleForTesting
