@@ -119,7 +119,7 @@ public class KafkaStreamStarterTest {
     @Test
     public void testGetProperties() {
         final Properties properties = kafkaStreamStarter.getProperties();
-        assertEquals(7, properties.size());
+        assertEquals(8, properties.size());
         assertEquals(CLIENT_ID, properties.get(StreamsConfig.CLIENT_ID_CONFIG));
         assertEquals(mockKafkaStreamBuilder.getClass().getName(), properties.get(ConsumerConfig.GROUP_ID_CONFIG));
         assertEquals(mockKafkaStreamBuilder.getClass().getSimpleName(), properties.get(StreamsConfig.APPLICATION_ID_CONFIG));

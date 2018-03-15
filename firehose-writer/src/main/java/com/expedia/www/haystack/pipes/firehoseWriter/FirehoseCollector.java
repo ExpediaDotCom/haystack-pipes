@@ -40,8 +40,14 @@ class FirehoseCollector {
      */
     static final int MAX_RECORDS_IN_BATCH = 500;
 
+    /**
+     * maximum time allowed since last batch was created
+     */
+    private static final long LAST_BATCH_TIME_DIFF_ALLOWED = 3000;
+
     private int totalDataSizeOfRecords;
     private List<Record> records;
+    private long batchLastCreatedAt;
 
     FirehoseCollector() {
         initialize();
@@ -50,6 +56,7 @@ class FirehoseCollector {
     private void initialize() {
         records = new ArrayList<>(MAX_RECORDS_IN_BATCH);
         totalDataSizeOfRecords = 0;
+        batchLastCreatedAt = System.currentTimeMillis();
     }
 
     private boolean shouldCreateNewBatchDueToRecordCount() {
@@ -60,23 +67,27 @@ class FirehoseCollector {
         return (totalDataSizeOfRecords + record.getData().array().length) > MAX_BYTES_IN_BATCH;
     }
 
+    private boolean batchCreationTimedout() {
+        return (System.currentTimeMillis() - batchLastCreatedAt) > LAST_BATCH_TIME_DIFF_ALLOWED;
+    }
+
     @VisibleForTesting
     boolean shouldCreateNewBatch(Record record) {
-        return shouldCreateNewBatchDueToDataSize(record) || shouldCreateNewBatchDueToRecordCount();
+        return records.size() > 0 &&
+                (shouldCreateNewBatchDueToDataSize(record) || shouldCreateNewBatchDueToRecordCount() || batchCreationTimedout());
     }
 
     @VisibleForTesting
     List<Record> addRecordAndReturnBatch(Record record) {
-        final List<Record> records;
         if (shouldCreateNewBatch(record)) {
-            records = this.records;
+            final List<Record> records = this.records;
             initialize();
             addRecord(record);
+            return records;
         } else {
-            records = Collections.emptyList();
             addRecord(record);
+            return Collections.emptyList();
         }
-        return records;
     }
 
     @VisibleForTesting

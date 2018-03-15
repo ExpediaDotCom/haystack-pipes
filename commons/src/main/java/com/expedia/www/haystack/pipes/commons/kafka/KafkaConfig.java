@@ -26,4 +26,6 @@ public interface KafkaConfig {
     String totopic();
 
     int threadcount();
+
+    int sessiontimeout();
 }

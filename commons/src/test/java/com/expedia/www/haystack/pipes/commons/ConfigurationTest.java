@@ -39,9 +39,12 @@ public class ConfigurationTest {
     private final static String HAYSTACK_GRAPHITE_PORT = "haystack.graphite.port";
     private final static String HAYSTACK_GRAPHITE_POLL_INTERVAL_SECONDS = "haystack.graphite.pollintervalseconds";
     private final static String HAYSTACK_GRAPHITE_QUEUE_SIZE = "haystack.graphite.queuesize";
+    private final static String HAYSTACK_KAFKA_SESSION_TIMEOUT = "haystack.kafka.sessiontimeout";
+
     private final static Object[][] TEST_DATA = {
             {HAYSTACK_KAFKA_BROKERS, "localhost"},
             {HAYSTACK_KAFKA_FROM_TOPIC, HAYSTACK_KAFKA_FROM_TOPIC},
+            {HAYSTACK_KAFKA_SESSION_TIMEOUT, 15000},
             {HAYSTACK_KAFKA_PORT, 65534},
             {HAYSTACK_KAFKA_TO_TOPIC, HAYSTACK_KAFKA_TO_TOPIC},
             {HAYSTACK_KAFKA_THREAD_COUNT, THREAD_COUNT_CONFIGURATION_IN_TEST_BASE_DOT_YAML},

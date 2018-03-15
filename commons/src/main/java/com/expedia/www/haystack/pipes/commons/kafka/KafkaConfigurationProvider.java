@@ -54,4 +54,9 @@ public class KafkaConfigurationProvider implements KafkaConfig {
     public int threadcount() {
         return kafkaConfig.threadcount();
     }
+
+    @Override
+    public int sessiontimeout() {
+        return kafkaConfig.sessiontimeout();
+    }
 }
