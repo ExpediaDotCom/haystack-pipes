@@ -5,6 +5,7 @@ haystack:
      fromtopic: "proto-spans"
      totopic: "" # not used but must be specified as empty for shared YAML parsing to work
      threadcount: 1
+     sessiontimeout: 15000
   pipe:
     streams:
       replicationfactor: 1

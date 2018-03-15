@@ -76,6 +76,7 @@ public class KafkaStreamStarter {
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, containingClass.getSimpleName());
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, getKafkaIpAnPort());
         props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, getReplicationFactor());
+        props.put(StreamsConfig.consumerPrefix(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG), getConsumerSessionTimeout());
         props.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, getThreadCount());
         props.put(StreamsConfig.TIMESTAMP_EXTRACTOR_CLASS_CONFIG, WallclockTimestampExtractor.class);
         return props;
@@ -105,6 +106,11 @@ public class KafkaStreamStarter {
         final IntermediateStreamsConfig intermediateStreamsConfig = CONFIGURATION_PROVIDER.bind(
                 Configuration.HAYSTACK_PIPE_STREAMS, IntermediateStreamsConfig.class);
         return intermediateStreamsConfig.replicationfactor();
+    }
+
+    private int getConsumerSessionTimeout() {
+        final KafkaConfig kafkaConfig = getKafkaConfig();
+        return kafkaConfig.sessiontimeout();
     }
 
     private static KafkaConfig getKafkaConfig() {

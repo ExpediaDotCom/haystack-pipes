@@ -5,6 +5,7 @@ haystack:
      fromtopic: "haystack.kafka.fromtopic"
      totopic: "haystack.kafka.totopic"
      threadcount: 42
+     sessiontimeout: 15000
   pipe:
     streams:
       replicationfactor: 2147483645

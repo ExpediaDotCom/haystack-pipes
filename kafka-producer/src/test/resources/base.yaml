@@ -5,6 +5,7 @@ haystack:
      fromtopic: "json-spans"
      totopic: ""
      threadcount: 1
+     sessiontimeout: 15000
   pipe:
     streams:
       replicationfactor: 1
