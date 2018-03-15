@@ -41,22 +41,22 @@ class FirehoseCollector {
      */
     static final int MAX_RECORDS_IN_BATCH = 500;
 
-    /**
-     * maximum time allowed since last batch was created
-     */
-    private static final long LAST_BATCH_TIME_DIFF_ALLOWED = 3000;
+    @VisibleForTesting
+    static final long LAST_BATCH_TIME_DIFF_ALLOWED_MILLIS = 3000;
+
+    private final Factory factory;
+    private final Clock clock;
 
     private int totalDataSizeOfRecords;
     private List<Record> records;
     private long batchLastCreatedAt;
-    private final Clock clock;
 
     FirehoseCollector() {
-        this(Clock.systemUTC());
+        this(new Factory(), Clock.systemUTC());
     }
 
-
-    FirehoseCollector(Clock clock) {
+    FirehoseCollector(Factory factory, Clock clock) {
+        this.factory = factory;
         this.clock = clock;
         initialize();
     }
@@ -76,13 +76,15 @@ class FirehoseCollector {
         return (totalDataSizeOfRecords + record.getData().array().length) > MAX_BYTES_IN_BATCH;
     }
 
-    private boolean batchCreationTimedout() {
-        return (System.currentTimeMillis() - batchLastCreatedAt) > LAST_BATCH_TIME_DIFF_ALLOWED;
+    private boolean batchCreationTimedOut() {
+        return (factory.currentTimeMillis() - batchLastCreatedAt) > LAST_BATCH_TIME_DIFF_ALLOWED_MILLIS;
     }
 
     @VisibleForTesting
     boolean shouldCreateNewBatch(Record record) {
-        return shouldCreateNewBatchDueToDataSize(record) || shouldCreateNewBatchDueToRecordCount() || batchCreationTimedout();
+        return shouldCreateNewBatchDueToDataSize(record)
+                || shouldCreateNewBatchDueToRecordCount()
+                || batchCreationTimedOut();
     }
 
     @VisibleForTesting
@@ -108,5 +110,11 @@ class FirehoseCollector {
     private void addRecord(Record record) {
         records.add(record);
         totalDataSizeOfRecords += record.getData().array().length;
+    }
+
+    static class Factory {
+        long currentTimeMillis() {
+            return System.currentTimeMillis();
+        }
     }
 }
