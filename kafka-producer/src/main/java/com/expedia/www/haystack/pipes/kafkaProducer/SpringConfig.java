@@ -2,6 +2,7 @@ package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
+import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
@@ -63,8 +64,14 @@ public class SpringConfig {
     }
 
     @Bean
-    KafkaStreamStarter kafkaStreamStarter() {
-        return new KafkaStreamStarter(ProtobufToKafkaProducer.class, APPLICATION);
+    @Autowired
+    KafkaStreamStarter kafkaStreamStarter(final HealthController healthController) {
+        return new KafkaStreamStarter(ProtobufToKafkaProducer.class, APPLICATION, healthController);
+    }
+
+    @Bean
+    HealthController healthController() {
+        return new HealthController();
     }
 
     @Bean

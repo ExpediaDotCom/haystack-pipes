@@ -17,6 +17,7 @@
 package com.expedia.www.haystack.pipes.commons.kafka;
 
 import com.expedia.www.haystack.pipes.commons.SystemExitUncaughtExceptionHandler;
+import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.Factory;
 import com.netflix.servo.publish.PollScheduler;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -41,10 +42,7 @@ import static com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.ST
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class KafkaStreamStarterTest {
@@ -52,6 +50,8 @@ public class KafkaStreamStarterTest {
     private static final String KAFKA_IP_AND_PORT = "localhost:" + 65534;
     private static final String KAFKA_FROM_TOPIC = "haystack.kafka.fromtopic";
     private static final String KAFKA_TO_TOPIC = "haystack.kafka.totopic";
+
+    private final HealthController healthController = new HealthController();
 
     @Mock
     private Factory mockFactory;
@@ -81,7 +81,7 @@ public class KafkaStreamStarterTest {
         KafkaStreamStarter.factory = mockFactory;
         realLogger = KafkaStreamStarter.logger;
         KafkaStreamStarter.logger = mockLogger;
-        kafkaStreamStarter = new KafkaStreamStarter(mockKafkaStreamBuilder.getClass(), CLIENT_ID);
+        kafkaStreamStarter = new KafkaStreamStarter(mockKafkaStreamBuilder.getClass(), CLIENT_ID, healthController);
     }
 
     @After
@@ -100,7 +100,7 @@ public class KafkaStreamStarterTest {
         when(mockFactory.createKStreamBuilder()).thenReturn(mockKStreamBuilder);
         when(mockFactory.createKafkaStreams(mockKStreamBuilder, kafkaStreamStarter))
                 .thenReturn(mockKafkaStreams);
-        when(mockFactory.createSystemExitUncaughtExceptionHandler(mockKafkaStreams))
+        when(mockFactory.createSystemExitUncaughtExceptionHandler(mockKafkaStreams, healthController))
                 .thenReturn(mockSystemExitUncaughtExceptionHandler);
 
         kafkaStreamStarter.createAndStartStream(mockKafkaStreamBuilder);
@@ -108,7 +108,7 @@ public class KafkaStreamStarterTest {
         verify(mockFactory).createKStreamBuilder();
         verify(mockFactory).createKafkaStreams(mockKStreamBuilder, kafkaStreamStarter);
         verify(mockKafkaStreamBuilder).buildStreamTopology(mockKStreamBuilder);
-        verify(mockFactory).createSystemExitUncaughtExceptionHandler(mockKafkaStreams);
+        verify(mockFactory).createSystemExitUncaughtExceptionHandler(mockKafkaStreams, healthController);
         verify(mockKafkaStreams).setUncaughtExceptionHandler(mockSystemExitUncaughtExceptionHandler);
         verify(mockKafkaStreams).start();
         verify(mockLogger).info(String.format(STARTING_MSG, KAFKA_IP_AND_PORT, KAFKA_FROM_TOPIC, KAFKA_TO_TOPIC));
@@ -152,7 +152,7 @@ public class KafkaStreamStarterTest {
 
     @Test
     public void testFactoryCreateSystemExitUncaughtExceptionHandler() {
-        assertNotNull(realFactory.createSystemExitUncaughtExceptionHandler(mockKafkaStreams));
+        assertNotNull(realFactory.createSystemExitUncaughtExceptionHandler(mockKafkaStreams, healthController));
     }
 
 }

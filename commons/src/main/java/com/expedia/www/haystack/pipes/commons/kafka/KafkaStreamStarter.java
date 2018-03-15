@@ -19,11 +19,12 @@ package com.expedia.www.haystack.pipes.commons.kafka;
 import com.expedia.www.haystack.pipes.commons.Configuration;
 import com.expedia.www.haystack.pipes.commons.IntermediateStreamsConfig;
 import com.expedia.www.haystack.pipes.commons.SystemExitUncaughtExceptionHandler;
+import com.expedia.www.haystack.pipes.commons.health.HealthController;
+import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
-import org.apache.kafka.streams.processor.WallclockTimestampExtractor;
 import org.cfg4j.provider.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,13 +43,19 @@ public class KafkaStreamStarter {
     private static final ConfigurationProvider CONFIGURATION_PROVIDER =
             new Configuration().createMergeConfigurationProvider();
 
+    private final HealthController healthController;
+
     public final Class<? extends KafkaStreamBuilder> containingClass;
     public final String clientId;
     final StreamsConfig streamsConfig;
 
-    public KafkaStreamStarter(Class<? extends KafkaStreamBuilder> containingClass, String clientId) {
+    public KafkaStreamStarter(Class<? extends KafkaStreamBuilder> containingClass,
+                              String clientId,
+                              HealthController healthController) {
         this.containingClass = containingClass;
         this.clientId = clientId;
+        this.healthController = healthController;
+        this.healthController.addListener(new UpdateHealthStatusFile("/app/isHealthy" /* should come from config */));
         this.streamsConfig = new StreamsConfig(getProperties());
     }
 
@@ -61,10 +68,11 @@ public class KafkaStreamStarter {
     private void startKafkaStreams(KStreamBuilder kStreamBuilder) {
         final KafkaStreams kafkaStreams = factory.createKafkaStreams(kStreamBuilder, this);
         final SystemExitUncaughtExceptionHandler systemExitUncaughtExceptionHandler
-                = factory.createSystemExitUncaughtExceptionHandler(kafkaStreams);
+                = factory.createSystemExitUncaughtExceptionHandler(kafkaStreams, healthController);
         kafkaStreams.setUncaughtExceptionHandler(systemExitUncaughtExceptionHandler);
         logger.info(String.format(STARTING_MSG, getKafkaIpAnPort(), getKafkaFromTopic(), getKafkaToTopic()));
         kafkaStreams.start();
+        healthController.setHealthy();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> kafkaStreams.close(MAX_CLOSE_TIMEOUT_SEC, TimeUnit.SECONDS)));
         logger.info(String.format(STARTED_MSG, kStreamBuilder.getClass().getSimpleName()));
     }
@@ -78,7 +86,6 @@ public class KafkaStreamStarter {
         props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, getReplicationFactor());
         props.put(StreamsConfig.consumerPrefix(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG), getConsumerSessionTimeout());
         props.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, getThreadCount());
-        props.put(StreamsConfig.TIMESTAMP_EXTRACTOR_CLASS_CONFIG, WallclockTimestampExtractor.class);
         return props;
     }
 
@@ -126,9 +133,9 @@ public class KafkaStreamStarter {
             return new KafkaStreams(kStreamBuilder, kafkaStreamStarter.streamsConfig);
         }
 
-        SystemExitUncaughtExceptionHandler createSystemExitUncaughtExceptionHandler(KafkaStreams kafkaStreams) {
-            return new SystemExitUncaughtExceptionHandler(kafkaStreams);
+        SystemExitUncaughtExceptionHandler createSystemExitUncaughtExceptionHandler(KafkaStreams kafkaStreams,
+                                                                                    HealthController controller) {
+            return new SystemExitUncaughtExceptionHandler(kafkaStreams, controller);
         }
-
     }
 }

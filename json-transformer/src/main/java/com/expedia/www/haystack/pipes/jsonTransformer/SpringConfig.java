@@ -1,5 +1,6 @@
 package com.expedia.www.haystack.pipes.jsonTransformer;
 
+import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
 import org.slf4j.Logger;
@@ -21,8 +22,14 @@ public class SpringConfig {
     }
 
     @Bean
-    KafkaStreamStarter kafkaStreamStarter() {
-        return new KafkaStreamStarter(ProtobufToJsonTransformer.class, APPLICATION);
+    @Autowired
+    KafkaStreamStarter kafkaStreamStarter(final HealthController healthController) {
+        return new KafkaStreamStarter(ProtobufToJsonTransformer.class, APPLICATION, healthController);
+    }
+
+    @Bean
+    HealthController healthController() {
+        return new HealthController();
     }
 
     // Beans without unit tests ////////////////////////////////////////////////////////////////////////////////////////

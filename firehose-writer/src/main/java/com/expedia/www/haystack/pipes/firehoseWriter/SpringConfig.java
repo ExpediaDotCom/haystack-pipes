@@ -21,6 +21,7 @@ import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehose;
 import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseClientBuilder;
 import com.expedia.www.haystack.metrics.MetricObjects;
+import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
@@ -93,8 +94,14 @@ class SpringConfig {
     }
 
     @Bean
-    KafkaStreamStarter kafkaStreamStarter() {
-        return new KafkaStreamStarter(ProtobufToFirehoseProducer.class, APPLICATION);
+    @Autowired
+    KafkaStreamStarter kafkaStreamStarter(final HealthController healthController) {
+        return new KafkaStreamStarter(ProtobufToFirehoseProducer.class, APPLICATION, healthController);
+    }
+
+    @Bean
+    HealthController healthController() {
+        return new HealthController();
     }
 
     @Bean

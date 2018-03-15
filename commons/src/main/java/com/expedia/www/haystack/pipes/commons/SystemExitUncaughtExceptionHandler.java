@@ -16,6 +16,7 @@
  */
 package com.expedia.www.haystack.pipes.commons;
 
+import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.netflix.servo.util.VisibleForTesting;
 import org.apache.kafka.streams.KafkaStreams;
 import org.slf4j.ILoggerFactory;
@@ -42,18 +43,18 @@ public class SystemExitUncaughtExceptionHandler implements Thread.UncaughtExcept
     @VisibleForTesting
     static Factory factory = new Factory();
 
-    private final KafkaStreams kafkaStreams;
+    private final HealthController healthController;
 
-    public SystemExitUncaughtExceptionHandler(KafkaStreams kafkaStreams) {
+    public SystemExitUncaughtExceptionHandler(KafkaStreams kafkaStreams, HealthController healthController) {
         Validate.notNull(kafkaStreams, KAFKA_STREAMS_IS_NULL);
-        this.kafkaStreams = kafkaStreams;
+        this.healthController = healthController;
     }
 
     @Override
     public void uncaughtException(Thread thread, Throwable throwable) {
         logger.error(String.format(ERROR_MSG, thread), throwable);
         shutdownLogger(LOGBACK_METHOD_NAME, LOG4J_METHOD_NAME);
-        factory.getRuntime().exit(SYSTEM_EXIT_STATUS);
+        healthController.setUnHealthy();
     }
 
     @VisibleForTesting
