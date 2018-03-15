@@ -29,8 +29,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 public class KafkaStreamStarter {
+    // move this to configuration later
+    private final long MAX_CLOSE_TIMEOUT_SEC = 30;
+
     static Factory factory = new Factory(); // will be mocked out in unit tests
     static Logger logger = LoggerFactory.getLogger(KafkaStreamStarter.class);
     static final String STARTING_MSG = "Attempting to start stream pointing at Kafka [%s] from topic [%s] to topic [%s]";
@@ -61,6 +65,7 @@ public class KafkaStreamStarter {
         kafkaStreams.setUncaughtExceptionHandler(systemExitUncaughtExceptionHandler);
         logger.info(String.format(STARTING_MSG, getKafkaIpAnPort(), getKafkaFromTopic(), getKafkaToTopic()));
         kafkaStreams.start();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> kafkaStreams.close(MAX_CLOSE_TIMEOUT_SEC, TimeUnit.SECONDS)));
         logger.info(String.format(STARTED_MSG, kStreamBuilder.getClass().getSimpleName()));
     }
 

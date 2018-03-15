@@ -82,7 +82,7 @@ public class BatchTest {
     @Before
     public void setUp() {
         final JsonFormat.Printer realPrinter = JsonFormat.printer().omittingInsignificantWhitespace();
-        batch = new Batch(realPrinter, mockFirehoseCollector, mockLogger);
+        batch = new Batch(realPrinter, () -> mockFirehoseCollector, mockLogger);
     }
 
     @After
@@ -94,7 +94,7 @@ public class BatchTest {
 
     @Test
     public void testGetRecordListInvalidProtocolBufferException() throws InvalidProtocolBufferException {
-        batch = new Batch(mockPrinter, mockFirehoseCollector, mockLogger);
+        batch = new Batch(mockPrinter, () -> mockFirehoseCollector, mockLogger);
         final InvalidProtocolBufferException exception = new InvalidProtocolBufferException(EXCEPTION_MESSAGE);
         when(mockPrinter.print(any(Span.class))).thenThrow(exception);
 

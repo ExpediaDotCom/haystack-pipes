@@ -41,7 +41,7 @@ public class FirehoseProcessorSupplierTest {
     @Before
     public void setUp() {
         firehoseProcessorSupplier = new FirehoseProcessorSupplier(mockFirehoseProcessorLogger, mockFirehoseCountersAndTimer,
-                mockBatch, mockAmazonKinesisFirehose, mockFirehoseProcessorFactory, mockFirehoseConfigurationProvider);
+                () -> mockBatch, mockAmazonKinesisFirehose, mockFirehoseProcessorFactory, mockFirehoseConfigurationProvider);
     }
 
     @After

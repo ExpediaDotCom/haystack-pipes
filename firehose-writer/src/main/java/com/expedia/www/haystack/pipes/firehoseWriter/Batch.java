@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Supplier;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.PROTOBUF_ERROR_MSG;
 
@@ -54,10 +55,10 @@ class Batch {
 
     @Autowired
     Batch(JsonFormat.Printer printer,
-          FirehoseCollector firehoseCollector,
+          Supplier<FirehoseCollector> firehoseCollector,
           Logger batchLogger) {
         this.printer = printer;
-        this.firehoseCollector = firehoseCollector;
+        this.firehoseCollector = firehoseCollector.get();
         this.logger = batchLogger;
     }
 
