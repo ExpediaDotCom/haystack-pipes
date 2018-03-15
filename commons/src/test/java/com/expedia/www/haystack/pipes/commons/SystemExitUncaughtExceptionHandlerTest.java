@@ -18,7 +18,6 @@ package com.expedia.www.haystack.pipes.commons;
 
 import com.expedia.www.haystack.pipes.commons.SystemExitUncaughtExceptionHandler.Factory;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
-import com.expedia.www.haystack.pipes.commons.health.HealthStatusListener;
 import org.apache.kafka.streams.KafkaStreams;
 import org.junit.After;
 import org.junit.Before;
@@ -63,14 +62,15 @@ public class SystemExitUncaughtExceptionHandlerTest {
     @Mock
     private ILoggerFactory mockILoggerFactory;
 
-    private HealthController healthController;
+    @Mock
+    private HealthController mockHealthController;
+
     private Throwable throwable;
     private SystemExitUncaughtExceptionHandler systemExitUncaughtExceptionHandler;
 
     @Before
     public void setUp() {
-        healthController = new HealthController();
-        systemExitUncaughtExceptionHandler = new SystemExitUncaughtExceptionHandler(mockKafkaStreams, healthController);
+        systemExitUncaughtExceptionHandler = new SystemExitUncaughtExceptionHandler(mockKafkaStreams, mockHealthController);
         realLogger = SystemExitUncaughtExceptionHandler.logger;
         SystemExitUncaughtExceptionHandler.logger = mockLogger;
         realFactory = SystemExitUncaughtExceptionHandler.factory;
@@ -82,7 +82,8 @@ public class SystemExitUncaughtExceptionHandlerTest {
     public void tearDown() {
         SystemExitUncaughtExceptionHandler.logger = realLogger;
         SystemExitUncaughtExceptionHandler.factory = realFactory;
-        verifyNoMoreInteractions(mockLogger, mockFactory, mockRuntime, mockKafkaStreams, mockILoggerFactory);
+        verifyNoMoreInteractions(mockLogger, mockFactory, mockRuntime, mockKafkaStreams, mockILoggerFactory,
+                mockHealthController);
     }
 
     @Test(expected = NullPointerException.class)
@@ -101,13 +102,11 @@ public class SystemExitUncaughtExceptionHandlerTest {
         when(mockFactory.getILoggerFactory()).thenReturn(mockILoggerFactory);
         final Thread thread = Thread.currentThread();
 
-        assertEquals(healthController.getStatus(), HealthController.HealthStatus.NOT_SET);
         systemExitUncaughtExceptionHandler.uncaughtException(thread, throwable);
+
         verify(mockLogger).error(String.format(ERROR_MSG, thread), throwable);
-        verify(mockFactory).getRuntime();
         verify(mockFactory).getILoggerFactory();
-        verify(mockRuntime).exit(SYSTEM_EXIT_STATUS);
-        assertEquals(healthController.getStatus(), HealthController.HealthStatus.UNHEALTHY);
+        verify(mockHealthController).setUnhealthy();
     }
 
     @Test

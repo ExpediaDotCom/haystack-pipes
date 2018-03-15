@@ -54,7 +54,7 @@ public class SystemExitUncaughtExceptionHandler implements Thread.UncaughtExcept
     public void uncaughtException(Thread thread, Throwable throwable) {
         logger.error(String.format(ERROR_MSG, thread), throwable);
         shutdownLogger(LOGBACK_METHOD_NAME, LOG4J_METHOD_NAME);
-        healthController.setUnHealthy();
+        healthController.setUnhealthy();
     }
 
     @VisibleForTesting

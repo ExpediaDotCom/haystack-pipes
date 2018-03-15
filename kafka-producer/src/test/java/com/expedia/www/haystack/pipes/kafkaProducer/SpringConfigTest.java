@@ -1,6 +1,7 @@
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.expedia.www.haystack.metrics.MetricObjects;
+import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
@@ -39,6 +40,9 @@ public class SpringConfigTest {
 
     private SpringConfig springConfig;
 
+    @Mock
+    private HealthController mockHealthController;
+
     @Before
     public void setUp() {
         springConfig = new SpringConfig(mockMetricObjects);
@@ -46,7 +50,7 @@ public class SpringConfigTest {
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockMetricObjects, mockCounter);
+        verifyNoMoreInteractions(mockMetricObjects, mockCounter, mockHealthController);
     }
 
     @Test
@@ -94,7 +98,7 @@ public class SpringConfigTest {
 
     @Test
     public void testKafkaStreamStarter() {
-        final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter();
+        final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter(mockHealthController);
 
         assertSame(ProtobufToKafkaProducer.class, kafkaStreamStarter.containingClass);
         assertSame(APPLICATION, kafkaStreamStarter.clientId);

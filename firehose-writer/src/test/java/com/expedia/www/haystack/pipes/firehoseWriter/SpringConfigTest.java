@@ -19,6 +19,7 @@ package com.expedia.www.haystack.pipes.firehoseWriter;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.expedia.www.haystack.metrics.MetricObjects;
+import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
@@ -57,6 +58,8 @@ public class SpringConfigTest {
     private Timer mockTimer;
     @Mock
     private Counter mockCounter;
+    @Mock
+    private HealthController mockHealthController;
 
     private SpringConfig springConfig;
 
@@ -67,7 +70,8 @@ public class SpringConfigTest {
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockMetricObjects, mockFirehoseConfigurationProvider, mockTimer, mockCounter);
+        verifyNoMoreInteractions(mockMetricObjects, mockFirehoseConfigurationProvider, mockTimer, mockCounter,
+                mockHealthController);
     }
 
     @Test
@@ -116,7 +120,7 @@ public class SpringConfigTest {
 
     @Test
     public void testKafkaStreamStarter() {
-        final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter();
+        final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter(mockHealthController);
 
         assertSame(ProtobufToFirehoseProducer.class, kafkaStreamStarter.containingClass);
         assertSame(APPLICATION, kafkaStreamStarter.clientId);

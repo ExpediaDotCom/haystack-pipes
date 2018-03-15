@@ -17,9 +17,14 @@
 
 package com.expedia.www.haystack.pipes.commons.health;
 
-import java.nio.charset.StandardCharsets;
+import com.expedia.www.haystack.pipes.commons.health.HealthController.HealthStatus;
+
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Objects;
+
+import static com.expedia.www.haystack.pipes.commons.health.HealthController.HealthStatus.HEALTHY;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class UpdateHealthStatusFile implements HealthStatusListener {
 
@@ -28,11 +33,12 @@ public class UpdateHealthStatusFile implements HealthStatusListener {
     public UpdateHealthStatusFile(final String statusFilePath) {
         this.statusFilePath = statusFilePath;
     }
+
     @Override
-    public void onChange(HealthController.HealthStatus status) {
-        final boolean isHealthy = status == HealthController.HealthStatus.HEALTHY;
+    public void onChange(HealthStatus status) {
+        final boolean isHealthy = (status == HEALTHY);
         try {
-            Files.write(Paths.get(statusFilePath), Boolean.toString(isHealthy).getBytes(StandardCharsets.UTF_8));
+            Files.write(Paths.get(statusFilePath), Boolean.toString(isHealthy).getBytes(UTF_8));
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

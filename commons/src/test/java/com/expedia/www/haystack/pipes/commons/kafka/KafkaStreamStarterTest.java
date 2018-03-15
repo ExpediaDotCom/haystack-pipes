@@ -119,14 +119,14 @@ public class KafkaStreamStarterTest {
     @Test
     public void testGetProperties() {
         final Properties properties = kafkaStreamStarter.getProperties();
-        assertEquals(8, properties.size());
-        assertEquals(CLIENT_ID, properties.get(StreamsConfig.CLIENT_ID_CONFIG));
-        assertEquals(mockKafkaStreamBuilder.getClass().getName(), properties.get(ConsumerConfig.GROUP_ID_CONFIG));
-        assertEquals(mockKafkaStreamBuilder.getClass().getSimpleName(), properties.get(StreamsConfig.APPLICATION_ID_CONFIG));
-        assertEquals(KAFKA_IP_AND_PORT, properties.get(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG));
-        assertEquals(2147483645, properties.get(StreamsConfig.REPLICATION_FACTOR_CONFIG));
-        assertEquals(THREAD_COUNT_CONFIGURATION_IN_TEST_BASE_DOT_YAML, properties.get(StreamsConfig.NUM_STREAM_THREADS_CONFIG));
-        assertEquals(WallclockTimestampExtractor.class, properties.get(StreamsConfig.TIMESTAMP_EXTRACTOR_CLASS_CONFIG));
+        assertEquals(CLIENT_ID, properties.remove(StreamsConfig.CLIENT_ID_CONFIG));
+        assertEquals(mockKafkaStreamBuilder.getClass().getName(), properties.remove(ConsumerConfig.GROUP_ID_CONFIG));
+        assertEquals(mockKafkaStreamBuilder.getClass().getSimpleName(), properties.remove(StreamsConfig.APPLICATION_ID_CONFIG));
+        assertEquals(KAFKA_IP_AND_PORT, properties.remove(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG));
+        assertEquals(2147483645, properties.remove(StreamsConfig.REPLICATION_FACTOR_CONFIG));
+        assertEquals(THREAD_COUNT_CONFIGURATION_IN_TEST_BASE_DOT_YAML, properties.remove(StreamsConfig.NUM_STREAM_THREADS_CONFIG));
+        assertEquals(15000, properties.remove(StreamsConfig.consumerPrefix(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG)));
+        assertEquals("Properties should be empty but is: " + properties, 0, properties.size());
     }
 
 

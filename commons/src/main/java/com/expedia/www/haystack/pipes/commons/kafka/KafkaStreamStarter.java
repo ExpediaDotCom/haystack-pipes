@@ -55,7 +55,6 @@ public class KafkaStreamStarter {
         this.containingClass = containingClass;
         this.clientId = clientId;
         this.healthController = healthController;
-        this.healthController.addListener(new UpdateHealthStatusFile("/app/isHealthy" /* should come from config */));
         this.streamsConfig = new StreamsConfig(getProperties());
     }
 

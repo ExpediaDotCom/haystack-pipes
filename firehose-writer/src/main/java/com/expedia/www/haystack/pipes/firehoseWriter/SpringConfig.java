@@ -22,6 +22,7 @@ import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehose;
 import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseClientBuilder;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
+import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
@@ -101,7 +102,9 @@ class SpringConfig {
 
     @Bean
     HealthController healthController() {
-        return new HealthController();
+        final HealthController healthController = new HealthController();
+        healthController.addListener(new UpdateHealthStatusFile("/app/isHealthy")); // TODO should come from config
+        return healthController;
     }
 
     @Bean

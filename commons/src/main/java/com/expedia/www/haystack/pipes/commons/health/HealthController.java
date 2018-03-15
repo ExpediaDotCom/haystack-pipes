@@ -21,6 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.expedia.www.haystack.pipes.commons.health.HealthController.HealthStatus.HEALTHY;
+import static com.expedia.www.haystack.pipes.commons.health.HealthController.HealthStatus.NOT_SET;
+import static com.expedia.www.haystack.pipes.commons.health.HealthController.HealthStatus.UNHEALTHY;
+
 public class HealthController {
 
     public enum HealthStatus {
@@ -33,19 +37,19 @@ public class HealthController {
     private final List<HealthStatusListener> listeners;
 
     public HealthController() {
-        this.status = new AtomicReference<>(HealthStatus.NOT_SET);
+        this.status = new AtomicReference<>(NOT_SET);
         this.listeners = new ArrayList<>();
     }
 
     public void setHealthy() {
-        if(status.getAndSet(HealthStatus.HEALTHY) != HealthStatus.HEALTHY) {
-            notifyChange(HealthStatus.HEALTHY);
+        if(status.getAndSet(HEALTHY) != HEALTHY) {
+            notifyChange(HEALTHY);
         }
     }
 
-    public void setUnHealthy() {
-        if(status.getAndSet(HealthStatus.UNHEALTHY) != HealthStatus.UNHEALTHY) {
-            notifyChange(HealthStatus.UNHEALTHY);
+    public void setUnhealthy() {
+        if(status.getAndSet(UNHEALTHY) != UNHEALTHY) {
+            notifyChange(UNHEALTHY);
         }
     }
 
