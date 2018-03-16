@@ -34,7 +34,10 @@ import org.slf4j.Logger;
 
 import java.nio.ByteBuffer;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.PROTOBUF_ERROR_MSG;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.EXCEPTION_MESSAGE;
@@ -43,6 +46,9 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Batch.ERROR_CODES_AND_MESSAGES_OF_FAILURES;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Batch.RESULT_NULL;
+import static com.expedia.www.haystack.pipes.firehoseWriter.Batch.THROTTLED_ERROR_CODE;
+import static com.expedia.www.haystack.pipes.firehoseWriter.Batch.THROTTLED_MESSAGE;
+import static com.expedia.www.haystack.pipes.firehoseWriter.Batch.THROTTLING_ERROR_MESSAGE;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -76,6 +82,14 @@ public class BatchTest {
     private PutRecordBatchResponseEntry mockPutRecordBatchResponseEntry;
     @Mock
     private List<Record> mockRecordList;
+    @Mock
+    private Map<String, String> mockMap;
+    @Mock
+    private Iterator<Map.Entry<String, String>> mockIterator;
+    @Mock
+    private Set<Map.Entry<String, String>> mockEntrySet;
+    @Mock
+    private Map.Entry<String, String> mockMapEntry;
 
     private Batch batch;
 
@@ -89,7 +103,7 @@ public class BatchTest {
     public void tearDown() {
         verifyNoMoreInteractions(mockPrinter, mockFirehoseCollector, mockLogger);
         verifyNoMoreInteractions(mockRequest, mockResult, mockRecord, mockPutRecordBatchResponseEntryList,
-                mockPutRecordBatchResponseEntry, mockRecordList);
+                mockPutRecordBatchResponseEntry, mockRecordList, mockMap, mockIterator, mockEntrySet, mockMapEntry);
     }
 
     @Test
@@ -150,7 +164,7 @@ public class BatchTest {
         verify(mockResult).getRequestResponses();
         verify(mockResult).getFailedPutCount();
         verify(mockPutRecordBatchResponseEntryList).size();
-        for(int i = 0 ; i < totalCount ; i++) {
+        for (int i = 0; i < totalCount; i++) {
             //noinspection ResultOfMethodCallIgnored
             verify(mockPutRecordBatchResponseEntryList).get(i);
         }
@@ -161,7 +175,7 @@ public class BatchTest {
         verify(mockRecordList).get(3);
         verify(mockRecordList).get(4);
         final String uniqueErrors = "{A_once=A_message, B_twice=B_message},";
-        verify(mockLogger).error(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES, uniqueErrors, RETRY_COUNT));
+        verify(mockLogger).warn(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES, uniqueErrors, RETRY_COUNT));
     }
 
     @Test
@@ -174,5 +188,32 @@ public class BatchTest {
         verify(mockRequest, times(2)).getRecords();
         verify(mockRecordList).size();
         verify(mockLogger).error(String.format(RESULT_NULL, SIZE, RETRY_COUNT));
+    }
+
+    @Test
+    public void testLogIfThrottled() {
+        // Using these mocks makes the test more verbose but verifies that break; is called appropriately
+        when(mockMap.entrySet()).thenReturn(mockEntrySet);
+        when(mockEntrySet.iterator()).thenReturn(mockIterator);
+        when(mockIterator.hasNext()).thenReturn(true);
+        when(mockIterator.next()).thenReturn(mockMapEntry);
+        when(mockMapEntry.getKey()).thenReturn(THROTTLED_ERROR_CODE, null, THROTTLED_ERROR_CODE);
+        when(mockMapEntry.getValue()).thenReturn(null, THROTTLED_MESSAGE, THROTTLED_MESSAGE);
+
+        batch.logIfThrottled(mockMap);
+
+        verify(mockLogger).error(THROTTLING_ERROR_MESSAGE);
+        verify(mockMap).entrySet();
+        verify(mockEntrySet).iterator();
+        verify(mockIterator, times(3)).hasNext();
+        verify(mockIterator, times(3)).next();
+        verify(mockMapEntry, times(3)).getKey();
+        verify(mockMapEntry, times(3)).getValue();
+        verify(mockIterator).remove();
+    }
+
+    @Test
+    public void testLogFailuresEmptyMap() {
+        batch.logFailures(Integer.MAX_VALUE, Collections.emptyMap());
     }
 }
