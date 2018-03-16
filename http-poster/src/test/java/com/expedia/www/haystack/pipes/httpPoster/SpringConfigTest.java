@@ -1,6 +1,7 @@
 package com.expedia.www.haystack.pipes.httpPoster;
 
 import com.expedia.www.haystack.metrics.MetricObjects;
+import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import org.junit.After;
 import org.junit.Before;
@@ -24,6 +25,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 public class SpringConfigTest {
     @Mock
     private MetricObjects mockMetricObjects;
+    @Mock
+    private HealthController mockHealthController;
 
     private SpringConfig springConfig;
 
@@ -63,7 +66,7 @@ public class SpringConfigTest {
 
     @Test
     public void testKafkaStreamStarter() {
-        final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter();
+        final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter(mockHealthController);
 
         assertSame(ProtobufToHttpPoster.class, kafkaStreamStarter.containingClass);
         assertSame(APPLICATION, kafkaStreamStarter.clientId);

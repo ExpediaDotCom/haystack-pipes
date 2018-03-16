@@ -17,6 +17,7 @@
 package com.expedia.www.haystack.pipes.commons;
 
 import com.expedia.www.haystack.pipes.commons.SystemExitUncaughtExceptionHandler.Factory;
+import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import org.apache.kafka.streams.KafkaStreams;
 import org.junit.After;
 import org.junit.Before;
@@ -61,12 +62,15 @@ public class SystemExitUncaughtExceptionHandlerTest {
     @Mock
     private ILoggerFactory mockILoggerFactory;
 
+    @Mock
+    private HealthController mockHealthController;
+
     private Throwable throwable;
     private SystemExitUncaughtExceptionHandler systemExitUncaughtExceptionHandler;
 
     @Before
     public void setUp() {
-        systemExitUncaughtExceptionHandler = new SystemExitUncaughtExceptionHandler(mockKafkaStreams);
+        systemExitUncaughtExceptionHandler = new SystemExitUncaughtExceptionHandler(mockKafkaStreams, mockHealthController);
         realLogger = SystemExitUncaughtExceptionHandler.logger;
         SystemExitUncaughtExceptionHandler.logger = mockLogger;
         realFactory = SystemExitUncaughtExceptionHandler.factory;
@@ -78,13 +82,14 @@ public class SystemExitUncaughtExceptionHandlerTest {
     public void tearDown() {
         SystemExitUncaughtExceptionHandler.logger = realLogger;
         SystemExitUncaughtExceptionHandler.factory = realFactory;
-        verifyNoMoreInteractions(mockLogger, mockFactory, mockRuntime, mockKafkaStreams, mockILoggerFactory);
+        verifyNoMoreInteractions(mockLogger, mockFactory, mockRuntime, mockKafkaStreams, mockILoggerFactory,
+                mockHealthController);
     }
 
     @Test(expected = NullPointerException.class)
     public void testNullKafkaStreams() {
         try {
-            new SystemExitUncaughtExceptionHandler(null);
+            new SystemExitUncaughtExceptionHandler(null, null);
         } catch(NullPointerException e) {
             assertEquals(SystemExitUncaughtExceptionHandler.KAFKA_STREAMS_IS_NULL, e.getMessage());
             throw e;
@@ -100,9 +105,8 @@ public class SystemExitUncaughtExceptionHandlerTest {
         systemExitUncaughtExceptionHandler.uncaughtException(thread, throwable);
 
         verify(mockLogger).error(String.format(ERROR_MSG, thread), throwable);
-        verify(mockFactory).getRuntime();
         verify(mockFactory).getILoggerFactory();
-        verify(mockRuntime).exit(SYSTEM_EXIT_STATUS);
+        verify(mockHealthController).setUnhealthy();
     }
 
     @Test

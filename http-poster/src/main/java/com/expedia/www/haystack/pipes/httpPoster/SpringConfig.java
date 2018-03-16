@@ -2,6 +2,8 @@ package com.expedia.www.haystack.pipes.httpPoster;
 
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
+import com.expedia.www.haystack.pipes.commons.health.HealthController;
+import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
@@ -64,8 +66,16 @@ public class SpringConfig {
     }
 
     @Bean
-    KafkaStreamStarter kafkaStreamStarter() {
-        return new KafkaStreamStarter(ProtobufToHttpPoster.class, APPLICATION);
+    @Autowired
+    KafkaStreamStarter kafkaStreamStarter(final HealthController healthController) {
+        return new KafkaStreamStarter(ProtobufToHttpPoster.class, APPLICATION, healthController);
+    }
+
+    @Bean
+    HealthController healthController() {
+        final HealthController healthController = new HealthController();
+        healthController.addListener(new UpdateHealthStatusFile("/app/isHealthy")); // TODO should come from config
+        return healthController;
     }
 
     @Bean
