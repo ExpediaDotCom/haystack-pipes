@@ -33,6 +33,7 @@ import org.springframework.stereotype.Component;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -43,10 +44,17 @@ import static com.expedia.www.haystack.pipes.commons.CommonConstants.PROTOBUF_ER
 @Component
 class Batch {
     @VisibleForTesting
-    static final String ERROR_CODES_AND_MESSAGES_OF_FAILURES
-            = "Error codes and messages for failures=[%s]; retryCount=%d";
+    static final String ERROR_CODES_AND_MESSAGES_OF_FAILURES =
+            "Error codes and messages for failures=[%s]; retryCount=%d";
+    @VisibleForTesting
+    static final String THROTTLING_ERROR_MESSAGE =
+            "Firehose is throttling requests; if this continues, request a limit increase from AWS";
     @VisibleForTesting
     static final String RESULT_NULL = "PutRecordBatchResult is null; retrying %d records; retryCount=%d";
+    @VisibleForTesting
+    static final String THROTTLED_ERROR_CODE = "ServiceUnavailableException";
+    @VisibleForTesting
+    static final String THROTTLED_MESSAGE = "Slow down.";
 
     private final TagFlattener tagFlattener = new TagFlattener();
     private final JsonFormat.Printer printer;
@@ -86,23 +94,54 @@ class Batch {
             final List<PutRecordBatchResponseEntry> batchResponseEntries = result.getRequestResponses();
             final Map<String, String> uniqueErrorCodesAndMessages = new TreeMap<>();
             final int failedPutCount = result.getFailedPutCount();
-            recordsNeedingRetry = new ArrayList<>(failedPutCount);
-            final int totalNumberOfResponses = batchResponseEntries.size();
-            for (int i = 0; i < totalNumberOfResponses; i++) {
-                final PutRecordBatchResponseEntry putRecordBatchResponseEntry = batchResponseEntries.get(i);
-                final String errorCode = putRecordBatchResponseEntry.getErrorCode();
-                if (StringUtils.isNotEmpty(errorCode)) {
-                    uniqueErrorCodesAndMessages.put(errorCode, putRecordBatchResponseEntry.getErrorMessage());
-                    final List<Record> records = request.getRecords();
-                    recordsNeedingRetry.add(records.get(i));
-                }
-            }
-            final String allErrorCodesAndMessages = StringUtils.join(uniqueErrorCodesAndMessages, ',');
-            logger.error(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES, allErrorCodesAndMessages, retryCount));
+            recordsNeedingRetry = extractFailedRecordsAndAggregateFailures(
+                    request, batchResponseEntries, uniqueErrorCodesAndMessages, failedPutCount);
+            final Map<String, String> errorsThatAreNotThrottles = logIfThrottled(uniqueErrorCodesAndMessages);
+            logFailures(retryCount, errorsThatAreNotThrottles);
         } else {
             recordsNeedingRetry = request.getRecords();
             logger.error(String.format(RESULT_NULL, request.getRecords().size(), retryCount));
         }
         return recordsNeedingRetry;
+    }
+
+    private List<Record> extractFailedRecordsAndAggregateFailures(PutRecordBatchRequest request, List<PutRecordBatchResponseEntry> batchResponseEntries, Map<String, String> uniqueErrorCodesAndMessages, int failedPutCount) {
+        List<Record> recordsNeedingRetry;
+        recordsNeedingRetry = new ArrayList<>(failedPutCount);
+        final int totalNumberOfResponses = batchResponseEntries.size();
+        for (int i = 0; i < totalNumberOfResponses; i++) {
+            final PutRecordBatchResponseEntry putRecordBatchResponseEntry = batchResponseEntries.get(i);
+            final String errorCode = putRecordBatchResponseEntry.getErrorCode();
+            if (StringUtils.isNotEmpty(errorCode)) {
+                uniqueErrorCodesAndMessages.put(errorCode, putRecordBatchResponseEntry.getErrorMessage());
+                final List<Record> records = request.getRecords();
+                recordsNeedingRetry.add(records.get(i));
+            }
+        }
+        return recordsNeedingRetry;
+    }
+
+    @VisibleForTesting
+    Map<String, String> logIfThrottled(Map<String, String> uniqueErrorCodesAndMessages) {
+        final Iterator<Map.Entry<String, String>> iterator = uniqueErrorCodesAndMessages.entrySet().iterator();
+        while (iterator.hasNext()) {
+            final Map.Entry<String, String> mapEntry = iterator.next();
+            final String errorCode = mapEntry.getKey();
+            final String message = mapEntry.getValue();
+            if (THROTTLED_ERROR_CODE.equals(errorCode) && THROTTLED_MESSAGE.equals(message)) {
+                iterator.remove();
+                logger.error(THROTTLING_ERROR_MESSAGE);
+                break;
+            }
+        }
+        return uniqueErrorCodesAndMessages;
+    }
+
+    @VisibleForTesting
+    void logFailures(int retryCount, Map<String, String> uniqueErrorCodesAndMessages) {
+        if(!uniqueErrorCodesAndMessages.isEmpty()) {
+            final String allErrorCodesAndMessages = StringUtils.join(uniqueErrorCodesAndMessages, ',');
+            logger.warn(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES, allErrorCodesAndMessages, retryCount));
+        }
     }
 }
