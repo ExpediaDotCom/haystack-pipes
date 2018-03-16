@@ -161,7 +161,7 @@ public class BatchTest {
         verify(mockRecordList).get(3);
         verify(mockRecordList).get(4);
         final String uniqueErrors = "{A_once=A_message, B_twice=B_message},";
-        verify(mockLogger).warn(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES, uniqueErrors, RETRY_COUNT));
+        verify(mockLogger).error(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES, uniqueErrors, RETRY_COUNT));
     }
 
     @Test
@@ -173,6 +173,6 @@ public class BatchTest {
 
         verify(mockRequest, times(2)).getRecords();
         verify(mockRecordList).size();
-        verify(mockLogger).warn(String.format(RESULT_NULL, SIZE, RETRY_COUNT));
+        verify(mockLogger).error(String.format(RESULT_NULL, SIZE, RETRY_COUNT));
     }
 }
