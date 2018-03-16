@@ -98,10 +98,10 @@ class Batch {
                 }
             }
             final String allErrorCodesAndMessages = StringUtils.join(uniqueErrorCodesAndMessages, ',');
-            logger.warn(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES, allErrorCodesAndMessages, retryCount));
+            logger.error(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES, allErrorCodesAndMessages, retryCount));
         } else {
             recordsNeedingRetry = request.getRecords();
-            logger.warn(String.format(RESULT_NULL, request.getRecords().size(), retryCount));
+            logger.error(String.format(RESULT_NULL, request.getRecords().size(), retryCount));
         }
         return recordsNeedingRetry;
     }
