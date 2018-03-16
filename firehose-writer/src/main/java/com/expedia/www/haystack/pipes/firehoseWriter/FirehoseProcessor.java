@@ -30,7 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 @Component
@@ -122,20 +121,20 @@ public class FirehoseProcessor implements Processor<String, Span> {
             final int maxRetrySleep = firehoseConfigurationProvider.maxretrysleep();
             final RetryCalculator retryCalculator = new RetryCalculator(
                     firehoseConfigurationProvider.initialretrysleep(), maxRetrySleep);
-            boolean allRecordsPutSuccessfully = false;
             final Sleeper sleeper = factory.createSleeper();
+
+            boolean allRecordsPutSuccessfully = false;
             do {
                 final PutRecordBatchRequest request = factory.createPutRecordBatchRequest(streamName, records);
-                PutRecordBatchResult result = null;
                 final Stopwatch stopwatch = firehoseCountersAndTimer.startTimer();
                 final int sleepMillis = retryCalculator.calculateSleepMillis();
+                PutRecordBatchResult result = null;
                 try {
                     sleeper.sleep(sleepMillis);
                     result = amazonKinesisFirehose.putRecordBatch(request);
                 } catch (Exception exception) {
                     firehoseCountersAndTimer.incrementExceptionCounter();
-                    final String errorMsg = String.format(PUT_RECORD_BATCH_WARN_MSG, retryCount++);
-                    logger.error(errorMsg, exception);
+                    logger.error(String.format(PUT_RECORD_BATCH_WARN_MSG, retryCount++), exception);
                     continue;
                 } finally {
                     stopwatch.stop();
@@ -203,8 +202,7 @@ public class FirehoseProcessor implements Processor<String, Span> {
         }
 
         Thread createShutdownHook(FirehoseProcessor firehoseProcessor) {
-            final ShutdownHook shutdownHook = new ShutdownHook(firehoseProcessor);
-            return new Thread(shutdownHook);
+            return new Thread(new ShutdownHook(firehoseProcessor));
         }
     }
 
