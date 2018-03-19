@@ -24,6 +24,7 @@ import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.kafka.TagFlattener;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.util.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -47,9 +48,6 @@ class Batch {
     static final String ERROR_CODES_AND_MESSAGES_OF_FAILURES =
             "Error codes and messages for failures=[%s]; retryCount=%d";
     @VisibleForTesting
-    static final String THROTTLING_ERROR_MESSAGE =
-            "Firehose is throttling requests; if this continues, request a limit increase from AWS";
-    @VisibleForTesting
     static final String RESULT_NULL = "PutRecordBatchResult is null; retrying %d records; retryCount=%d";
     @VisibleForTesting
     static final String THROTTLED_ERROR_CODE = "ServiceUnavailableException";
@@ -60,14 +58,17 @@ class Batch {
     private final JsonFormat.Printer printer;
     private final FirehoseCollector firehoseCollector;
     private final Logger logger;
+    private final Counter throttledCounter;
 
     @Autowired
     Batch(JsonFormat.Printer printer,
           Supplier<FirehoseCollector> firehoseCollector,
-          Logger batchLogger) {
+          Logger batchLogger,
+          Counter throttledCounter) {
         this.printer = printer;
         this.firehoseCollector = firehoseCollector.get();
         this.logger = batchLogger;
+        this.throttledCounter = throttledCounter;
     }
 
     List<Record> getRecordList(Span span) {
@@ -96,7 +97,7 @@ class Batch {
             final int failedPutCount = result.getFailedPutCount();
             recordsNeedingRetry = extractFailedRecordsAndAggregateFailures(
                     request, batchResponseEntries, uniqueErrorCodesAndMessages, failedPutCount);
-            final Map<String, String> errorsThatAreNotThrottles = logIfThrottled(uniqueErrorCodesAndMessages);
+            final Map<String, String> errorsThatAreNotThrottles = countIfThrottled(uniqueErrorCodesAndMessages);
             logFailures(retryCount, errorsThatAreNotThrottles);
         } else {
             recordsNeedingRetry = request.getRecords();
@@ -122,7 +123,7 @@ class Batch {
     }
 
     @VisibleForTesting
-    Map<String, String> logIfThrottled(Map<String, String> uniqueErrorCodesAndMessages) {
+    Map<String, String> countIfThrottled(Map<String, String> uniqueErrorCodesAndMessages) {
         final Iterator<Map.Entry<String, String>> iterator = uniqueErrorCodesAndMessages.entrySet().iterator();
         while (iterator.hasNext()) {
             final Map.Entry<String, String> mapEntry = iterator.next();
@@ -130,7 +131,7 @@ class Batch {
             final String message = mapEntry.getValue();
             if (THROTTLED_ERROR_CODE.equals(errorCode) && THROTTLED_MESSAGE.equals(message)) {
                 iterator.remove();
-                logger.error(THROTTLING_ERROR_MESSAGE);
+                throttledCounter.increment();
                 break;
             }
         }

@@ -23,6 +23,7 @@ import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.expedia.open.tracing.Span;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import com.netflix.servo.monitor.Counter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,7 +49,6 @@ import static com.expedia.www.haystack.pipes.firehoseWriter.Batch.ERROR_CODES_AN
 import static com.expedia.www.haystack.pipes.firehoseWriter.Batch.RESULT_NULL;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Batch.THROTTLED_ERROR_CODE;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Batch.THROTTLED_MESSAGE;
-import static com.expedia.www.haystack.pipes.firehoseWriter.Batch.THROTTLING_ERROR_MESSAGE;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -90,25 +90,27 @@ public class BatchTest {
     private Set<Map.Entry<String, String>> mockEntrySet;
     @Mock
     private Map.Entry<String, String> mockMapEntry;
+    @Mock
+    private Counter mockCounter;
 
     private Batch batch;
 
     @Before
     public void setUp() {
         final JsonFormat.Printer realPrinter = JsonFormat.printer().omittingInsignificantWhitespace();
-        batch = new Batch(realPrinter, () -> mockFirehoseCollector, mockLogger);
+        batch = new Batch(realPrinter, () -> mockFirehoseCollector, mockLogger, mockCounter);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockPrinter, mockFirehoseCollector, mockLogger);
+        verifyNoMoreInteractions(mockPrinter, mockFirehoseCollector, mockLogger, mockCounter);
         verifyNoMoreInteractions(mockRequest, mockResult, mockRecord, mockPutRecordBatchResponseEntryList,
                 mockPutRecordBatchResponseEntry, mockRecordList, mockMap, mockIterator, mockEntrySet, mockMapEntry);
     }
 
     @Test
     public void testGetRecordListInvalidProtocolBufferException() throws InvalidProtocolBufferException {
-        batch = new Batch(mockPrinter, () -> mockFirehoseCollector, mockLogger);
+        batch = new Batch(mockPrinter, () -> mockFirehoseCollector, mockLogger, mockCounter);
         final InvalidProtocolBufferException exception = new InvalidProtocolBufferException(EXCEPTION_MESSAGE);
         when(mockPrinter.print(any(Span.class))).thenThrow(exception);
 
@@ -191,7 +193,7 @@ public class BatchTest {
     }
 
     @Test
-    public void testLogIfThrottled() {
+    public void testCountIfThrottled() {
         // Using these mocks makes the test more verbose but verifies that break; is called appropriately
         when(mockMap.entrySet()).thenReturn(mockEntrySet);
         when(mockEntrySet.iterator()).thenReturn(mockIterator);
@@ -200,9 +202,9 @@ public class BatchTest {
         when(mockMapEntry.getKey()).thenReturn(THROTTLED_ERROR_CODE, null, THROTTLED_ERROR_CODE);
         when(mockMapEntry.getValue()).thenReturn(null, THROTTLED_MESSAGE, THROTTLED_MESSAGE);
 
-        batch.logIfThrottled(mockMap);
+        batch.countIfThrottled(mockMap);
 
-        verify(mockLogger).error(THROTTLING_ERROR_MESSAGE);
+        verify(mockCounter).increment();
         verify(mockMap).entrySet();
         verify(mockEntrySet).iterator();
         verify(mockIterator, times(3)).hasNext();

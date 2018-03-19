@@ -36,7 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -86,6 +85,12 @@ class SpringConfig {
     Counter exceptionCounter() {
         return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
                 FirehoseProcessor.class.getName(), "EXCEPTION");
+    }
+
+    @Bean
+    Counter throttledCounter() {
+        return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
+                Batch.class.getName(), "THROTTLED");
     }
 
     @Bean
@@ -205,8 +210,9 @@ class SpringConfig {
     @Autowired
     Supplier<Batch> batch(Printer printer,
                           Supplier<FirehoseCollector> firehoseCollector,
-                          Logger batchLogger) {
-        return () -> new Batch(printer, firehoseCollector, batchLogger);
+                          Logger batchLogger,
+                          Counter throttledCounter) {
+        return () -> new Batch(printer, firehoseCollector, batchLogger, throttledCounter);
     }
 
     @Bean

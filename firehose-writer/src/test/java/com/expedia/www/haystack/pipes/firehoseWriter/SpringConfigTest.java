@@ -108,6 +108,28 @@ public class SpringConfigTest {
     }
 
     @Test
+    public void testExceptionCounter() {
+        when(mockMetricObjects.createAndRegisterResettingCounter(anyString(), anyString(), anyString(), anyString()))
+                .thenReturn(mockCounter);
+
+        assertNotNull(springConfig.exceptionCounter());
+
+        verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
+                FirehoseProcessor.class.getName(), "EXCEPTION");
+    }
+
+    @Test
+    public void testThrottledCounter() {
+        when(mockMetricObjects.createAndRegisterResettingCounter(anyString(), anyString(), anyString(), anyString()))
+                .thenReturn(mockCounter);
+
+        assertNotNull(springConfig.throttledCounter());
+
+        verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
+                Batch.class.getName(), "THROTTLED");
+    }
+
+    @Test
     public void testPutBatchRequestTimer() {
         when(mockMetricObjects.createAndRegisterBasicTimer(anyString(), anyString(), anyString(),
                 anyString(), any(TimeUnit.class))).thenReturn(mockTimer);
