@@ -29,7 +29,8 @@ them to JSON, and write them to another topic in Kafka.
 Streams to read the protobuf records from Kafka, transform them to JSON, and send them to another service, via an
 [HTTP POST](https://en.wikipedia.org/wiki/POST_(HTTP)) request.
 
-In all of the cases above, "transform to JSON" implies "tag flattening": the [OpenTracing API] specifies tags in a 
+In all of the cases above, "transform to JSON" implies "tag flattening": the 
+[OpenTracing API](https://github.com/opentracing/specification/blob/master/semantic_conventions.md) specifies tags in a 
 somewhat unfriendly format. For example, the following open tracing tags:
 ```
 "tags":[{"key":"strKey","vStr":"tagValue"},
