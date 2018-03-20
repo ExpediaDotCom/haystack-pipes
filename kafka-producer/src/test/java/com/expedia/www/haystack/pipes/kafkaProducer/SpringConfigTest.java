@@ -31,17 +31,14 @@ import static org.mockito.Mockito.when;
 public class SpringConfigTest {
     @Mock
     private MetricObjects mockMetricObjects;
-
     @Mock
     private Counter mockCounter;
-
     @Mock
     private Timer mockTimer;
-
-    private SpringConfig springConfig;
-
     @Mock
     private HealthController mockHealthController;
+
+    private SpringConfig springConfig;
 
     @Before
     public void setUp() {

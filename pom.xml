@@ -15,6 +15,7 @@
         <!-- Versions -->
         <aws-java-sdk-kinesis-version>1.11.267</aws-java-sdk-kinesis-version>
         <cfg4j-core-version>4.4.1</cfg4j-core-version>
+        <chlorine-finder-version>1.1.5</chlorine-finder-version>
         <commons-lang3-version>3.7</commons-lang3-version>
         <commons-pool2-version>2.5.0</commons-pool2-version>
         <commons-text-version>1.1</commons-text-version>
@@ -47,10 +48,11 @@
 
     <modules>
         <module>commons</module>
-        <module>json-transformer</module>
-        <module>kafka-producer</module>
         <module>firehose-writer</module>
         <module>http-poster</module>
+        <module>json-transformer</module>
+        <module>kafka-producer</module>
+        <module>secret-detector</module>
     </modules>
 
     <dependencyManagement>
@@ -114,6 +116,11 @@
                 <groupId>com.netflix.servo</groupId>
                 <artifactId>servo-graphite</artifactId>
                 <version>${servo-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.dataapps.chlorine</groupId>
+                <artifactId>chlorine-finder</artifactId>
+                <version>${chlorine-finder-version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -349,7 +356,7 @@
                     <artifactId>coveralls-maven-plugin</artifactId>
                     <version>${coveralls-maven-plugin-version}</version>
                     <configuration>
-                        <repoToken>S2zUNtPF8u9A5fcGs3KTzAYm7ZzOXvO57</repoToken>
+                        <repoToken>PutRepoTokenHere</repoToken>
                     </configuration>
                 </plugin>
             </plugins>
