@@ -1,20 +1,4 @@
-/*
- * Copyright 2018 Expedia, Inc.
- *
- *       Licensed under the Apache License, Version 2.0 (the "License");
- *       you may not use this file except in compliance with the License.
- *       You may obtain a copy of the License at
- *
- *           http://www.apache.org/licenses/LICENSE-2.0
- *
- *       Unless required by applicable law or agreed to in writing, software
- *       distributed under the License is distributed on an "AS IS" BASIS,
- *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *       See the License for the specific language governing permissions and
- *       limitations under the License.
- *
- */
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.secretDetector;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
@@ -33,7 +17,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
-import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
+import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATION;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -42,7 +26,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ProtobufToKafkaProducerTest {
+public class DetectorProducerTest {
     private final static String FROM_TOPIC = RANDOM.nextLong() + "FROM_TOPIC";
 
     @Mock
@@ -50,7 +34,7 @@ public class ProtobufToKafkaProducerTest {
     @Mock
     private SpanSerdeFactory mockSpanSerdeFactory;
     @Mock
-    private ProduceIntoExternalKafkaAction mockProduceIntoExternalKafkaAction;
+    private DetectorAction mockDetectorAction;
     @Mock
     private KafkaConfigurationProvider mockKafkaConfigurationProvider;
     @Mock
@@ -60,25 +44,25 @@ public class ProtobufToKafkaProducerTest {
     @Mock
     private Serde<Span> mockSpanSerde;
 
-    private ProtobufToKafkaProducer protobufToFirehoseProducer;
+    private DetectorProducer detectorProducer;
 
     @Before
     public void setUp() {
-        protobufToFirehoseProducer = new ProtobufToKafkaProducer(
-                mockKafkaStreamStarter, mockSpanSerdeFactory, mockProduceIntoExternalKafkaAction, mockKafkaConfigurationProvider);
+        detectorProducer = new DetectorProducer(
+                mockKafkaStreamStarter, mockSpanSerdeFactory, mockDetectorAction, mockKafkaConfigurationProvider);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSpanSerdeFactory, mockProduceIntoExternalKafkaAction,
+        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSpanSerdeFactory, mockDetectorAction,
                 mockKafkaConfigurationProvider, mockKStreamBuilder, mockKStream, mockSpanSerde);
     }
 
     @Test
     public void testMain() {
-        protobufToFirehoseProducer.main();
+        detectorProducer.main();
 
-        verify(mockKafkaStreamStarter).createAndStartStream(protobufToFirehoseProducer);
+        verify(mockKafkaStreamStarter).createAndStartStream(detectorProducer);
     }
 
     @SuppressWarnings("Duplicates")
@@ -89,11 +73,11 @@ public class ProtobufToKafkaProducerTest {
         when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
                 .thenReturn(mockKStream);
 
-        protobufToFirehoseProducer.buildStreamTopology(mockKStreamBuilder);
+        detectorProducer.buildStreamTopology(mockKStreamBuilder);
 
         verify(mockSpanSerdeFactory).createSpanSerde(APPLICATION);
         verify(mockKafkaConfigurationProvider).fromtopic();
         verify(mockKStreamBuilder).stream(any(Serdes.StringSerde.class), eq(mockSpanSerde), eq(FROM_TOPIC));
-        verify(mockKStream).foreach(mockProduceIntoExternalKafkaAction);
+        verify(mockKStream).foreach(mockDetectorAction);
     }
 }

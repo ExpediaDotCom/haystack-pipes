@@ -123,6 +123,7 @@ public class SpringConfig {
         return new CountersAndTimer(
                 kafkaProducerPost, produceIntoExternalKafkaActionRequestCounter, postsInFlightCounter);
     }
+
     @Bean
     @Autowired
     ProduceIntoExternalKafkaAction produceIntoExternalKafkaAction(
