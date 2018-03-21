@@ -29,7 +29,6 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class DetectorActionTest {
     private static final String KEY = RANDOM.nextLong() + "KEY";
-    private static final String SECRET = RANDOM.nextLong() + "SECRET";
 
     @Mock
     private CountersAndTimer mockCountersAndTimer;
@@ -63,7 +62,7 @@ public class DetectorActionTest {
 
     @Test
     public void testApplyOneSecretFound() {
-        whensForApply(Collections.singletonList(SECRET));
+        whensForApply(Collections.singletonList(KEY));
 
         detectorAction.apply(KEY, FULLY_POPULATED_SPAN);
 

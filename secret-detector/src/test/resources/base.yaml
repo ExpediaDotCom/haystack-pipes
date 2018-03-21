@@ -15,3 +15,7 @@ haystack:
      port: 2003
      pollintervalseconds: 300
      queuesize: 10
+  secretsnotifications:
+    emails:
+      - "haystack@expedia.com"
+      - "test@expedia.com"

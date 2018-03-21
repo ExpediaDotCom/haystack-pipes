@@ -9,6 +9,9 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Finds that tag keys and field keys in a Span that contain secrets.
+ */
 public class Detector {
     private final FinderEngine finderEngine;
 
@@ -17,29 +20,36 @@ public class Detector {
     }
 
     List<String> findSecrets(Span span) {
-        final List<String> secrets = new ArrayList<>();
-        findSecretsInTags(secrets, span);
-        findSecretsInLogs(secrets, span);
-        return secrets;
+        final List<String> listOfKeysOfSecrets = new ArrayList<>();
+        findSecretsInTags(listOfKeysOfSecrets, span);
+        findSecretsInLogFields(listOfKeysOfSecrets, span);
+        return listOfKeysOfSecrets;
     }
 
-    private void findSecretsInTags(List<String> secrets, Span span) {
-        findSecrets(secrets, span.getTagsList());
+    private void findSecretsInTags(List<String> listOfKeysOfSecrets, Span span) {
+        findSecrets(listOfKeysOfSecrets, span.getTagsList());
     }
 
-    private void findSecretsInLogs(List<String> secrets, Span span) {
+    private void findSecretsInLogFields(List<String> listOfKeysOfSecrets, Span span) {
         for(final Log log : span.getLogsList()) {
-            findSecrets(secrets, log.getFieldsList());
+            findSecrets(listOfKeysOfSecrets, log.getFieldsList());
         }
     }
 
-    private void findSecrets(List<String> secrets, List<Tag> tags) {
+    private void findSecrets(List<String> listOfKeysOfSecrets, List<Tag> tags) {
         for(final Tag tag : tags) {
             if(StringUtils.isNotEmpty(tag.getVStr())) {
-                secrets.addAll(finderEngine.find(tag.getVStr()));
+                putKeysOfSecretsIntoList(listOfKeysOfSecrets, tag, finderEngine.find(tag.getVStr()));
             } else if(tag.getVBytes().size() > 0) {
-                secrets.addAll(finderEngine.find(new String(tag.getVBytes().toByteArray())));
+                final String input = new String(tag.getVBytes().toByteArray());
+                putKeysOfSecretsIntoList(listOfKeysOfSecrets, tag, finderEngine.find(input));
             }
+        }
+    }
+
+    private void putKeysOfSecretsIntoList(List<String> listOfKeysOfSecrets, Tag tag, List<String> secretsList) {
+        if(!secretsList.isEmpty()) {
+            listOfKeysOfSecrets.add(tag.getKey());
         }
     }
 

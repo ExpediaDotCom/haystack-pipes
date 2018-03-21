@@ -8,13 +8,15 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.List;
 
-import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.EMAIL_ADDRESS;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.BYTES_FIELD_KEY;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.BYTES_TAG_KEY;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.EMAIL_ADDRESS_IN_TAG_BYTES_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.EMAIL_ADDRESS_LOG_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.EMAIL_ADDRESS_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
-import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.IP_ADDRESS;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.IP_ADDRESS_SPAN;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.STRING_FIELD_KEY;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.STRING_TAG_KEY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -34,8 +36,8 @@ public class DetectorTest {
         final List<String> secrets = detector.findSecrets(EMAIL_ADDRESS_SPAN);
 
         assertEquals(1, secrets.size());
-        final String secret = secrets.get(0);
-        assertEquals(EMAIL_ADDRESS, secret);
+        assertEquals(STRING_TAG_KEY, secrets.get(0));
+
     }
 
     @Test
@@ -43,9 +45,8 @@ public class DetectorTest {
         final List<String> secrets = detector.findSecrets(EMAIL_ADDRESS_IN_TAG_BYTES_SPAN);
 
         assertEquals(2, secrets.size());
-        for(final String secret :secrets) {
-            assertEquals(EMAIL_ADDRESS, secret);
-        }
+        assertEquals(BYTES_TAG_KEY, secrets.get(0));
+        assertEquals(BYTES_FIELD_KEY, secrets.get(1));
     }
 
     @Test
@@ -53,8 +54,7 @@ public class DetectorTest {
         final List<String> secrets = detector.findSecrets(EMAIL_ADDRESS_LOG_SPAN);
 
         assertEquals(1, secrets.size());
-        final String secret = secrets.get(0);
-        assertEquals(EMAIL_ADDRESS, secret);
+        assertEquals(STRING_FIELD_KEY, secrets.get(0));
     }
 
     @Test
@@ -62,8 +62,7 @@ public class DetectorTest {
         final List<String> secrets = detector.findSecrets(IP_ADDRESS_SPAN);
 
         assertEquals(1, secrets.size());
-        final String secret = secrets.get(0);
-        assertEquals(IP_ADDRESS, secret);
+        assertEquals(STRING_TAG_KEY, secrets.get(0));
     }
 
     @Test

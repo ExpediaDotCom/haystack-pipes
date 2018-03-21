@@ -8,28 +8,32 @@ import java.util.Base64;
 import java.util.Random;
 
 /**
- * Constants used by tests in subpackages, included in functional code to avoid having to publish a jar file from the
- * test directory.
+ * Constants used by tests in subpackages; this class is included in functional code to avoid having to publish a jar
+ * file from the tªest directory.
  */
 public interface TestConstantsAndCommonCode {
     Random RANDOM = new Random();
     String EXCEPTION_MESSAGE = RANDOM.nextLong() + "EXCEPTION_MESSAGE";
 
-    String LOG_FIELD_VALUE = "logFieldValue";
+    String STRING_FIELD_KEY = "logStrField";
+    String STRING_FIELD_VALUE = "logFieldValue";
+    String BYTES_FIELD_KEY = "logBytesKey";
     String BASE_64_ENCODED_STRING = "AAEC/f7/";
-    String LOGS = "[{\"timestamp\":\"234567890\",\"fields\":" + "[{\"key\":\"strField\",\"vStr\":\"" +
-            LOG_FIELD_VALUE + "\"},{\"key\":\"longField\",\"vLong\":\"4567890\"}]},"
+    String LOGS = "[{\"timestamp\":\"234567890\",\"fields\":" + "[{\"key\":\"" + STRING_FIELD_KEY +
+            "\",\"vStr\":\"" + STRING_FIELD_VALUE + "\"},{\"key\":\"longField\",\"vLong\":\"4567890\"}]},"
             + "{\"timestamp\":\"234567891\",\"fields\":" +
             "[{\"key\":\"doubleField\",\"vDouble\":6.54321}," +
-            "{\"key\":\"bytesKey\",\"vBytes\":\"" + BASE_64_ENCODED_STRING + "\"}," +
+            "{\"key\":\"" + BYTES_FIELD_KEY + "\",\"vBytes\":\"" + BASE_64_ENCODED_STRING + "\"}," +
             "{\"key\":\"boolField\",\"vBool\":false}]}],";
+    String STRING_TAG_KEY = "strKey";
     String STRING_TAG_VALUE = "tagValue";
+    String BYTES_TAG_KEY = "bytesKey";
     String TAGS = "[" +
-            "{\"key\":\"strKey\",\"vStr\":\"" + STRING_TAG_VALUE +"\"}," +
+            "{\"key\":\"" + STRING_TAG_KEY + "\",\"vStr\":\"" + STRING_TAG_VALUE +"\"}," +
             "{\"key\":\"longKey\",\"vLong\":\"987654321\"}," +
             "{\"key\":\"doubleKey\",\"vDouble\":9876.54321}," +
             "{\"key\":\"boolKey\",\"vBool\":true}," +
-            "{\"key\":\"bytesKey\",\"vBytes\":\"" + BASE_64_ENCODED_STRING + "\"}]}";
+            "{\"key\":\"" + BYTES_TAG_KEY + "\",\"vBytes\":\"" + BASE_64_ENCODED_STRING + "\"}]}";
     String BOGUS_TAGS = "[{\"key\":\"bogusKey\",\"vBogus\":\"bogusValue\"}]}";
     String TAGS_WITHOUT_TAG_KEY = "[{\"vBogus\":\"bogusValue\"}]}";
     String EMAIL_ADDRESS = "haystack@expedia.com";
@@ -69,7 +73,7 @@ public interface TestConstantsAndCommonCode {
             RANDOM.nextInt(Byte.MAX_VALUE), RANDOM.nextInt(Byte.MAX_VALUE));
     String JSON_SPAN_STRING_WITH_IP_ADDRESS_IN_TAG = JSON_SPAN_STRING.replace(STRING_TAG_VALUE, IP_ADDRESS);
     Span IP_ADDRESS_SPAN = buildSpan(JSON_SPAN_STRING_WITH_IP_ADDRESS_IN_TAG);
-    String JSON_SPAN_STRING_WITH_EMAIL_ADDRESS_IN_LOG_TAG = JSON_SPAN_STRING.replace(LOG_FIELD_VALUE, EMAIL_ADDRESS);
+    String JSON_SPAN_STRING_WITH_EMAIL_ADDRESS_IN_LOG_TAG = JSON_SPAN_STRING.replace(STRING_FIELD_VALUE, EMAIL_ADDRESS);
     Span EMAIL_ADDRESS_LOG_SPAN = buildSpan(JSON_SPAN_STRING_WITH_EMAIL_ADDRESS_IN_LOG_TAG);
 
     static Span buildSpan(String jsonSpanString) {

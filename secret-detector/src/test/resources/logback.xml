@@ -8,7 +8,7 @@
     </appender>
     <appender name="EmitToGraphiteLogbackAppender"
               class="com.expedia.www.haystack.metrics.appenders.logback.EmitToGraphiteLogbackAppender">
-        <host>${HAYSTACK_GRAPHITE_HOST}</host>
+        <host>localhost</host>
         <subsystem>pipes-secret-detector</subsystem>
     </appender>
     <logger name="com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter" additivity="false" level="INFO">

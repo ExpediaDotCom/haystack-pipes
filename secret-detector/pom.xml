@@ -31,7 +31,7 @@
         </dependency>
         <dependency>
             <groupId>com.expedia.www</groupId>
-            <artifactId>haystack-log4j-metrics-appender</artifactId>
+            <artifactId>haystack-logback-metrics-appender</artifactId>
         </dependency>
         <dependency>
             <groupId>com.expedia.www</groupId>

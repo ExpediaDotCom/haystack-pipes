@@ -1,17 +1,20 @@
 haystack:
   kafka:
-     brokers: "localhost"
-     port: 9092
-     fromtopic: "json-spans"
-     totopic: ""
-     threadcount: 1
-     sessiontimeout: 15000
+    brokers: "localhost"
+    port: 9092
+    fromtopic: "json-spans"
+    totopic: ""
+    threadcount: 1
+    sessiontimeout: 15000
   pipe:
     streams:
       replicationfactor: 1
   graphite:
-     prefix: "haystack"
-     host: "localhost"
-     port: 2003
-     pollintervalseconds: 300
-     queuesize: 10
+    prefix: "haystack"
+    host: "localhost"
+    port: 2003
+    pollintervalseconds: 300
+    queuesize: 10
+  secrets:
+    emails:
+      - "haystack@expedia.com"
