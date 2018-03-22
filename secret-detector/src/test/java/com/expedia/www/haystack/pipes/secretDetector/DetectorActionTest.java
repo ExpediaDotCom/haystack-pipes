@@ -43,7 +43,8 @@ public class DetectorActionTest {
 
     @Before
     public void setUp() {
-        detectorAction = new DetectorAction(mockCountersAndTimer, mockDetector, mockLogger);
+        detectorAction = new DetectorAction(
+                mockCountersAndTimer, mockDetector, mockLogger);
     }
 
     @After
@@ -62,12 +63,14 @@ public class DetectorActionTest {
 
     @Test
     public void testApplyOneSecretFound() {
-        whensForApply(Collections.singletonList(KEY));
+        final List<String> secrets = Collections.singletonList(KEY);
+        whensForApply(secrets);
 
         detectorAction.apply(KEY, FULLY_POPULATED_SPAN);
 
         verifiesForApply();
-        verify(mockLogger).info(String.format(CONFIDENTIAL_DATA_MSG, SERVICE_NAME, OPERATION_NAME, SPAN_ID, TRACE_ID));
+        verify(mockLogger).info(
+                String.format(CONFIDENTIAL_DATA_MSG, SERVICE_NAME, OPERATION_NAME, SPAN_ID, TRACE_ID, secrets));
     }
 
     private void whensForApply(List<String> secrets) {

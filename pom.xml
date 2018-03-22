@@ -28,6 +28,8 @@
         <jacoco-percentage>1.0</jacoco-percentage>
         <jackson-version>2.9.1</jackson-version>
         <java-version>1.8</java-version>
+        <javax-mail-version>1.4.7</javax-mail-version>
+        <javax-activation-version>1.1.1</javax-activation-version>
         <junit-version>4.12</junit-version>
         <kafka-version>0.11.0.2</kafka-version>
         <logback-version>1.2.3</logback-version>
@@ -121,6 +123,16 @@
                 <groupId>io.dataapps.chlorine</groupId>
                 <artifactId>chlorine-finder</artifactId>
                 <version>${chlorine-finder-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.mail</groupId>
+                <artifactId>mail</artifactId>
+                <version>${javax-mail-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.activation</groupId>
+                <artifactId>activation</artifactId>
+                <version>${javax-activation-version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -295,6 +307,7 @@
                         <excludes>
                             <exclude>**/com/expedia/open/tracing/**</exclude>
                             <exclude>**/com/expedia/www/haystack/pipes/commons/test/*</exclude>
+                            <exclude>**/com/expedia/www/haystack/pipes/secretDetector/SenderImpl*</exclude>
                         </excludes>
                     </configuration>
                     <executions>

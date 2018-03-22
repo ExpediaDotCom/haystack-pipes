@@ -17,9 +17,24 @@ public class SecretsConfigurationProviderTest {
     }
 
     @Test
-    public void testEmails() {
+    public void testFrom() {
+        assertEquals("haystack@expedia.com", secretsConfigurationProvider.from());
+    }
+
+    @Test
+    public void testTos() {
         final List<String> expected = Arrays.asList("haystack@expedia.com", "test@expedia.com");
 
-        assertEquals(expected, secretsConfigurationProvider.emails());
+        assertEquals(expected, secretsConfigurationProvider.tos());
+    }
+
+    @Test
+    public void testHost() {
+        assertEquals("localhost", secretsConfigurationProvider.host());
+    }
+
+    @Test
+    public void testSubject() {
+        assertEquals("[Action Required] Security alert in haystack spans!", secretsConfigurationProvider.subject());
     }
 }

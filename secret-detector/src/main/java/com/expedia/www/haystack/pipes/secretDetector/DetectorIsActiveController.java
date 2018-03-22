@@ -46,11 +46,11 @@ public class DetectorIsActiveController extends SpringBootServletInitializer {
 
     @Autowired
     DetectorIsActiveController(DetectorProducer detectorProducer,
-                               Factory kafkaProducerIsActiveControllerFactory,
-                               Logger kafkaProducerIsActiveControllerLogger) {
+                               Factory detectorIsActiveControllerFactory,
+                               Logger detectorIsActiveControllerLogger) {
         this.detectorProducer = detectorProducer;
-        this.factory = kafkaProducerIsActiveControllerFactory;
-        this.logger = kafkaProducerIsActiveControllerLogger;
+        this.factory = detectorIsActiveControllerFactory;
+        this.logger = detectorIsActiveControllerLogger;
         INSTANCE.compareAndSet(null, this);
     }
 
