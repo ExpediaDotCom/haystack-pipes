@@ -6,7 +6,7 @@ import org.cfg4j.provider.ConfigurationProvider;
 import java.util.List;
 
 public class SecretsConfigurationProvider implements SecretsConfig {
-    private static final String HAYSTACK_SECRETS_CONFIG_PREFIX = "haystack.secretsnotifications";
+    private static final String HAYSTACK_SECRETS_CONFIG_PREFIX = "haystack.secretsnotifications.email";
 
     private final SecretsConfig secretsConfig;
 
@@ -17,7 +17,22 @@ public class SecretsConfigurationProvider implements SecretsConfig {
     }
 
     @Override
-    public List<String> emails() {
-        return secretsConfig.emails();
+    public String from() {
+        return secretsConfig.from();
+    }
+
+    @Override
+    public List<String> tos() {
+        return secretsConfig.tos();
+    }
+
+    @Override
+    public String host() {
+        return secretsConfig.host();
+    }
+
+    @Override
+    public String subject() {
+        return secretsConfig.subject();
     }
 }

@@ -16,6 +16,10 @@ haystack:
      pollintervalseconds: 300
      queuesize: 10
   secretsnotifications:
-    emails:
-      - "haystack@expedia.com"
-      - "test@expedia.com"
+    email:
+      from: "haystack@expedia.com"
+      tos:
+        - "haystack@expedia.com"
+        - "test@expedia.com"
+      host: "localhost"
+      subject: "[Action Required] Security alert in haystack spans!"

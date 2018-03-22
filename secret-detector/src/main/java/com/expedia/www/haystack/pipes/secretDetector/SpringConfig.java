@@ -39,8 +39,26 @@ public class SpringConfig {
     }
 
     @Bean
-    Logger detectorIsActiveController() {
+    @Autowired
+    DetectorIsActiveController detectorIsActiveController(DetectorProducer detectorProducer,
+                                                          DetectorIsActiveController.Factory detectorIsActiveControllerFactory,
+                                                          Logger detectorIsActiveControllerLogger) {
+        return new DetectorIsActiveController(detectorProducer, detectorIsActiveControllerFactory,
+                detectorIsActiveControllerLogger);
+    }
+    @Bean
+    Logger detectorIsActiveControllerLogger() {
         return LoggerFactory.getLogger(DetectorIsActiveController.class);
+    }
+
+    @Bean
+    Logger detectorActionLogger() {
+        return LoggerFactory.getLogger(DetectorAction.class);
+    }
+
+    @Bean
+    Logger emailerLogger() {
+        return LoggerFactory.getLogger(Emailer.class);
     }
 
     @Bean
@@ -109,8 +127,25 @@ public class SpringConfig {
 
     @Bean
     @Autowired
-    DetectorAction detectorAction(CountersAndTimer detectorDetectTimer, Detector detector, Logger detectorLogger) {
-        return new DetectorAction(detectorDetectTimer, detector, detectorLogger);
+    DetectorAction detectorAction(CountersAndTimer detectorDetectTimer,
+                                  Detector detector,
+                                  Logger detectorActionLogger) {
+        return new DetectorAction(detectorDetectTimer, detector, detectorActionLogger);
+    }
+
+    @Bean
+    SecretsConfigurationProvider secretsConfigurationProvider() {
+        return new SecretsConfigurationProvider();
+    }
+
+    @Bean
+    Emailer.Factory emailerFactory() {
+        return new Emailer.Factory();
+    }
+
+    @Bean
+    Emailer.Sender sender() {
+        return new SenderImpl();
     }
 
     /*

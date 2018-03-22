@@ -66,8 +66,8 @@ public class SpringConfigTest {
     }
 
     @Test
-    public void testDetectorIsActiveController() {
-        final Logger logger = springConfig.detectorIsActiveController();
+    public void testDetectorIsActiveControllerLogger() {
+        final Logger logger = springConfig.detectorIsActiveControllerLogger();
 
         assertEquals(DetectorIsActiveController.class.getName(), logger.getName());
     }
