@@ -34,6 +34,7 @@ public class DetectorIsActiveControllerTest {
 
     @Before
     public void setUp() {
+        DetectorIsActiveController.INSTANCE.set(null);
         storeKafkaProducerIsActiveControllerWithMocksInStaticInstance();
         factory = new Factory();
     }

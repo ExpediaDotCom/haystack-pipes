@@ -8,9 +8,14 @@ import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
+import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.ActionsConfigurationProvider;
+import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction;
+import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedActionFactory;
+import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.SenderImpl;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
 import io.dataapps.chlorine.finder.FinderEngine;
+import org.cfg4j.provider.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,8 +71,13 @@ public class SpringConfig {
     }
 
     @Bean
+    Logger actionsConfigurationProviderLogger() {
+        return LoggerFactory.getLogger(ActionsConfigurationProvider.class);
+    }
+
+    @Bean
     Logger emailerLogger() {
-        return LoggerFactory.getLogger(Emailer.class);
+        return LoggerFactory.getLogger(EmailerDetectedAction.class);
     }
 
     @Bean
@@ -148,13 +158,29 @@ public class SpringConfig {
     }
 
     @Bean
-    Emailer.Factory emailerFactory() {
-        return new Emailer.Factory();
+    EmailerDetectedAction.Factory emailerFactory() {
+        return new EmailerDetectedAction.Factory();
     }
 
     @Bean
-    Emailer.Sender sender() {
+    EmailerDetectedAction.Sender sender() {
         return new SenderImpl();
+    }
+
+    @Bean
+    @Autowired
+    EmailerDetectedActionFactory emailerDetectedActionFactory(EmailerDetectedAction.Factory emailerFactory,
+                                                              Logger emailerLogger,
+                                                              EmailerDetectedAction.Sender sender,
+                                                              SecretsConfigurationProvider secretsConfigurationProvider) {
+        return new EmailerDetectedActionFactory(emailerFactory, emailerLogger, sender, secretsConfigurationProvider);
+    }
+
+    @Bean
+    ConfigurationProvider configurationProvider() {
+        final com.expedia.www.haystack.pipes.commons.Configuration configuration
+                = new com.expedia.www.haystack.pipes.commons.Configuration();
+        return configuration.createMergeConfigurationProvider();
     }
 
     /*
