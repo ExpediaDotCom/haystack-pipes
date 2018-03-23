@@ -16,6 +16,8 @@ haystack:
     pollintervalseconds: 300
     queuesize: 10
   secretsnotifications:
+    actionfactories:
+      - "emailerDetectedActionFactory" # (method) name of the bean in SpringConfig.java
     email:
       from: "haystack@expedia.com"
       tos:

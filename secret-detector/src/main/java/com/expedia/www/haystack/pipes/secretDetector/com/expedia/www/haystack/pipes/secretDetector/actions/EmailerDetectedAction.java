@@ -1,10 +1,9 @@
-package com.expedia.www.haystack.pipes.secretDetector;
+package com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions;
 
 import com.expedia.open.tracing.Span;
+import com.expedia.www.haystack.pipes.secretDetector.SecretsConfigurationProvider;
 import com.netflix.servo.util.VisibleForTesting;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import javax.mail.Address;
 import javax.mail.Message;
@@ -15,8 +14,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.util.List;
 
-@Component
-public class Emailer {
+public class EmailerDetectedAction implements DetectedAction {
     @VisibleForTesting
     static final String TEXT_TEMPLATE =
             "Confidential data has been found in a span: service [%s] operation [%s] span [%s] trace [%s] tag(s) [%s]";
@@ -29,19 +27,18 @@ public class Emailer {
     @VisibleForTesting
     static final String HOST_KEY = "mail.smtp.host";
 
-    final private Factory factory;
-    final private Sender sender;
-    final private Logger logger;
+    private final Factory factory;
+    private final Sender sender;
+    private final Logger logger;
 
-    final private Address from;
-    final private Address[] toAddresses;
-    final private String subject;
+    private final Address from;
+    private final Address[] toAddresses;
+    private final String subject;
 
-    @Autowired
-    Emailer(Factory emailerFactory,
-            Logger emailerLogger,
-            Sender sender,
-            SecretsConfigurationProvider secretsConfigurationProvider) {
+    EmailerDetectedAction(Factory emailerFactory,
+                          Logger emailerLogger,
+                          Sender sender,
+                          SecretsConfigurationProvider secretsConfigurationProvider) {
         this.factory = emailerFactory;
         this.logger = emailerLogger;
         this.sender = sender;
@@ -78,7 +75,8 @@ public class Emailer {
         return null;
     }
 
-    void send(Span span, List<String> listOfKeysOfSecrets) {
+    @Override
+    public void send(Span span, List<String> listOfKeysOfSecrets) {
         final MimeMessage message = factory.createMimeMessage();
         try {
             message.setFrom(from);
@@ -92,13 +90,14 @@ public class Emailer {
         }
     }
 
-    interface Sender {
+    public interface Sender {
         void send(Message message, Address[] toAddresses) throws MessagingException;
     }
 
-    static class Factory {
+    public static class Factory {
         MimeMessage createMimeMessage() {
             return new MimeMessage(Session.getDefaultInstance(System.getProperties()));
         }
     }
+
 }

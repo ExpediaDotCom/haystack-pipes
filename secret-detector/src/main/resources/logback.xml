@@ -20,7 +20,7 @@
     <logger name="com.netflix.servo.publish.graphite.GraphiteMetricObserver" additivity="false" level="INFO">
         <appender-ref ref="STDOUT" /><!-- Display start up message without flooding logs with other info messages -->
     </logger>
-    <root level="WARN">
+    <root level="ERROR">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="EmitToGraphiteLogbackAppender" />
     </root>

@@ -20,7 +20,8 @@ import com.expedia.www.haystack.pipes.commons.Configuration;
 import com.expedia.www.haystack.pipes.commons.IntermediateStreamsConfig;
 import com.expedia.www.haystack.pipes.commons.SystemExitUncaughtExceptionHandler;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
-import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
+import com.netflix.servo.util.VisibleForTesting;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
@@ -30,18 +31,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class KafkaStreamStarter {
     // move this to configuration later
     private final long MAX_CLOSE_TIMEOUT_SEC = 30;
 
-    static Factory factory = new Factory(); // will be mocked out in unit tests
+    @VisibleForTesting
+    static Factory factory = new Factory();
+    @VisibleForTesting
     static Logger logger = LoggerFactory.getLogger(KafkaStreamStarter.class);
-    static final String STARTING_MSG = "Attempting to start stream pointing at Kafka [%s] from topic [%s] to topic [%s]";
+    @VisibleForTesting
+    static ConfigurationProvider CONFIGURATION_PROVIDER = new Configuration().createMergeConfigurationProvider();
+
+    static final String STARTING_MSG_WITH_TO_TOPIC =
+            "Attempting to start stream pointing at Kafka [%s] from topic [%s] to topic [%s]";
+    static final String STARTING_MSG_WITHOUT_TO_TOPIC =
+            "Attempting to start stream pointing at Kafka [%s] from topic [%s]";
     static final String STARTED_MSG = "Now started Stream %s";
-    private static final ConfigurationProvider CONFIGURATION_PROVIDER =
-            new Configuration().createMergeConfigurationProvider();
 
     private final HealthController healthController;
 
@@ -69,10 +77,15 @@ public class KafkaStreamStarter {
         final SystemExitUncaughtExceptionHandler systemExitUncaughtExceptionHandler
                 = factory.createSystemExitUncaughtExceptionHandler(kafkaStreams, healthController);
         kafkaStreams.setUncaughtExceptionHandler(systemExitUncaughtExceptionHandler);
-        logger.info(String.format(STARTING_MSG, getKafkaIpAnPort(), getKafkaFromTopic(), getKafkaToTopic()));
+        final String toTopic = getToTopic();
+        if(StringUtils.isEmpty(toTopic)) {
+            logger.info(String.format(STARTING_MSG_WITHOUT_TO_TOPIC, getIpAnPort(), getFromTopic()));
+        } else {
+            logger.info(String.format(STARTING_MSG_WITH_TO_TOPIC, getIpAnPort(), getFromTopic(), toTopic));
+        }
         kafkaStreams.start();
         healthController.setHealthy();
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> kafkaStreams.close(MAX_CLOSE_TIMEOUT_SEC, TimeUnit.SECONDS)));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> kafkaStreams.close(MAX_CLOSE_TIMEOUT_SEC, SECONDS)));
         logger.info(String.format(STARTED_MSG, kStreamBuilder.getClass().getSimpleName()));
     }
 
@@ -81,24 +94,24 @@ public class KafkaStreamStarter {
         props.put(StreamsConfig.CLIENT_ID_CONFIG, clientId);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, containingClass.getName());
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, containingClass.getSimpleName());
-        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, getKafkaIpAnPort());
+        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, getIpAnPort());
         props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, getReplicationFactor());
         props.put(StreamsConfig.consumerPrefix(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG), getConsumerSessionTimeout());
         props.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, getThreadCount());
         return props;
     }
 
-    private String getKafkaIpAnPort() {
+    private String getIpAnPort() {
         final KafkaConfig kafkaConfig = getKafkaConfig();
         return kafkaConfig.brokers() + ":" + kafkaConfig.port();
     }
 
-    private String getKafkaFromTopic() {
+    private String getFromTopic() {
         final KafkaConfig kafkaConfig = getKafkaConfig();
         return kafkaConfig.fromtopic();
     }
 
-    private String getKafkaToTopic() {
+    private String getToTopic() {
         final KafkaConfig kafkaConfig = getKafkaConfig();
         return kafkaConfig.totopic();
     }

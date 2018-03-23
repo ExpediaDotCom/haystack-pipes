@@ -1,7 +1,8 @@
-package com.expedia.www.haystack.pipes.secretDetector;
+package com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions;
 
-import com.expedia.www.haystack.pipes.secretDetector.Emailer.Factory;
-import com.expedia.www.haystack.pipes.secretDetector.Emailer.Sender;
+import com.expedia.www.haystack.pipes.secretDetector.SecretsConfigurationProvider;
+import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.Factory;
+import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.Sender;
 import com.google.common.collect.ImmutableList;
 import org.junit.After;
 import org.junit.Before;
@@ -25,11 +26,11 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.SERVICE_NAME;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.SPAN_ID;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.TRACE_ID;
-import static com.expedia.www.haystack.pipes.secretDetector.Emailer.FROM_ADDRESS_EXCEPTION_MSG;
-import static com.expedia.www.haystack.pipes.secretDetector.Emailer.HOST_KEY;
-import static com.expedia.www.haystack.pipes.secretDetector.Emailer.SENDING_EXCEPTION_MSG;
-import static com.expedia.www.haystack.pipes.secretDetector.Emailer.TEXT_TEMPLATE;
-import static com.expedia.www.haystack.pipes.secretDetector.Emailer.TOS_ADDRESS_EXCEPTION_MSG;
+import static com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.FROM_ADDRESS_EXCEPTION_MSG;
+import static com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.HOST_KEY;
+import static com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.SENDING_EXCEPTION_MSG;
+import static com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.TEXT_TEMPLATE;
+import static com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.TOS_ADDRESS_EXCEPTION_MSG;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -40,12 +41,12 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EmailerTest {
-    private final static String FROM = RANDOM.nextInt(Integer.MAX_VALUE) + "@expedia.com";
-    private final static String TO1 = RANDOM.nextInt(Integer.MAX_VALUE) + "@expedia.com";
-    private final static String TO2 = RANDOM.nextInt(Integer.MAX_VALUE) + "@expedia.com";
-    private final static List<String> TOS = ImmutableList.of(TO1, TO2);
-    private final static Address[] TO_ADDRESSES = new Address[TOS.size()];
+public class EmailerDetectedActionTest {
+    private static final String FROM = RANDOM.nextInt(Integer.MAX_VALUE) + "@expedia.com";
+    private static final String TO1 = RANDOM.nextInt(Integer.MAX_VALUE) + "@expedia.com";
+    private static final String TO2 = RANDOM.nextInt(Integer.MAX_VALUE) + "@expedia.com";
+    private static final List<String> TOS = ImmutableList.of(TO1, TO2);
+    private static final Address[] TO_ADDRESSES = new Address[TOS.size()];
     static {
         for(int i = 0; i < TOS.size() ; i++) {
             try {
@@ -55,8 +56,8 @@ public class EmailerTest {
             }
         }
     }
-    private final static String SUBJECT = RANDOM.nextLong() + "SUBJECT";
-    private final static String HOST = "localhost"; //RANDOM.nextLong() + "HOST";
+    private static final String SUBJECT = RANDOM.nextLong() + "SUBJECT";
+    private static final String HOST = "localhost"; //RANDOM.nextLong() + "HOST";
     private static final String SECRET = RANDOM.nextLong() + "SECRET";
     private static final List<String> SECRETS = ImmutableList.of(SECRET);
     private static final String EMAIL_TEXT =
@@ -73,29 +74,38 @@ public class EmailerTest {
     @Mock
     private MimeMessage mockMimeMessage;
 
-    private Emailer emailer;
+    private EmailerDetectedAction emailerDetectedAction;
     private Factory factory;
     private int constructorTimes = 1;
 
     @Before
     public void setUp() {
+        whensForConstructor(mockSecretsConfigurationProvider);
+        emailerDetectedAction = new EmailerDetectedAction(
+                mockFactory, mockLogger, mockSender, mockSecretsConfigurationProvider);
+        factory = new Factory();
+    }
+
+    static void whensForConstructor(SecretsConfigurationProvider mockSecretsConfigurationProvider) {
         when(mockSecretsConfigurationProvider.from()).thenReturn(FROM);
         when(mockSecretsConfigurationProvider.tos()).thenReturn(TOS);
         when(mockSecretsConfigurationProvider.subject()).thenReturn(SUBJECT);
         when(mockSecretsConfigurationProvider.host()).thenReturn(HOST);
-        emailer = new Emailer(mockFactory, mockLogger, mockSender, mockSecretsConfigurationProvider);
-        factory = new Factory();
     }
 
     @After
     public void tearDown() {
+        verifiesForConstructor(mockSecretsConfigurationProvider, constructorTimes);
+
+        verifyNoMoreInteractions(mockFactory, mockLogger, mockSender, mockSecretsConfigurationProvider);
+        verifyNoMoreInteractions(mockMimeMessage);
+    }
+
+    static void verifiesForConstructor(SecretsConfigurationProvider mockSecretsConfigurationProvider, int constructorTimes) {
         verify(mockSecretsConfigurationProvider, times(constructorTimes)).from();
         verify(mockSecretsConfigurationProvider, times(constructorTimes)).tos();
         verify(mockSecretsConfigurationProvider, times(constructorTimes)).subject();
         verify(mockSecretsConfigurationProvider, times(constructorTimes)).host();
-
-        verifyNoMoreInteractions(mockFactory, mockLogger, mockSender, mockSecretsConfigurationProvider);
-        verifyNoMoreInteractions(mockMimeMessage);
     }
 
     @Test
@@ -121,7 +131,7 @@ public class EmailerTest {
 
     private void testConstructorAddressException(String message) {
         constructorTimes = 2;
-        new Emailer(mockFactory, mockLogger, mockSender, mockSecretsConfigurationProvider);
+        new EmailerDetectedAction(mockFactory, mockLogger, mockSender, mockSecretsConfigurationProvider);
         verify(mockLogger).error(message);
     }
 
@@ -142,7 +152,7 @@ public class EmailerTest {
     private void testSend(MimeMessage mimeMessage) throws MessagingException {
         when(mockFactory.createMimeMessage()).thenReturn(mimeMessage);
 
-        emailer.send(FULLY_POPULATED_SPAN, SECRETS);
+        emailerDetectedAction.send(FULLY_POPULATED_SPAN, SECRETS);
 
         verify(mockFactory).createMimeMessage();
         verify(mockMimeMessage).setFrom(new InternetAddress(FROM));

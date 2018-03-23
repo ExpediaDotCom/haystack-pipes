@@ -307,7 +307,7 @@
                         <excludes>
                             <exclude>**/com/expedia/open/tracing/**</exclude>
                             <exclude>**/com/expedia/www/haystack/pipes/commons/test/*</exclude>
-                            <exclude>**/com/expedia/www/haystack/pipes/secretDetector/SenderImpl*</exclude>
+                            <exclude>**/com/expedia/www/haystack/pipes/secretDetector/actions/SenderImpl*</exclude>
                         </excludes>
                     </configuration>
                     <executions>

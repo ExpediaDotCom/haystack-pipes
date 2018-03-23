@@ -16,6 +16,7 @@
  */
 package com.expedia.www.haystack.pipes.commons.kafka;
 
+import com.expedia.www.haystack.pipes.commons.Configuration;
 import com.expedia.www.haystack.pipes.commons.SystemExitUncaughtExceptionHandler;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.Factory;
@@ -24,7 +25,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
-import org.apache.kafka.streams.processor.WallclockTimestampExtractor;
+import org.cfg4j.provider.ConfigurationProvider;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,9 +37,11 @@ import org.slf4j.Logger;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import static com.expedia.www.haystack.pipes.commons.Configuration.HAYSTACK_KAFKA_CONFIG_PREFIX;
 import static com.expedia.www.haystack.pipes.commons.ConfigurationTest.THREAD_COUNT_CONFIGURATION_IN_TEST_BASE_DOT_YAML;
 import static com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.STARTED_MSG;
-import static com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.STARTING_MSG;
+import static com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.STARTING_MSG_WITHOUT_TO_TOPIC;
+import static com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.STARTING_MSG_WITH_TO_TOPIC;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -47,7 +50,9 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class KafkaStreamStarterTest {
     private final static String CLIENT_ID = RANDOM.nextLong() + "CLIENT_ID";
-    private static final String KAFKA_IP_AND_PORT = "localhost:" + 65534;
+    private static final String BROKERS = "localhost";
+    private static final int PORT = 65534;
+    private static final String KAFKA_IP_AND_PORT = BROKERS + ":" + PORT;
     private static final String KAFKA_FROM_TOPIC = "haystack.kafka.fromtopic";
     private static final String KAFKA_TO_TOPIC = "haystack.kafka.totopic";
 
@@ -56,24 +61,24 @@ public class KafkaStreamStarterTest {
     @Mock
     private Factory mockFactory;
     private Factory realFactory;
-
     @Mock
     private Logger mockLogger;
     private Logger realLogger;
-
     @Mock
     private KafkaStreamBuilder mockKafkaStreamBuilder;
-
     @Mock
     private KStreamBuilder mockKStreamBuilder;
-
     @Mock
     private KafkaStreams mockKafkaStreams;
-
     @Mock
     private SystemExitUncaughtExceptionHandler mockSystemExitUncaughtExceptionHandler;
+    @Mock
+    private ConfigurationProvider mockConfigurationProvider;
+    @Mock
+    private KafkaConfig mockKafkaConfig;
 
     private KafkaStreamStarter kafkaStreamStarter;
+
 
     @Before
     public void setUp() {
@@ -92,28 +97,57 @@ public class KafkaStreamStarterTest {
             PollScheduler.getInstance().stop();
         }
         verifyNoMoreInteractions(mockFactory, mockLogger, mockKafkaStreamBuilder, mockKStreamBuilder,
-                mockKafkaStreams, mockSystemExitUncaughtExceptionHandler);
+                mockKafkaStreams, mockSystemExitUncaughtExceptionHandler, mockConfigurationProvider, mockKafkaConfig);
     }
 
     @Test
-    public void testCreateAndStartStream() {
+    public void testCreateAndStartStreamWithToTopic() {
+        commonWhensForCreateAndStartStream();
+
+        kafkaStreamStarter.createAndStartStream(mockKafkaStreamBuilder);
+
+        commonVerifiesForCreateAndStartStream();
+        verify(mockLogger).info(String.format(STARTING_MSG_WITH_TO_TOPIC, KAFKA_IP_AND_PORT, KAFKA_FROM_TOPIC, KAFKA_TO_TOPIC));
+    }
+
+    @Test
+    public void testCreateAndStartStreamWithoutToTopic() {
+        commonWhensForCreateAndStartStream();
+        when(mockConfigurationProvider.bind(HAYSTACK_KAFKA_CONFIG_PREFIX, KafkaConfig.class)).thenReturn(mockKafkaConfig);
+        when(mockKafkaConfig.fromtopic()).thenReturn(KAFKA_FROM_TOPIC);
+        when(mockKafkaConfig.brokers()).thenReturn(BROKERS);
+        when(mockKafkaConfig.port()).thenReturn(PORT);
+
+        final ConfigurationProvider savedConfigurationProvider = KafkaStreamStarter.CONFIGURATION_PROVIDER;
+        KafkaStreamStarter.CONFIGURATION_PROVIDER = mockConfigurationProvider;
+        kafkaStreamStarter.createAndStartStream(mockKafkaStreamBuilder);
+        KafkaStreamStarter.CONFIGURATION_PROVIDER = savedConfigurationProvider;
+
+        commonVerifiesForCreateAndStartStream();
+        verify(mockLogger).info(String.format(STARTING_MSG_WITHOUT_TO_TOPIC, KAFKA_IP_AND_PORT, KAFKA_FROM_TOPIC));
+        verify(mockConfigurationProvider, times(3)).bind(HAYSTACK_KAFKA_CONFIG_PREFIX, KafkaConfig.class);
+        verify(mockKafkaConfig).fromtopic();
+        verify(mockKafkaConfig).totopic();
+        verify(mockKafkaConfig).brokers();
+        verify(mockKafkaConfig).port();
+    }
+
+    private void commonWhensForCreateAndStartStream() {
         when(mockFactory.createKStreamBuilder()).thenReturn(mockKStreamBuilder);
         when(mockFactory.createKafkaStreams(mockKStreamBuilder, kafkaStreamStarter))
                 .thenReturn(mockKafkaStreams);
         when(mockFactory.createSystemExitUncaughtExceptionHandler(mockKafkaStreams, healthController))
                 .thenReturn(mockSystemExitUncaughtExceptionHandler);
+    }
 
-        kafkaStreamStarter.createAndStartStream(mockKafkaStreamBuilder);
-
+    private void commonVerifiesForCreateAndStartStream() {
         verify(mockFactory).createKStreamBuilder();
         verify(mockFactory).createKafkaStreams(mockKStreamBuilder, kafkaStreamStarter);
         verify(mockKafkaStreamBuilder).buildStreamTopology(mockKStreamBuilder);
         verify(mockFactory).createSystemExitUncaughtExceptionHandler(mockKafkaStreams, healthController);
         verify(mockKafkaStreams).setUncaughtExceptionHandler(mockSystemExitUncaughtExceptionHandler);
         verify(mockKafkaStreams).start();
-        verify(mockLogger).info(String.format(STARTING_MSG, KAFKA_IP_AND_PORT, KAFKA_FROM_TOPIC, KAFKA_TO_TOPIC));
         verify(mockLogger).info(String.format(STARTED_MSG, mockKStreamBuilder.getClass().getSimpleName()));
-
     }
 
     @Test
