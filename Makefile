@@ -20,9 +20,13 @@ http-poster:
 firehose-writer:
 	mvn package -pl firehose-writer -am
 
+secret-detector:
+	mvn package -pl secret-detector -am
+
 # build all and release
 release: all
 	cd json-transformer && $(MAKE) release
 	cd kafka-producer && $(MAKE) release
 	cd http-poster && $(MAKE) release
 	cd firehose-writer && $(MAKE) release
+	cd secret-detector && $(MAKE) release

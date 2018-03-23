@@ -1,6 +1,6 @@
 haystack:
   kafka:
-    brokers: "localhost"
+    brokers: "haystack.local"
     port: 9092
     fromtopic: "json-spans"
     totopic: ""
