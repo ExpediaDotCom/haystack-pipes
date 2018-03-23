@@ -40,6 +40,15 @@ public class SpringConfig {
 
     @Bean
     @Autowired
+    DetectorProducer detectorProducer(KafkaStreamStarter kafkaStreamStarter,
+                                      SpanSerdeFactory spanSerdeFactory,
+                                      DetectorAction detectorAction,
+                                      KafkaConfigurationProvider kafkaConfigurationProvider) {
+        return new DetectorProducer(kafkaStreamStarter, spanSerdeFactory, detectorAction, kafkaConfigurationProvider);
+    }
+
+    @Bean
+    @Autowired
     DetectorIsActiveController detectorIsActiveController(DetectorProducer detectorProducer,
                                                           DetectorIsActiveController.Factory detectorIsActiveControllerFactory,
                                                           Logger detectorIsActiveControllerLogger) {
