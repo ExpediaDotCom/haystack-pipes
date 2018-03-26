@@ -2,7 +2,7 @@ haystack:
   kafka:
     brokers: "haystack.local"
     port: 9092
-    fromtopic: "json-spans"
+    fromtopic: "proto-spans"
     totopic: ""
     threadcount: 1
     sessiontimeout: 15000
