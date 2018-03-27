@@ -86,7 +86,7 @@ public class EmailerDetectedAction implements DetectedAction {
             message.setText(text);
             sender.send(message, toAddresses);
         } catch (MessagingException e) {
-            logger.error(SENDING_EXCEPTION_MSG);
+            logger.error(SENDING_EXCEPTION_MSG, e);
         }
     }
 
