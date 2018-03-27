@@ -2,6 +2,8 @@ package com.expedia.www.haystack.pipes.secretDetector;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
+import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.ActionsConfigurationProvider;
+import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.DetectedAction;
 import com.netflix.servo.monitor.Stopwatch;
 import org.junit.After;
 import org.junit.Before;
@@ -38,18 +40,25 @@ public class DetectorActionTest {
     private Logger mockLogger;
     @Mock
     private Stopwatch mockTimer;
+    @Mock
+    private ActionsConfigurationProvider mockActionsConfigurationProvider;
+    @Mock
+    private DetectedAction mockDetectedAction;
 
     private DetectorAction detectorAction;
+    private List<DetectedAction> detectedActions;
 
     @Before
     public void setUp() {
+        detectedActions = Collections.singletonList(mockDetectedAction);
         detectorAction = new DetectorAction(
-                mockCountersAndTimer, mockDetector, mockLogger);
+                mockCountersAndTimer, mockDetector, mockLogger, mockActionsConfigurationProvider);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockCountersAndTimer, mockDetector, mockLogger, mockTimer);
+        verifyNoMoreInteractions(mockCountersAndTimer, mockDetector, mockLogger, mockTimer,
+                mockActionsConfigurationProvider, mockDetectedAction);
     }
 
     @Test
@@ -65,12 +74,15 @@ public class DetectorActionTest {
     public void testApplyOneSecretFound() {
         final List<String> secrets = Collections.singletonList(KEY);
         whensForApply(secrets);
+        when(mockActionsConfigurationProvider.getDetectedActions()).thenReturn(detectedActions);
 
         detectorAction.apply(KEY, FULLY_POPULATED_SPAN);
 
         verifiesForApply();
         verify(mockLogger).info(
                 String.format(CONFIDENTIAL_DATA_MSG, SERVICE_NAME, OPERATION_NAME, SPAN_ID, TRACE_ID, secrets));
+        verify(mockActionsConfigurationProvider).getDetectedActions();
+        verify(mockDetectedAction).send(FULLY_POPULATED_SPAN, secrets);
     }
 
     private void whensForApply(List<String> secrets) {

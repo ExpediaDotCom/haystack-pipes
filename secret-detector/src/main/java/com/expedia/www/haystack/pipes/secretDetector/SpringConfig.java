@@ -146,10 +146,18 @@ public class SpringConfig {
 
     @Bean
     @Autowired
+    ActionsConfigurationProvider actionsConfigurationProvider(Logger actionsConfigurationProviderLogger,
+                                                              ConfigurationProvider configurationProvider) {
+        return new ActionsConfigurationProvider(actionsConfigurationProviderLogger, configurationProvider);
+    }
+
+    @Bean
+    @Autowired
     DetectorAction detectorAction(CountersAndTimer detectorDetectTimer,
                                   Detector detector,
-                                  Logger detectorActionLogger) {
-        return new DetectorAction(detectorDetectTimer, detector, detectorActionLogger);
+                                  Logger detectorActionLogger,
+                                  ActionsConfigurationProvider actionsConfigurationProvider) {
+        return new DetectorAction(detectorDetectTimer, detector, detectorActionLogger, actionsConfigurationProvider);
     }
 
     @Bean

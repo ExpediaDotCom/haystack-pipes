@@ -5,6 +5,7 @@ import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.HealthStatusListener;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
+import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.ActionsConfigurationProvider;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
 import io.dataapps.chlorine.finder.FinderEngine;
@@ -51,6 +52,8 @@ public class SpringConfigTest {
     private Logger mockLogger;
     @Mock
     private FinderEngine mockFinderEngine;
+    @Mock
+    private ActionsConfigurationProvider mockActionsConfigurationProvider;
 
     private SpringConfig springConfig;
 
@@ -62,7 +65,8 @@ public class SpringConfigTest {
     @After
     public void tearDown() {
         verifyNoMoreInteractions(mockMetricObjects, mockCounter, mockTimer, mockHealthController,
-                mockHealthStatusListener, mockCountersAndTimer, mockDetector, mockLogger, mockFinderEngine);
+                mockHealthStatusListener, mockCountersAndTimer, mockDetector, mockLogger, mockFinderEngine,
+                mockActionsConfigurationProvider);
     }
 
     @Test
@@ -124,7 +128,8 @@ public class SpringConfigTest {
 
     @Test
     public void testDetectorAction() {
-        assertNotNull(springConfig.detectorAction(mockCountersAndTimer, mockDetector, mockLogger));
+        assertNotNull(springConfig.detectorAction(
+                mockCountersAndTimer, mockDetector, mockLogger, mockActionsConfigurationProvider));
     }
 
     @Test
