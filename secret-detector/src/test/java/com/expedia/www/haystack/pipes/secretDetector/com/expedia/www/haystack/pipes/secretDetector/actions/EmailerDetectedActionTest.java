@@ -146,7 +146,7 @@ public class EmailerDetectedActionTest {
         doThrow(exceptionToThrow).when(mockSender).send(any(MimeMessage.class), eq(TO_ADDRESSES));
 
         testSend(mockMimeMessage);
-        verify(mockLogger).error(SENDING_EXCEPTION_MSG);
+        verify(mockLogger).error(SENDING_EXCEPTION_MSG, exceptionToThrow);
     }
 
     private void testSend(MimeMessage mimeMessage) throws MessagingException {
