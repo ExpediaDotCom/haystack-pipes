@@ -49,6 +49,16 @@ public class NonLocalIpV4AddressFinderTest {
         testAddressIsInternal(ONE92_DOT_168_ADDRESS);
     }
 
+    @Test
+    public void test10DotInternalAddressSubstring() {
+        testAddressIsInternal("Endpoint{serviceName=cs-ch-gateway-adapter, ipv4=10.42.61.90, ipv6=null, port=null}");
+    }
+
+    @Test
+    public void test192Dot168InternalAddressSubstring() {
+        testAddressIsInternal("Endpoint{serviceName=cs-ch-gateway-adapter, ipv4=192.168.61.90, ipv6=null, port=null}");
+    }
+
     private void testAddressIsInternal(String address) {
         final String message = String.format(SHOULD_NOT_BE_SECRET_FORMAT, address);
         assertTrue(message, nonLocalIpV4AddressFinder.find(address).isEmpty());

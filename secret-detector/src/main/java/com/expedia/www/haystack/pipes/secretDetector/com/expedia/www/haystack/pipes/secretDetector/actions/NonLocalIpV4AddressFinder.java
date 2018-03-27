@@ -21,15 +21,18 @@ import io.dataapps.chlorine.pattern.RegexFinder;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /*
  * Finds IP V4 addresses, but ignores those in the 10.0.0.0/8 and 192.168.0.0/16 ranges.
  */
 public class NonLocalIpV4AddressFinder implements Finder {
     private final Finder ipvr4Finder = new RegexFinder("IPV4", "(?:[0-9]{1,3}\\.){3}[0-9]{1,3}");
-    private final Finder tenDotFinder = new RegexFinder("IPV4", "(?:^10\\.)");
-    private final Finder one92Dot168Finder = new RegexFinder("IPV4", "(?:^192\\.168\\.)");
+    private final Pattern pattern10Dot = Pattern.compile("(^10\\.)");
+    private final Pattern pattern192Dot168 = Pattern.compile("(^192\\.168\\.)");
 
     @Override
     public String getName() {
@@ -48,9 +51,17 @@ public class NonLocalIpV4AddressFinder implements Finder {
     @Override
     public List<String> find(String input) {
         final List<String> strings = ipvr4Finder.find(input);
-        if(!strings.isEmpty()) {
-            if(!tenDotFinder.find(input).isEmpty() || !one92Dot168Finder.find(input).isEmpty()) {
-                return Collections.emptyList();
+        final Iterator<String> iterator = strings.iterator();
+        while(iterator.hasNext()) {
+            final String ipAddressFromIpv4Finder = iterator.next();
+            final Matcher matcher10Dot = pattern10Dot.matcher(ipAddressFromIpv4Finder);
+            if(matcher10Dot.find()) {
+                iterator.remove();
+            } else {
+                final Matcher matcher192Dot168 = pattern192Dot168.matcher(ipAddressFromIpv4Finder);
+                if(matcher192Dot168.find()) {
+                    iterator.remove();
+                }
             }
         }
         return strings;
