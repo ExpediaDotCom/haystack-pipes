@@ -22,7 +22,7 @@ public class ActionsConfigurationProvider implements ActionsConfig {
     private final ActionsConfig actionsConfig;
 
     @Autowired
-    ActionsConfigurationProvider(Logger actionsConfigurationProviderLogger,
+    public ActionsConfigurationProvider(Logger actionsConfigurationProviderLogger,
                                  ConfigurationProvider configurationProvider) {
         this(actionsConfigurationProviderLogger,
                 configurationProvider.bind(HAYSTACK_SECRETS_CONFIG_PREFIX, ActionsConfig.class));

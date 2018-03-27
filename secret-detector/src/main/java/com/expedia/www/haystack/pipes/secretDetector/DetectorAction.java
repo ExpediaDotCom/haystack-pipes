@@ -2,6 +2,8 @@ package com.expedia.www.haystack.pipes.secretDetector;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
+import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.ActionsConfigurationProvider;
+import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.DetectedAction;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.util.VisibleForTesting;
 import org.apache.kafka.streams.kstream.ForeachAction;
@@ -19,14 +21,17 @@ public class DetectorAction implements ForeachAction<String, Span> {
     private final CountersAndTimer countersAndTimer;
     private final Detector detector;
     private final Logger detectorActionLogger;
+    private final ActionsConfigurationProvider actionsConfigurationProvider;
 
     @Autowired
     public DetectorAction(CountersAndTimer countersAndTimer,
                           Detector detector,
-                          Logger detectorActionLogger) {
+                          Logger detectorActionLogger,
+                          ActionsConfigurationProvider actionsConfigurationProvider) {
         this.countersAndTimer = countersAndTimer;
         this.detector = detector;
         this.detectorActionLogger = detectorActionLogger;
+        this.actionsConfigurationProvider = actionsConfigurationProvider;
     }
 
     @Override
@@ -36,8 +41,13 @@ public class DetectorAction implements ForeachAction<String, Span> {
         try {
             final List<String> listOfKeysOfSecrets = detector.findSecrets(span);
             if (!listOfKeysOfSecrets.isEmpty()) {
-                detectorActionLogger.info(String.format(CONFIDENTIAL_DATA_MSG, span.getServiceName(), span.getOperationName(),
-                        span.getSpanId(), span.getTraceId(), listOfKeysOfSecrets));
+                final List<DetectedAction> detectedActions = actionsConfigurationProvider.getDetectedActions();
+                detectorActionLogger.info(String.format(CONFIDENTIAL_DATA_MSG, span.getServiceName(),
+                        span.getOperationName(), span.getSpanId(), span.getTraceId(), listOfKeysOfSecrets));
+                for (DetectedAction detectedAction : detectedActions) {
+                    detectedAction.send(span, listOfKeysOfSecrets);
+                }
+
             }
         } finally {
             stopwatch.stop();
