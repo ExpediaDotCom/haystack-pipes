@@ -51,12 +51,12 @@ public class NonLocalIpV4AddressFinderTest {
 
     @Test
     public void test10DotInternalAddressSubstring() {
-        testAddressIsInternal("Endpoint{serviceName=cs-ch-gateway-adapter, ipv4=10.42.61.90, ipv6=null, port=null}");
+        testAddressIsInternal("Endpoint{serviceName=my-service, ipv4=10.42.61.90, ipv6=null, port=null}");
     }
 
     @Test
     public void test192Dot168InternalAddressSubstring() {
-        testAddressIsInternal("Endpoint{serviceName=cs-ch-gateway-adapter, ipv4=192.168.61.90, ipv6=null, port=null}");
+        testAddressIsInternal("Endpoint{serviceName=my-service, ipv4=192.168.61.90, ipv6=null, port=null}");
     }
 
     private void testAddressIsInternal(String address) {
