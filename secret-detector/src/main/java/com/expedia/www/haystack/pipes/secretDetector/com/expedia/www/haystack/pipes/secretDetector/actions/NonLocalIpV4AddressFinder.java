@@ -27,12 +27,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /*
- * Finds IP V4 addresses, but ignores those in the 10.0.0.0/8 and 192.168.0.0/16 ranges.
+ * Finds IP V4 addresses, but ignores those in the 10.0.0.0/8, 192.168.0.0/16, and 127.0.0.0/8 ranges.
  */
 public class NonLocalIpV4AddressFinder implements Finder {
     private final Finder ipvr4Finder = new RegexFinder("IPV4", "(?:[0-9]{1,3}\\.){3}[0-9]{1,3}");
     private final Pattern pattern10Dot = Pattern.compile("(^10\\.)");
     private final Pattern pattern192Dot168 = Pattern.compile("(^192\\.168\\.)");
+    private final Pattern pattern127Dot0Dot0 = Pattern.compile("(^127\\.0\\.0\\.)");
 
     @Override
     public String getName() {
@@ -61,6 +62,11 @@ public class NonLocalIpV4AddressFinder implements Finder {
                 final Matcher matcher192Dot168 = pattern192Dot168.matcher(ipAddressFromIpv4Finder);
                 if(matcher192Dot168.find()) {
                     iterator.remove();
+                } else {
+                    final Matcher matcher127Dot0Dot0 = pattern127Dot0Dot0.matcher(ipAddressFromIpv4Finder);
+                    if(matcher127Dot0Dot0.find()) {
+                        iterator.remove();
+                    }
                 }
             }
         }
