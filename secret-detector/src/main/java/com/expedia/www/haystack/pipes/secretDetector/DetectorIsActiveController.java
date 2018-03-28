@@ -16,6 +16,8 @@
  */
 package com.expedia.www.haystack.pipes.secretDetector;
 
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilderBase;
+import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.ActionsConfigurationProvider;
 import com.netflix.servo.util.VisibleForTesting;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,30 +42,41 @@ public class DetectorIsActiveController extends SpringBootServletInitializer {
     static final AtomicReference<DetectorIsActiveController> INSTANCE = new AtomicReference<>();
     @VisibleForTesting static final String STARTUP_MSG = "Starting FirehoseIsActiveController";
 
-    private final DetectorProducer detectorProducer;
     private final Factory factory;
     private final Logger logger;
+    private final ActionsConfigurationProvider actionsConfigurationProvider;
 
     @Autowired
-    DetectorIsActiveController(DetectorProducer detectorProducer,
-                               Factory detectorIsActiveControllerFactory,
-                               Logger detectorIsActiveControllerLogger) {
-        this.detectorProducer = detectorProducer;
+    DetectorIsActiveController(Factory detectorIsActiveControllerFactory,
+                               Logger detectorIsActiveControllerLogger,
+                               ActionsConfigurationProvider actionsConfigurationProvider) {
         this.factory = detectorIsActiveControllerFactory;
         this.logger = detectorIsActiveControllerLogger;
+        this.actionsConfigurationProvider = actionsConfigurationProvider;
         INSTANCE.compareAndSet(null, this);
     }
 
     public static void main(String[] args) {
-        new AnnotationConfigApplicationContext(SpringConfig.class);
+        final AnnotationConfigApplicationContext annotationConfigApplicationContext =
+                new AnnotationConfigApplicationContext(SpringConfig.class);
         INSTANCE.get().logger.info(STARTUP_MSG);
-        INSTANCE.get().detectorProducer.main();
-        INSTANCE.get().factory.createSpringApplication().run(args);
+        final String mainclass = INSTANCE.get().actionsConfigurationProvider.mainclass();
+        final KafkaStreamBuilderBase bean = INSTANCE.get().factory.createBean(
+                annotationConfigApplicationContext, mainclass);
+        bean.main();
+        INSTANCE.get().factory.createSpringApplication(DetectorIsActiveController.class).run(args);
     }
 
     static class Factory {
-        SpringApplication createSpringApplication() {
-            return new SpringApplication(DetectorIsActiveController.class);
+        SpringApplication createSpringApplication(
+                Class<? extends SpringBootServletInitializer> springBootServletInitializerClass) {
+            return new SpringApplication(springBootServletInitializerClass);
+        }
+
+        KafkaStreamBuilderBase createBean(AnnotationConfigApplicationContext annotationConfigApplicationContext,
+                                          String mainclass) {
+            return (KafkaStreamBuilderBase) annotationConfigApplicationContext.getBean(mainclass);
         }
     }
 }
+

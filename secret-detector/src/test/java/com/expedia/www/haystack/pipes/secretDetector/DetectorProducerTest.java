@@ -4,6 +4,7 @@ import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
+import com.expedia.www.haystack.pipes.secretDetector.mains.DetectorProducer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.kstream.KStream;
@@ -27,7 +28,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DetectorProducerTest {
-    private final static String FROM_TOPIC = RANDOM.nextLong() + "FROM_TOPIC";
+    private static final String FROM_TOPIC = RANDOM.nextLong() + "FROM_TOPIC";
 
     @Mock
     private KafkaStreamStarter mockKafkaStreamStarter;

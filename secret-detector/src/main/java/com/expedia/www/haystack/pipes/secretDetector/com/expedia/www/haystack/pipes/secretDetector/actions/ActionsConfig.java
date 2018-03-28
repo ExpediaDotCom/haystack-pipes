@@ -20,4 +20,6 @@ import java.util.List;
 
 public interface ActionsConfig {
     List<String> actionfactories();
+
+    String mainclass();
 }

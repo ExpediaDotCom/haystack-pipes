@@ -28,6 +28,7 @@ import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pi
 import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction;
 import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedActionFactory;
 import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.SenderImpl;
+import com.expedia.www.haystack.pipes.secretDetector.mains.DetectorProducer;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
 import io.dataapps.chlorine.finder.FinderEngine;
@@ -70,11 +71,11 @@ public class SpringConfig {
 
     @Bean
     @Autowired
-    DetectorIsActiveController detectorIsActiveController(DetectorProducer detectorProducer,
-                                                          DetectorIsActiveController.Factory detectorIsActiveControllerFactory,
-                                                          Logger detectorIsActiveControllerLogger) {
-        return new DetectorIsActiveController(detectorProducer, detectorIsActiveControllerFactory,
-                detectorIsActiveControllerLogger);
+    DetectorIsActiveController detectorIsActiveController(DetectorIsActiveController.Factory detectorIsActiveControllerFactory,
+                                                          Logger detectorIsActiveControllerLogger,
+                                                          ActionsConfigurationProvider actionsConfigurationProvider) {
+        return new DetectorIsActiveController(
+                detectorIsActiveControllerFactory, detectorIsActiveControllerLogger, actionsConfigurationProvider);
     }
     @Bean
     Logger detectorIsActiveControllerLogger() {
@@ -84,11 +85,6 @@ public class SpringConfig {
     @Bean
     Logger detectorActionLogger() {
         return LoggerFactory.getLogger(DetectorAction.class);
-    }
-
-    @Bean
-    Logger actionsConfigurationProviderLogger() {
-        return LoggerFactory.getLogger(ActionsConfigurationProvider.class);
     }
 
     @Bean
@@ -162,13 +158,6 @@ public class SpringConfig {
 
     @Bean
     @Autowired
-    ActionsConfigurationProvider actionsConfigurationProvider(Logger actionsConfigurationProviderLogger,
-                                                              ConfigurationProvider configurationProvider) {
-        return new ActionsConfigurationProvider(actionsConfigurationProviderLogger, configurationProvider);
-    }
-
-    @Bean
-    @Autowired
     DetectorAction detectorAction(CountersAndTimer detectorDetectTimer,
                                   Detector detector,
                                   Logger detectorActionLogger,
@@ -200,13 +189,6 @@ public class SpringConfig {
         return new EmailerDetectedActionFactory(emailerFactory, emailerLogger, sender, secretsConfigurationProvider);
     }
 
-    @Bean
-    ConfigurationProvider configurationProvider() {
-        final com.expedia.www.haystack.pipes.commons.Configuration configuration
-                = new com.expedia.www.haystack.pipes.commons.Configuration();
-        return configuration.createMergeConfigurationProvider();
-    }
-
     /*
      * Spring loads this static inner class before loading the SpringConfig outer class so that its bean is available to
      * the outer class constructor.
@@ -219,5 +201,34 @@ public class SpringConfig {
         public MetricObjects metricObjects() {
             return new MetricObjects();
         }
+    }
+
+    /*
+     * Spring loads this static inner class before loading the SpringConfig outer class so that its beans are available
+     * to the outer class constructor.
+     *
+     * @see SpringConfig
+     */
+    @Configuration
+    static class ActionsConfigurationProviderSpringConfig {
+        @Bean
+        Logger actionsConfigurationProviderLogger() {
+            return LoggerFactory.getLogger(ActionsConfigurationProvider.class);
+        }
+
+        @Bean
+        ConfigurationProvider configurationProvider() {
+            final com.expedia.www.haystack.pipes.commons.Configuration configuration
+                    = new com.expedia.www.haystack.pipes.commons.Configuration();
+            return configuration.createMergeConfigurationProvider();
+        }
+
+        @Bean
+        @Autowired
+        ActionsConfigurationProvider actionsConfigurationProvider(Logger actionsConfigurationProviderLogger,
+                                                                  ConfigurationProvider configurationProvider) {
+            return new ActionsConfigurationProvider(actionsConfigurationProviderLogger, configurationProvider);
+        }
+
     }
 }

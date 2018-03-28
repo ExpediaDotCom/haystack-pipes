@@ -54,6 +54,11 @@ public class ActionsConfigurationProvider implements ActionsConfig {
         return actionsConfig.actionfactories();
     }
 
+    @Override
+    public String mainclass() {
+        return actionsConfig.mainclass();
+    }
+
     public List<DetectedAction> getDetectedActions() {
         final List<String> sActionFactories = actionfactories();
         final List<DetectedAction> detectedActions = new ArrayList<>(sActionFactories.size());
