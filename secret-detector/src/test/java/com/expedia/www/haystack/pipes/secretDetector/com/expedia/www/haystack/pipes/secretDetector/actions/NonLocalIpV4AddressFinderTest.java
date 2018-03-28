@@ -59,6 +59,11 @@ public class NonLocalIpV4AddressFinderTest {
         testAddressIsInternal("Endpoint{serviceName=my-service, ipv4=192.168.61.90, ipv6=null, port=null}");
     }
 
+    @Test
+    public void test10DotAndLocalHostTogether() {
+        testAddressIsInternal("10.38.85.225, 127.0.0.1");
+    }
+
     private void testAddressIsInternal(String address) {
         final String message = String.format(SHOULD_NOT_BE_SECRET_FORMAT, address);
         assertTrue(message, nonLocalIpV4AddressFinder.find(address).isEmpty());
