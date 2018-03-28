@@ -14,12 +14,13 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.secretDetector;
+package com.expedia.www.haystack.pipes.secretDetector.mains;
 
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilderBase;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
+import com.expedia.www.haystack.pipes.secretDetector.DetectorAction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,10 +29,10 @@ import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATIO
 @Component
 public class DetectorProducer extends KafkaStreamBuilderBase {
     @Autowired
-    DetectorProducer(KafkaStreamStarter kafkaStreamStarter,
-                     SpanSerdeFactory spanSerdeFactory,
-                     DetectorAction detectorAction,
-                     KafkaConfigurationProvider kafkaConfigurationProvider) {
+    public DetectorProducer(KafkaStreamStarter kafkaStreamStarter,
+                            SpanSerdeFactory spanSerdeFactory,
+                            DetectorAction detectorAction,
+                            KafkaConfigurationProvider kafkaConfigurationProvider) {
         super(kafkaStreamStarter, spanSerdeFactory, APPLICATION, kafkaConfigurationProvider, detectorAction);
     }
 }

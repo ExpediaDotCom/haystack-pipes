@@ -70,4 +70,9 @@ public class ActionsConfigurationProviderTest {
             throw e;
         }
     }
+
+    @Test
+    public void testMainClass() {
+        assertEquals("detectorProducer", actionsConfigurationProvider.mainclass());
+    }
 }
