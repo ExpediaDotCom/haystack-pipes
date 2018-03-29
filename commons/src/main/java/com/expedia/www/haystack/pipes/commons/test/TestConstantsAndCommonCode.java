@@ -9,7 +9,7 @@ import java.util.Random;
 
 /**
  * Constants used by tests in subpackages; this class is included in functional code to avoid having to publish a jar
- * file from the tªest directory.
+ * file from the test directory.
  */
 public interface TestConstantsAndCommonCode {
     Random RANDOM = new Random();
@@ -69,10 +69,6 @@ public interface TestConstantsAndCommonCode {
     String JSON_SPAN_STRING_WITH_EMAIL_ADDRESS_IN_TAG_BYTES_AND_LOG_BYTES =
             JSON_SPAN_STRING.replace(BASE_64_ENCODED_STRING, BASE_64_ENCODED_EMAIL);
     Span EMAIL_ADDRESS_IN_TAG_BYTES_SPAN = buildSpan(JSON_SPAN_STRING_WITH_EMAIL_ADDRESS_IN_TAG_BYTES_AND_LOG_BYTES);
-    String IP_ADDRESS = String.format("%d.%d.%d.%d", RANDOM.nextInt(Byte.MAX_VALUE), RANDOM.nextInt(Byte.MAX_VALUE),
-            RANDOM.nextInt(Byte.MAX_VALUE), RANDOM.nextInt(Byte.MAX_VALUE));
-    String JSON_SPAN_STRING_WITH_IP_ADDRESS_IN_TAG = JSON_SPAN_STRING.replace(STRING_TAG_VALUE, IP_ADDRESS);
-    Span IP_ADDRESS_SPAN = buildSpan(JSON_SPAN_STRING_WITH_IP_ADDRESS_IN_TAG);
     String JSON_SPAN_STRING_WITH_EMAIL_ADDRESS_IN_LOG_TAG = JSON_SPAN_STRING.replace(STRING_FIELD_VALUE, EMAIL_ADDRESS);
     Span EMAIL_ADDRESS_LOG_SPAN = buildSpan(JSON_SPAN_STRING_WITH_EMAIL_ADDRESS_IN_LOG_TAG);
 

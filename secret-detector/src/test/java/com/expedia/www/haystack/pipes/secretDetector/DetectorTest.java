@@ -14,7 +14,6 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.EMAIL_ADDRESS_LOG_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.EMAIL_ADDRESS_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
-import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.IP_ADDRESS_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.STRING_FIELD_KEY;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.STRING_TAG_KEY;
 import static org.junit.Assert.assertEquals;
@@ -22,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DetectorTest {
-    private final static FinderEngine FINDER_ENGINE = new FinderEngine();
+    private static final FinderEngine FINDER_ENGINE = new FinderEngine();
 
     private Detector detector;
 
@@ -55,14 +54,6 @@ public class DetectorTest {
 
         assertEquals(1, secrets.size());
         assertEquals(STRING_FIELD_KEY, secrets.get(0));
-    }
-
-    @Test
-    public void testFindSecretsIpAddress() {
-        final List<String> secrets = detector.findSecrets(IP_ADDRESS_SPAN);
-
-        assertEquals(1, secrets.size());
-        assertEquals(STRING_TAG_KEY, secrets.get(0));
     }
 
     @Test
