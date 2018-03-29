@@ -1,6 +1,6 @@
 package com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions;
 
-import com.expedia.www.haystack.pipes.secretDetector.SecretsConfigurationProvider;
+import com.expedia.www.haystack.pipes.secretDetector.SecretsEmailConfigurationProvider;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,27 +21,27 @@ public class EmailerDetectedActionFactoryTest {
     @Mock
     private EmailerDetectedAction.Sender mockSender;
     @Mock
-    private SecretsConfigurationProvider mockSecretsConfigurationProvider;
+    private SecretsEmailConfigurationProvider mockSecretsEmailConfigurationProvider;
 
     private EmailerDetectedActionFactory emailerDetectedActionFactory;
 
     @Before
     public void setUp() {
         emailerDetectedActionFactory = new EmailerDetectedActionFactory(
-                mockEmailerFactory, mockEmailerLogger, mockSender, mockSecretsConfigurationProvider);
+                mockEmailerFactory, mockEmailerLogger, mockSender, mockSecretsEmailConfigurationProvider);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockEmailerFactory, mockEmailerLogger, mockSender, mockSecretsConfigurationProvider);
+        verifyNoMoreInteractions(mockEmailerFactory, mockEmailerLogger, mockSender, mockSecretsEmailConfigurationProvider);
     }
 
     @Test
     public void testCreate() {
-        EmailerDetectedActionTest.whensForConstructor(mockSecretsConfigurationProvider);
+        EmailerDetectedActionTest.whensForConstructor(mockSecretsEmailConfigurationProvider);
 
         assertNotNull(emailerDetectedActionFactory.create());
 
-        EmailerDetectedActionTest.verifiesForConstructor(mockSecretsConfigurationProvider, 1);
+        EmailerDetectedActionTest.verifiesForConstructor(mockSecretsEmailConfigurationProvider, 1);
     }
 }

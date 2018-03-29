@@ -16,7 +16,7 @@
  */
 package com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions;
 
-import com.expedia.www.haystack.pipes.secretDetector.SecretsConfigurationProvider;
+import com.expedia.www.haystack.pipes.secretDetector.SecretsEmailConfigurationProvider;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -27,21 +27,21 @@ public class EmailerDetectedActionFactory implements DetectedActionFactory {
     private final EmailerDetectedAction.Factory emailerFactory;
     private final Logger emailerLogger;
     private final EmailerDetectedAction.Sender sender;
-    private final SecretsConfigurationProvider secretsConfigurationProvider;
+    private final SecretsEmailConfigurationProvider secretsEmailConfigurationProvider;
 
     @Autowired
     public EmailerDetectedActionFactory(EmailerDetectedAction.Factory emailerFactory,
                                         Logger emailerLogger,
                                         EmailerDetectedAction.Sender sender,
-                                        SecretsConfigurationProvider secretsConfigurationProvider) {
+                                        SecretsEmailConfigurationProvider secretsEmailConfigurationProvider) {
         this.emailerFactory = emailerFactory;
         this.emailerLogger = emailerLogger;
         this.sender = sender;
-        this.secretsConfigurationProvider = secretsConfigurationProvider;
+        this.secretsEmailConfigurationProvider = secretsEmailConfigurationProvider;
     }
 
     @Override
     public DetectedAction create() {
-        return new EmailerDetectedAction(emailerFactory, emailerLogger, sender, secretsConfigurationProvider);
+        return new EmailerDetectedAction(emailerFactory, emailerLogger, sender, secretsEmailConfigurationProvider);
     }
 }

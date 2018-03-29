@@ -166,8 +166,8 @@ public class SpringConfig {
     }
 
     @Bean
-    SecretsConfigurationProvider secretsConfigurationProvider() {
-        return new SecretsConfigurationProvider();
+    SecretsEmailConfigurationProvider secretsEmailConfigurationProvider() {
+        return new SecretsEmailConfigurationProvider();
     }
 
     @Bean
@@ -185,8 +185,8 @@ public class SpringConfig {
     EmailerDetectedActionFactory emailerDetectedActionFactory(EmailerDetectedAction.Factory emailerFactory,
                                                               Logger emailerLogger,
                                                               EmailerDetectedAction.Sender sender,
-                                                              SecretsConfigurationProvider secretsConfigurationProvider) {
-        return new EmailerDetectedActionFactory(emailerFactory, emailerLogger, sender, secretsConfigurationProvider);
+                                                              SecretsEmailConfigurationProvider secretsEmailConfigurationProvider) {
+        return new EmailerDetectedActionFactory(emailerFactory, emailerLogger, sender, secretsEmailConfigurationProvider);
     }
 
     /*

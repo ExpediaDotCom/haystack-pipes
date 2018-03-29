@@ -1,6 +1,6 @@
 package com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions;
 
-import com.expedia.www.haystack.pipes.secretDetector.SecretsConfigurationProvider;
+import com.expedia.www.haystack.pipes.secretDetector.SecretsEmailConfigurationProvider;
 import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.Factory;
 import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.Sender;
 import com.google.common.collect.ImmutableList;
@@ -70,7 +70,7 @@ public class EmailerDetectedActionTest {
     @Mock
     private Sender mockSender;
     @Mock
-    private SecretsConfigurationProvider mockSecretsConfigurationProvider;
+    private SecretsEmailConfigurationProvider mockSecretsEmailConfigurationProvider;
     @Mock
     private MimeMessage mockMimeMessage;
 
@@ -80,32 +80,32 @@ public class EmailerDetectedActionTest {
 
     @Before
     public void setUp() {
-        whensForConstructor(mockSecretsConfigurationProvider);
+        whensForConstructor(mockSecretsEmailConfigurationProvider);
         emailerDetectedAction = new EmailerDetectedAction(
-                mockFactory, mockLogger, mockSender, mockSecretsConfigurationProvider);
+                mockFactory, mockLogger, mockSender, mockSecretsEmailConfigurationProvider);
         factory = new Factory();
     }
 
-    static void whensForConstructor(SecretsConfigurationProvider mockSecretsConfigurationProvider) {
-        when(mockSecretsConfigurationProvider.from()).thenReturn(FROM);
-        when(mockSecretsConfigurationProvider.tos()).thenReturn(TOS);
-        when(mockSecretsConfigurationProvider.subject()).thenReturn(SUBJECT);
-        when(mockSecretsConfigurationProvider.host()).thenReturn(HOST);
+    static void whensForConstructor(SecretsEmailConfigurationProvider mockSecretsEmailConfigurationProvider) {
+        when(mockSecretsEmailConfigurationProvider.from()).thenReturn(FROM);
+        when(mockSecretsEmailConfigurationProvider.tos()).thenReturn(TOS);
+        when(mockSecretsEmailConfigurationProvider.subject()).thenReturn(SUBJECT);
+        when(mockSecretsEmailConfigurationProvider.host()).thenReturn(HOST);
     }
 
     @After
     public void tearDown() {
-        verifiesForConstructor(mockSecretsConfigurationProvider, constructorTimes);
+        verifiesForConstructor(mockSecretsEmailConfigurationProvider, constructorTimes);
 
-        verifyNoMoreInteractions(mockFactory, mockLogger, mockSender, mockSecretsConfigurationProvider);
+        verifyNoMoreInteractions(mockFactory, mockLogger, mockSender, mockSecretsEmailConfigurationProvider);
         verifyNoMoreInteractions(mockMimeMessage);
     }
 
-    static void verifiesForConstructor(SecretsConfigurationProvider mockSecretsConfigurationProvider, int constructorTimes) {
-        verify(mockSecretsConfigurationProvider, times(constructorTimes)).from();
-        verify(mockSecretsConfigurationProvider, times(constructorTimes)).tos();
-        verify(mockSecretsConfigurationProvider, times(constructorTimes)).subject();
-        verify(mockSecretsConfigurationProvider, times(constructorTimes)).host();
+    static void verifiesForConstructor(SecretsEmailConfigurationProvider mockSecretsEmailConfigurationProvider, int constructorTimes) {
+        verify(mockSecretsEmailConfigurationProvider, times(constructorTimes)).from();
+        verify(mockSecretsEmailConfigurationProvider, times(constructorTimes)).tos();
+        verify(mockSecretsEmailConfigurationProvider, times(constructorTimes)).subject();
+        verify(mockSecretsEmailConfigurationProvider, times(constructorTimes)).host();
     }
 
     @Test
@@ -118,20 +118,20 @@ public class EmailerDetectedActionTest {
     @Test
     public void testCreateFromAddressException() {
         final String illegalFrom = TOS.toString();
-        when(mockSecretsConfigurationProvider.from()).thenReturn(illegalFrom);
+        when(mockSecretsEmailConfigurationProvider.from()).thenReturn(illegalFrom);
         testConstructorAddressException(String.format(FROM_ADDRESS_EXCEPTION_MSG, illegalFrom));
     }
 
     @Test
     public void testCreateToAddressesException() {
         final List<String> illegalTos = ImmutableList.of(TOS.toString());
-        when(mockSecretsConfigurationProvider.tos()).thenReturn(illegalTos);
+        when(mockSecretsEmailConfigurationProvider.tos()).thenReturn(illegalTos);
         testConstructorAddressException(String.format(TOS_ADDRESS_EXCEPTION_MSG, illegalTos));
     }
 
     private void testConstructorAddressException(String message) {
         constructorTimes = 2;
-        new EmailerDetectedAction(mockFactory, mockLogger, mockSender, mockSecretsConfigurationProvider);
+        new EmailerDetectedAction(mockFactory, mockLogger, mockSender, mockSecretsEmailConfigurationProvider);
         verify(mockLogger).error(message);
     }
 
