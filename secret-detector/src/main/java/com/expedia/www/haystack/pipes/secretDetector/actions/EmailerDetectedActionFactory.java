@@ -14,9 +14,9 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions;
+package com.expedia.www.haystack.pipes.secretDetector.actions;
 
-import com.expedia.www.haystack.pipes.secretDetector.SecretsEmailConfigurationProvider;
+import com.expedia.www.haystack.pipes.secretDetector.config.SecretsEmailConfigurationProvider;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

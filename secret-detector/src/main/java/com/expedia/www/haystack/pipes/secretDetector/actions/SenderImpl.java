@@ -14,9 +14,16 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions;
+package com.expedia.www.haystack.pipes.secretDetector.actions;
 
-public interface DetectedActionFactory {
-    DetectedAction create();
+import javax.mail.Address;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Transport;
+
+public class SenderImpl implements EmailerDetectedAction.Sender {
+    @Override
+    public void send(Message message, Address[] toAddresses) throws MessagingException {
+        Transport.send(message, toAddresses);
+    }
 }
-

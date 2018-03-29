@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions;
+package com.expedia.www.haystack.pipes.secretDetector.config;
 
 import java.util.List;
 

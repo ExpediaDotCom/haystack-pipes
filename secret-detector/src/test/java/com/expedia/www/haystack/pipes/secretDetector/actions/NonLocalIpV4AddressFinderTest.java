@@ -1,4 +1,4 @@
-package com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions;
+package com.expedia.www.haystack.pipes.secretDetector.actions;
 
 import com.google.common.collect.ImmutableList;
 import org.junit.Before;

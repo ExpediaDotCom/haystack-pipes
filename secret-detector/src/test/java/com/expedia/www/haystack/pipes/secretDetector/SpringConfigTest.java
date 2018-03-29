@@ -5,7 +5,7 @@ import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.HealthStatusListener;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
-import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.ActionsConfigurationProvider;
+import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
 import com.expedia.www.haystack.pipes.secretDetector.mains.DetectorProducer;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;

@@ -14,12 +14,16 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions;
-
-import com.expedia.open.tracing.Span;
+package com.expedia.www.haystack.pipes.secretDetector.config;
 
 import java.util.List;
 
-public interface DetectedAction {
-    void send(Span span, List<String> listOfKeysOfSecrets);
+public interface SecretsConfig {
+    String from();
+
+    List<String> tos();
+
+    String host();
+
+    String subject();
 }

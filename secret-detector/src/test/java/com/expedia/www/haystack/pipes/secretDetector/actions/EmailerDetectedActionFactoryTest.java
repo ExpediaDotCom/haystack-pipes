@@ -1,6 +1,6 @@
-package com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions;
+package com.expedia.www.haystack.pipes.secretDetector.actions;
 
-import com.expedia.www.haystack.pipes.secretDetector.SecretsEmailConfigurationProvider;
+import com.expedia.www.haystack.pipes.secretDetector.config.SecretsEmailConfigurationProvider;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

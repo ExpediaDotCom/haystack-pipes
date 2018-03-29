@@ -14,10 +14,10 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions;
+package com.expedia.www.haystack.pipes.secretDetector.actions;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.pipes.secretDetector.SecretsEmailConfigurationProvider;
+import com.expedia.www.haystack.pipes.secretDetector.config.SecretsEmailConfigurationProvider;
 import com.netflix.servo.util.VisibleForTesting;
 import org.slf4j.Logger;
 

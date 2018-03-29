@@ -1,4 +1,4 @@
-package com.expedia.www.haystack.pipes.secretDetector;
+package com.expedia.www.haystack.pipes.secretDetector.config;
 
 import org.junit.Before;
 import org.junit.Test;

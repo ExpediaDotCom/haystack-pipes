@@ -14,41 +14,41 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.secretDetector;
+package com.expedia.www.haystack.pipes.secretDetector.config;
 
 import com.expedia.www.haystack.pipes.commons.Configuration;
 import org.cfg4j.provider.ConfigurationProvider;
 
 import java.util.List;
 
-public class SecretsEmailConfigurationProvider implements SecretsEmailConfig {
+public class SecretsConfigurationProvider implements SecretsConfig {
     private static final String HAYSTACK_SECRETS_CONFIG_PREFIX = "haystack.secretsnotifications.email";
 
-    private final SecretsEmailConfig secretsEmailConfig;
+    private final SecretsConfig secretsConfig;
 
-    SecretsEmailConfigurationProvider() {
+    SecretsConfigurationProvider() {
         final Configuration configuration = new Configuration();
         final ConfigurationProvider configurationProvider = configuration.createMergeConfigurationProvider();
-        secretsEmailConfig = configurationProvider.bind(HAYSTACK_SECRETS_CONFIG_PREFIX, SecretsEmailConfig.class);
+        secretsConfig = configurationProvider.bind(HAYSTACK_SECRETS_CONFIG_PREFIX, SecretsConfig.class);
     }
 
     @Override
     public String from() {
-        return secretsEmailConfig.from();
+        return secretsConfig.from();
     }
 
     @Override
     public List<String> tos() {
-        return secretsEmailConfig.tos();
+        return secretsConfig.tos();
     }
 
     @Override
     public String host() {
-        return secretsEmailConfig.host();
+        return secretsConfig.host();
     }
 
     @Override
     public String subject() {
-        return secretsEmailConfig.subject();
+        return secretsConfig.subject();
     }
 }
