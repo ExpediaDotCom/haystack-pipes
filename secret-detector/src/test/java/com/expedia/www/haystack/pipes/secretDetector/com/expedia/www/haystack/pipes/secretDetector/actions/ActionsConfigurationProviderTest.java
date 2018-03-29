@@ -72,7 +72,7 @@ public class ActionsConfigurationProviderTest {
     }
 
     @Test
-    public void testMainClass() {
-        assertEquals("detectorProducer", actionsConfigurationProvider.mainclass());
+    public void testMainBean() {
+        assertEquals("detectorProducer", actionsConfigurationProvider.mainbean());
     }
 }

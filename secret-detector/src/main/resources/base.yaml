@@ -16,7 +16,7 @@ haystack:
     pollintervalseconds: 300
     queuesize: 10
   secretsnotifications:
-    mainclass: "detectorProducer"  # (method) name of the bean in SpringConfig.java
+    mainbean: "detectorProducer"  # (method) name of the bean in SpringConfig.java
     actionfactories:
       - "emailerDetectedActionFactory" # (method) name of the bean in SpringConfig.java
     email:
