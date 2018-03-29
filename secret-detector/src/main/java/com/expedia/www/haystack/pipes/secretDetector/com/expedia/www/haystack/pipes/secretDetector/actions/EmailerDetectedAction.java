@@ -17,7 +17,7 @@
 package com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.pipes.secretDetector.SecretsConfigurationProvider;
+import com.expedia.www.haystack.pipes.secretDetector.SecretsEmailConfigurationProvider;
 import com.netflix.servo.util.VisibleForTesting;
 import org.slf4j.Logger;
 
@@ -54,19 +54,19 @@ public class EmailerDetectedAction implements DetectedAction {
     EmailerDetectedAction(Factory emailerFactory,
                           Logger emailerLogger,
                           Sender sender,
-                          SecretsConfigurationProvider secretsConfigurationProvider) {
+                          SecretsEmailConfigurationProvider secretsEmailConfigurationProvider) {
         this.factory = emailerFactory;
         this.logger = emailerLogger;
         this.sender = sender;
 
-        this.from = createFromAddress(secretsConfigurationProvider);
-        this.toAddresses = createToAddresses(secretsConfigurationProvider);
-        this.subject = secretsConfigurationProvider.subject();
-        System.getProperties().setProperty(HOST_KEY, secretsConfigurationProvider.host());
+        this.from = createFromAddress(secretsEmailConfigurationProvider);
+        this.toAddresses = createToAddresses(secretsEmailConfigurationProvider);
+        this.subject = secretsEmailConfigurationProvider.subject();
+        System.getProperties().setProperty(HOST_KEY, secretsEmailConfigurationProvider.host());
     }
 
-    private Address createFromAddress(SecretsConfigurationProvider secretsConfigurationProvider) {
-        final String sFrom = secretsConfigurationProvider.from();
+    private Address createFromAddress(SecretsEmailConfigurationProvider secretsEmailConfigurationProvider) {
+        final String sFrom = secretsEmailConfigurationProvider.from();
         try {
             return new InternetAddress(sFrom);
         } catch (AddressException e) {
@@ -76,8 +76,8 @@ public class EmailerDetectedAction implements DetectedAction {
         return null;
     }
 
-    private Address[] createToAddresses(SecretsConfigurationProvider secretsConfigurationProvider) {
-        final List<String> tos = secretsConfigurationProvider.tos();
+    private Address[] createToAddresses(SecretsEmailConfigurationProvider secretsEmailConfigurationProvider) {
+        final List<String> tos = secretsEmailConfigurationProvider.tos();
         try {
             final Address[] addresses = new Address[tos.size()];
             for(int i = 0; i < tos.size() ; i++) {
