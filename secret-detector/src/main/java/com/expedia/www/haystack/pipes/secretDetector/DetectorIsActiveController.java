@@ -60,9 +60,9 @@ public class DetectorIsActiveController extends SpringBootServletInitializer {
         final AnnotationConfigApplicationContext annotationConfigApplicationContext =
                 new AnnotationConfigApplicationContext(SpringConfig.class);
         INSTANCE.get().logger.info(STARTUP_MSG);
-        final String mainclass = INSTANCE.get().actionsConfigurationProvider.mainclass();
+        final String mainbean = INSTANCE.get().actionsConfigurationProvider.mainbean();
         final KafkaStreamBuilderBase bean = INSTANCE.get().factory.createBean(
-                annotationConfigApplicationContext, mainclass);
+                annotationConfigApplicationContext, mainbean);
         bean.main();
         INSTANCE.get().factory.createSpringApplication(DetectorIsActiveController.class).run(args);
     }
@@ -74,8 +74,8 @@ public class DetectorIsActiveController extends SpringBootServletInitializer {
         }
 
         KafkaStreamBuilderBase createBean(AnnotationConfigApplicationContext annotationConfigApplicationContext,
-                                          String mainclass) {
-            return (KafkaStreamBuilderBase) annotationConfigApplicationContext.getBean(mainclass);
+                                          String mainbean) {
+            return (KafkaStreamBuilderBase) annotationConfigApplicationContext.getBean(mainbean);
         }
     }
 }

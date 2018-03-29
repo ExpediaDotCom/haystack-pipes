@@ -43,7 +43,7 @@ public class DetectorIsActiveControllerTest {
     @Mock
     private AnnotationConfigApplicationContext mockAnnotationConfigApplicationContext;
     @Mock
-    private KafkaStreamBuilderBase mockMainClass;
+    private KafkaStreamBuilderBase mockMainBean;
 
     private Factory factory;
 
@@ -61,7 +61,7 @@ public class DetectorIsActiveControllerTest {
     @After
     public void tearDown() {
         verifyNoMoreInteractions(mockFactory, mockLogger, mockSpringApplication, mockDetectorProducer,
-                mockActionsConfigurationProvider, mockAnnotationConfigApplicationContext, mockMainClass);
+                mockActionsConfigurationProvider, mockAnnotationConfigApplicationContext, mockMainBean);
         clearKafkaProducerIsActiveControllerInStaticInstance();
     }
 
@@ -72,7 +72,7 @@ public class DetectorIsActiveControllerTest {
     @Test
     public void testMain() {
         final String beanName = "detectorProducer";
-        when(mockActionsConfigurationProvider.mainclass()).thenReturn(beanName);
+        when(mockActionsConfigurationProvider.mainbean()).thenReturn(beanName);
         when(mockFactory.createSpringApplication(DetectorIsActiveController.class)).thenReturn(mockSpringApplication);
         when(mockFactory.createBean(any(AnnotationConfigApplicationContext.class), anyString()))
                 .thenReturn(mockDetectorProducer);
@@ -82,7 +82,7 @@ public class DetectorIsActiveControllerTest {
 
         verify(mockLogger).info(STARTUP_MSG);
         verify(mockFactory).createSpringApplication(DetectorIsActiveController.class);
-        verify(mockActionsConfigurationProvider).mainclass();
+        verify(mockActionsConfigurationProvider).mainbean();
         verify(mockFactory).createBean(any(AnnotationConfigApplicationContext.class), eq(beanName));
         verify(mockDetectorProducer).main();
         verify(mockSpringApplication).run(args);
@@ -100,9 +100,9 @@ public class DetectorIsActiveControllerTest {
 
     @Test
     public void testFactoryCreateBean() {
-        when(mockAnnotationConfigApplicationContext.getBean(anyString())).thenReturn(mockMainClass);
+        when(mockAnnotationConfigApplicationContext.getBean(anyString())).thenReturn(mockMainBean);
 
-        assertSame(mockMainClass, factory.createBean(mockAnnotationConfigApplicationContext, MAIN_CLASS));
+        assertSame(mockMainBean, factory.createBean(mockAnnotationConfigApplicationContext, MAIN_CLASS));
 
         verify(mockAnnotationConfigApplicationContext).getBean(MAIN_CLASS);
     }

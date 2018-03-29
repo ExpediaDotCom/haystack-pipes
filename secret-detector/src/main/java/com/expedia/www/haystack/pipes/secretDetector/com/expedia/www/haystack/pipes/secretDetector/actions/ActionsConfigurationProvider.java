@@ -55,8 +55,8 @@ public class ActionsConfigurationProvider implements ActionsConfig {
     }
 
     @Override
-    public String mainclass() {
-        return actionsConfig.mainclass();
+    public String mainbean() {
+        return actionsConfig.mainbean();
     }
 
     public List<DetectedAction> getDetectedActions() {
