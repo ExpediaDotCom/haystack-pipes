@@ -1,8 +1,8 @@
-package com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions;
+package com.expedia.www.haystack.pipes.secretDetector.actions;
 
-import com.expedia.www.haystack.pipes.secretDetector.SecretsEmailConfigurationProvider;
-import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.Factory;
-import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.Sender;
+import com.expedia.www.haystack.pipes.secretDetector.config.SecretsEmailConfigurationProvider;
+import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.Factory;
+import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.Sender;
 import com.google.common.collect.ImmutableList;
 import org.junit.After;
 import org.junit.Before;
@@ -26,11 +26,11 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.SERVICE_NAME;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.SPAN_ID;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.TRACE_ID;
-import static com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.FROM_ADDRESS_EXCEPTION_MSG;
-import static com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.HOST_KEY;
-import static com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.SENDING_EXCEPTION_MSG;
-import static com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.TEXT_TEMPLATE;
-import static com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.TOS_ADDRESS_EXCEPTION_MSG;
+import static com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.FROM_ADDRESS_EXCEPTION_MSG;
+import static com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.HOST_KEY;
+import static com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.SENDING_EXCEPTION_MSG;
+import static com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.TEXT_TEMPLATE;
+import static com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.TOS_ADDRESS_EXCEPTION_MSG;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;

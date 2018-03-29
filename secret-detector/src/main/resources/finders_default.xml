@@ -15,7 +15,7 @@
 		<enabled>true</enabled>
 	</finder>
 	<finder>
-		<class>com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.NonLocalIpV4AddressFinder</class>
+		<class>com.expedia.www.haystack.pipes.secretDetector.actions.NonLocalIpV4AddressFinder</class>
 		<enabled>true</enabled>
 	</finder>
 	<finder>

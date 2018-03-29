@@ -17,7 +17,7 @@
 package com.expedia.www.haystack.pipes.secretDetector;
 
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilderBase;
-import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.ActionsConfigurationProvider;
+import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
 import com.netflix.servo.util.VisibleForTesting;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

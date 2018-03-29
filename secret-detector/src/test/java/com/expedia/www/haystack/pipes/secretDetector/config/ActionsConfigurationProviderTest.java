@@ -1,6 +1,8 @@
-package com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions;
+package com.expedia.www.haystack.pipes.secretDetector.config;
 
 import com.expedia.www.haystack.pipes.commons.Configuration;
+import com.expedia.www.haystack.pipes.secretDetector.actions.DetectedAction;
+import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction;
 import org.cfg4j.provider.ConfigurationProvider;
 import org.junit.After;
 import org.junit.Before;
@@ -14,8 +16,8 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import java.util.Collections;
 import java.util.List;
 
-import static com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.ActionsConfigurationProvider.HAYSTACK_SECRETS_CONFIG_PREFIX;
-import static com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.ActionsConfigurationProvider.PROBLEM_USING_CONFIGURATION;
+import static com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider.HAYSTACK_SECRETS_CONFIG_PREFIX;
+import static com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider.PROBLEM_USING_CONFIGURATION;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;

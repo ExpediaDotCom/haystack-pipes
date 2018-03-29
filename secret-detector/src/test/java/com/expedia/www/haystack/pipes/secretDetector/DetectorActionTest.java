@@ -2,8 +2,8 @@ package com.expedia.www.haystack.pipes.secretDetector;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
-import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.ActionsConfigurationProvider;
-import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.DetectedAction;
+import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
+import com.expedia.www.haystack.pipes.secretDetector.actions.DetectedAction;
 import com.netflix.servo.monitor.Stopwatch;
 import org.junit.After;
 import org.junit.Before;

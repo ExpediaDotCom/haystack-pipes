@@ -2,7 +2,7 @@ package com.expedia.www.haystack.pipes.secretDetector;
 
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilderBase;
 import com.expedia.www.haystack.pipes.secretDetector.DetectorIsActiveController.Factory;
-import com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions.ActionsConfigurationProvider;
+import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
 import com.expedia.www.haystack.pipes.secretDetector.mains.DetectorProducer;
 import org.junit.After;
 import org.junit.Before;

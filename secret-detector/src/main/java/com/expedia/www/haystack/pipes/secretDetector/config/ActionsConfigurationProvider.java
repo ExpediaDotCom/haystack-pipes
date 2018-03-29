@@ -14,9 +14,11 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.secretDetector.com.expedia.www.haystack.pipes.secretDetector.actions;
+package com.expedia.www.haystack.pipes.secretDetector.config;
 
 import com.expedia.www.haystack.pipes.secretDetector.SpringConfig;
+import com.expedia.www.haystack.pipes.secretDetector.actions.DetectedAction;
+import com.expedia.www.haystack.pipes.secretDetector.actions.DetectedActionFactory;
 import com.netflix.servo.util.VisibleForTesting;
 import org.cfg4j.provider.ConfigurationProvider;
 import org.slf4j.Logger;
@@ -39,7 +41,7 @@ public class ActionsConfigurationProvider implements ActionsConfig {
 
     @Autowired
     public ActionsConfigurationProvider(Logger actionsConfigurationProviderLogger,
-                                 ConfigurationProvider configurationProvider) {
+                                        ConfigurationProvider configurationProvider) {
         this(actionsConfigurationProviderLogger,
                 configurationProvider.bind(HAYSTACK_SECRETS_CONFIG_PREFIX, ActionsConfig.class));
     }
