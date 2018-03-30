@@ -83,7 +83,7 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
     public Iterable<String> apply(Span span) {
         final List<String> listOfKeysOfSecrets = findSecrets(span);
         if (listOfKeysOfSecrets.isEmpty()) {
-            return null;
+            return Collections.emptyList();
         }
         final String emailText = EmailerDetectedAction.getEmailText(span, listOfKeysOfSecrets);
         logger.info(emailText);
