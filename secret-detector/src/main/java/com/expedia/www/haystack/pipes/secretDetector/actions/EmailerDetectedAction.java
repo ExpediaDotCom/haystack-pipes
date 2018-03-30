@@ -97,13 +97,17 @@ public class EmailerDetectedAction implements DetectedAction {
         try {
             message.setFrom(from);
             message.setSubject(subject);
-            final String text = String.format(TEXT_TEMPLATE, span.getServiceName(), span.getOperationName(),
-                    span.getSpanId(), span.getTraceId(), listOfKeysOfSecrets.toString());
+            final String text = getEmailText(span, listOfKeysOfSecrets);
             message.setText(text);
             sender.send(message, toAddresses);
         } catch (MessagingException e) {
             logger.error(SENDING_EXCEPTION_MSG, e);
         }
+    }
+
+    public static String getEmailText(Span span, List<String> listOfKeysOfSecrets) {
+        return String.format(TEXT_TEMPLATE, span.getServiceName(), span.getOperationName(), span.getSpanId(),
+                span.getTraceId(), listOfKeysOfSecrets.toString());
     }
 
     public interface Sender {

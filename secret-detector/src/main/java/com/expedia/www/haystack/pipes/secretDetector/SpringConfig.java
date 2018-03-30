@@ -29,7 +29,8 @@ import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedActi
 import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedActionFactory;
 import com.expedia.www.haystack.pipes.secretDetector.actions.SenderImpl;
 import com.expedia.www.haystack.pipes.secretDetector.config.SecretsEmailConfigurationProvider;
-import com.expedia.www.haystack.pipes.secretDetector.mains.DetectorProducer;
+import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufSpanToEmailInKafkaTransformer;
+import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufToDetectorAction;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
 import io.dataapps.chlorine.finder.FinderEngine;
@@ -63,11 +64,19 @@ public class SpringConfig {
 
     @Bean
     @Autowired
-    DetectorProducer detectorProducer(KafkaStreamStarter kafkaStreamStarter,
-                                      SpanSerdeFactory spanSerdeFactory,
-                                      DetectorAction detectorAction,
-                                      KafkaConfigurationProvider kafkaConfigurationProvider) {
-        return new DetectorProducer(kafkaStreamStarter, spanSerdeFactory, detectorAction, kafkaConfigurationProvider);
+    ProtobufToDetectorAction detectorProducer(KafkaStreamStarter kafkaStreamStarter,
+                                              SpanSerdeFactory spanSerdeFactory,
+                                              DetectorAction detectorAction,
+                                              KafkaConfigurationProvider kafkaConfigurationProvider) {
+        return new ProtobufToDetectorAction(kafkaStreamStarter, spanSerdeFactory, detectorAction, kafkaConfigurationProvider);
+    }
+
+    @Bean
+    @Autowired
+    ProtobufSpanToEmailInKafkaTransformer protobufSpanToEmailInKafkaTransformer(KafkaStreamStarter kafkaStreamStarter,
+                                                                                SpanSerdeFactory spanSerdeFactory,
+                                                                                Detector detector) {
+        return new ProtobufSpanToEmailInKafkaTransformer(kafkaStreamStarter, spanSerdeFactory, detector);
     }
 
     @Bean
@@ -78,6 +87,7 @@ public class SpringConfig {
         return new DetectorIsActiveController(
                 detectorIsActiveControllerFactory, detectorIsActiveControllerLogger, actionsConfigurationProvider);
     }
+
     @Bean
     Logger detectorIsActiveControllerLogger() {
         return LoggerFactory.getLogger(DetectorIsActiveController.class);
@@ -94,9 +104,14 @@ public class SpringConfig {
     }
 
     @Bean
+    Logger detectorLogger() {
+        return LoggerFactory.getLogger(Detector.class);
+    }
+
+    @Bean
     @Autowired
     KafkaStreamStarter kafkaStreamStarter(final HealthController healthController) {
-        return new KafkaStreamStarter(DetectorProducer.class, APPLICATION, healthController);
+        return new KafkaStreamStarter(ProtobufToDetectorAction.class, APPLICATION, healthController);
     }
 
     @Bean
@@ -153,8 +168,8 @@ public class SpringConfig {
 
     @Bean
     @Autowired
-    Detector detector(FinderEngine finderEngine) {
-        return new Detector(finderEngine);
+    Detector detector(Logger detectorLogger, FinderEngine finderEngine) {
+        return new Detector(detectorLogger, finderEngine);
     }
 
     @Bean

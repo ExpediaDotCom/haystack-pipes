@@ -75,6 +75,6 @@ public class ActionsConfigurationProviderTest {
 
     @Test
     public void testMainBean() {
-        assertEquals("detectorProducer", actionsConfigurationProvider.mainbean());
+        assertEquals("protobufToDetectorAction", actionsConfigurationProvider.mainbean());
     }
 }

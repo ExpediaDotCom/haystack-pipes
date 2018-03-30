@@ -9,7 +9,7 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.processor.ProcessorSupplier;
 
-public abstract class KafkaStreamBuilderBase implements KafkaStreamBuilder {
+public abstract class KafkaStreamBuilderBase implements KafkaStreamBuilder, Main {
     private final KafkaStreamStarter kafkaStreamStarter;
     private final SpanSerdeFactory spanSerdeFactory;
     private final String application;
@@ -66,6 +66,7 @@ public abstract class KafkaStreamBuilderBase implements KafkaStreamBuilder {
      * main() is an instance method because it is called by the static void *IsActiveController.main(String [] args)
      * methods; making it an instance method facilitates unit testing.
      */
+    @Override
     public void main() {
         kafkaStreamStarter.createAndStartStream(this);
     }

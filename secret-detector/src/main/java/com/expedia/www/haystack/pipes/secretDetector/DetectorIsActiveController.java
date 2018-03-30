@@ -16,7 +16,7 @@
  */
 package com.expedia.www.haystack.pipes.secretDetector;
 
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilderBase;
+import com.expedia.www.haystack.pipes.commons.kafka.Main;
 import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
 import com.netflix.servo.util.VisibleForTesting;
 import org.slf4j.Logger;
@@ -59,23 +59,21 @@ public class DetectorIsActiveController extends SpringBootServletInitializer {
     public static void main(String[] args) {
         final AnnotationConfigApplicationContext annotationConfigApplicationContext =
                 new AnnotationConfigApplicationContext(SpringConfig.class);
-        INSTANCE.get().logger.info(STARTUP_MSG);
-        final String mainbean = INSTANCE.get().actionsConfigurationProvider.mainbean();
-        final KafkaStreamBuilderBase bean = INSTANCE.get().factory.createBean(
-                annotationConfigApplicationContext, mainbean);
-        bean.main();
-        INSTANCE.get().factory.createSpringApplication(DetectorIsActiveController.class).run(args);
+        final DetectorIsActiveController instance = INSTANCE.get();
+        instance.logger.info(STARTUP_MSG);
+        final String mainBeanName = instance.actionsConfigurationProvider.mainbean();
+        instance.factory.createBean(annotationConfigApplicationContext, mainBeanName).main();
+        instance.factory.createSpringApplication().run(args);
     }
 
     static class Factory {
-        SpringApplication createSpringApplication(
-                Class<? extends SpringBootServletInitializer> springBootServletInitializerClass) {
-            return new SpringApplication(springBootServletInitializerClass);
+        SpringApplication createSpringApplication() {
+            return new SpringApplication(DetectorIsActiveController.class);
         }
 
-        KafkaStreamBuilderBase createBean(AnnotationConfigApplicationContext annotationConfigApplicationContext,
+        Main createBean(AnnotationConfigApplicationContext annotationConfigApplicationContext,
                                           String mainbean) {
-            return (KafkaStreamBuilderBase) annotationConfigApplicationContext.getBean(mainbean);
+            return (Main) annotationConfigApplicationContext.getBean(mainbean);
         }
     }
 }

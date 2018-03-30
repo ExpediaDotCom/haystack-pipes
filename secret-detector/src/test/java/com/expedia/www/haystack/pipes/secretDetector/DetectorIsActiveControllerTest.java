@@ -1,9 +1,9 @@
 package com.expedia.www.haystack.pipes.secretDetector;
 
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilderBase;
+import com.expedia.www.haystack.pipes.commons.kafka.Main;
 import com.expedia.www.haystack.pipes.secretDetector.DetectorIsActiveController.Factory;
 import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
-import com.expedia.www.haystack.pipes.secretDetector.mains.DetectorProducer;
+import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufToDetectorAction;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,13 +37,13 @@ public class DetectorIsActiveControllerTest {
     @Mock
     private SpringApplication mockSpringApplication;
     @Mock
-    private DetectorProducer mockDetectorProducer;
+    private ProtobufToDetectorAction mockProtobufToDetectorAction;
     @Mock
     private ActionsConfigurationProvider mockActionsConfigurationProvider;
     @Mock
     private AnnotationConfigApplicationContext mockAnnotationConfigApplicationContext;
     @Mock
-    private KafkaStreamBuilderBase mockMainBean;
+    private Main mockMainBean;
 
     private Factory factory;
 
@@ -60,7 +60,7 @@ public class DetectorIsActiveControllerTest {
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockFactory, mockLogger, mockSpringApplication, mockDetectorProducer,
+        verifyNoMoreInteractions(mockFactory, mockLogger, mockSpringApplication, mockProtobufToDetectorAction,
                 mockActionsConfigurationProvider, mockAnnotationConfigApplicationContext, mockMainBean);
         clearKafkaProducerIsActiveControllerInStaticInstance();
     }
@@ -73,24 +73,24 @@ public class DetectorIsActiveControllerTest {
     public void testMain() {
         final String beanName = "detectorProducer";
         when(mockActionsConfigurationProvider.mainbean()).thenReturn(beanName);
-        when(mockFactory.createSpringApplication(DetectorIsActiveController.class)).thenReturn(mockSpringApplication);
+        when(mockFactory.createSpringApplication()).thenReturn(mockSpringApplication);
         when(mockFactory.createBean(any(AnnotationConfigApplicationContext.class), anyString()))
-                .thenReturn(mockDetectorProducer);
+                .thenReturn(mockProtobufToDetectorAction);
 
         final String[] args = new String[0];
         DetectorIsActiveController.main(args);
 
         verify(mockLogger).info(STARTUP_MSG);
-        verify(mockFactory).createSpringApplication(DetectorIsActiveController.class);
+        verify(mockFactory).createSpringApplication();
         verify(mockActionsConfigurationProvider).mainbean();
         verify(mockFactory).createBean(any(AnnotationConfigApplicationContext.class), eq(beanName));
-        verify(mockDetectorProducer).main();
+        verify(mockProtobufToDetectorAction).main();
         verify(mockSpringApplication).run(args);
     }
 
     @Test
     public void testFactoryCreateSpringApplication() {
-        final SpringApplication springApplication = factory.createSpringApplication(DetectorIsActiveController.class);
+        final SpringApplication springApplication = factory.createSpringApplication();
 
         final Set<Object> sources = springApplication.getSources();
         assertEquals(1, sources.size());

@@ -6,7 +6,7 @@ import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.HealthStatusListener;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
-import com.expedia.www.haystack.pipes.secretDetector.mains.DetectorProducer;
+import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufToDetectorAction;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
 import io.dataapps.chlorine.finder.FinderEngine;
@@ -81,7 +81,7 @@ public class SpringConfigTest {
     public void testKafkaStreamStarter() {
         final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter(mockHealthController);
 
-        assertSame(DetectorProducer.class, kafkaStreamStarter.containingClass);
+        assertSame(ProtobufToDetectorAction.class, kafkaStreamStarter.containingClass);
         assertSame(APPLICATION, kafkaStreamStarter.clientId);
     }
 
@@ -135,7 +135,7 @@ public class SpringConfigTest {
 
     @Test
     public void testDetector() {
-        assertNotNull(springConfig.detector(mockFinderEngine));
+        assertNotNull(springConfig.detector(mockLogger, mockFinderEngine));
     }
 
     @Test
