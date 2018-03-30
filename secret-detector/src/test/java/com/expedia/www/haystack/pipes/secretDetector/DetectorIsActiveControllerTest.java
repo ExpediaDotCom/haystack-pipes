@@ -1,6 +1,6 @@
 package com.expedia.www.haystack.pipes.secretDetector;
 
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilderBase;
+import com.expedia.www.haystack.pipes.commons.kafka.Main;
 import com.expedia.www.haystack.pipes.secretDetector.DetectorIsActiveController.Factory;
 import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
 import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufToDetectorAction;
@@ -43,7 +43,7 @@ public class DetectorIsActiveControllerTest {
     @Mock
     private AnnotationConfigApplicationContext mockAnnotationConfigApplicationContext;
     @Mock
-    private KafkaStreamBuilderBase mockMainBean;
+    private Main mockMainBean;
 
     private Factory factory;
 
@@ -73,7 +73,7 @@ public class DetectorIsActiveControllerTest {
     public void testMain() {
         final String beanName = "detectorProducer";
         when(mockActionsConfigurationProvider.mainbean()).thenReturn(beanName);
-        when(mockFactory.createSpringApplication(DetectorIsActiveController.class)).thenReturn(mockSpringApplication);
+        when(mockFactory.createSpringApplication()).thenReturn(mockSpringApplication);
         when(mockFactory.createBean(any(AnnotationConfigApplicationContext.class), anyString()))
                 .thenReturn(mockProtobufToDetectorAction);
 
@@ -81,7 +81,7 @@ public class DetectorIsActiveControllerTest {
         DetectorIsActiveController.main(args);
 
         verify(mockLogger).info(STARTUP_MSG);
-        verify(mockFactory).createSpringApplication(DetectorIsActiveController.class);
+        verify(mockFactory).createSpringApplication();
         verify(mockActionsConfigurationProvider).mainbean();
         verify(mockFactory).createBean(any(AnnotationConfigApplicationContext.class), eq(beanName));
         verify(mockProtobufToDetectorAction).main();
@@ -90,7 +90,7 @@ public class DetectorIsActiveControllerTest {
 
     @Test
     public void testFactoryCreateSpringApplication() {
-        final SpringApplication springApplication = factory.createSpringApplication(DetectorIsActiveController.class);
+        final SpringApplication springApplication = factory.createSpringApplication();
 
         final Set<Object> sources = springApplication.getSources();
         assertEquals(1, sources.size());

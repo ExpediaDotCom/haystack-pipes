@@ -29,6 +29,7 @@ import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedActi
 import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedActionFactory;
 import com.expedia.www.haystack.pipes.secretDetector.actions.SenderImpl;
 import com.expedia.www.haystack.pipes.secretDetector.config.SecretsEmailConfigurationProvider;
+import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufSpanToEmailInKafkaTransformer;
 import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufToDetectorAction;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
@@ -72,6 +73,14 @@ public class SpringConfig {
 
     @Bean
     @Autowired
+    ProtobufSpanToEmailInKafkaTransformer protobufSpanToEmailInKafkaTransformer(KafkaStreamStarter kafkaStreamStarter,
+                                                                                SpanSerdeFactory spanSerdeFactory,
+                                                                                Detector detector) {
+        return new ProtobufSpanToEmailInKafkaTransformer(kafkaStreamStarter, spanSerdeFactory, detector);
+    }
+
+    @Bean
+    @Autowired
     DetectorIsActiveController detectorIsActiveController(DetectorIsActiveController.Factory detectorIsActiveControllerFactory,
                                                           Logger detectorIsActiveControllerLogger,
                                                           ActionsConfigurationProvider actionsConfigurationProvider) {
@@ -92,6 +101,11 @@ public class SpringConfig {
     @Bean
     Logger emailerLogger() {
         return LoggerFactory.getLogger(EmailerDetectedAction.class);
+    }
+
+    @Bean
+    Logger detectorLogger() {
+        return LoggerFactory.getLogger(Detector.class);
     }
 
     @Bean
@@ -154,8 +168,8 @@ public class SpringConfig {
 
     @Bean
     @Autowired
-    Detector detector(FinderEngine finderEngine) {
-        return new Detector(finderEngine);
+    Detector detector(Logger detectorLogger, FinderEngine finderEngine) {
+        return new Detector(detectorLogger, finderEngine);
     }
 
     @Bean

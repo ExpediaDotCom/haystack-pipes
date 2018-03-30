@@ -14,12 +14,12 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.jsonTransformer;
+package com.expedia.www.haystack.pipes.secretDetector.mains;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
-import com.expedia.www.haystack.pipes.commons.serialization.SpanJsonSerializer;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
+import com.expedia.www.haystack.pipes.secretDetector.Detector;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
@@ -33,6 +33,12 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.EMAIL_ADDRESS_SPAN;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -42,7 +48,9 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ProtobufToJsonTransformerTest {
+public class ProtobufSpanToEmailInKafkaTransformerTest {
+    private static final String SECRET = RANDOM.nextLong() + "SECRET";
+    private static final Iterable<String> LIST_OF_SECRETS = Collections.singletonList(SECRET);
     @Mock
     private KafkaStreamStarter mockKafkaStreamStarter;
     @Mock
@@ -50,26 +58,29 @@ public class ProtobufToJsonTransformerTest {
     @Mock
     private KStream<String, Span> mockKStreamStringSpan;
     @Mock
-    private KStream<String, SpanJsonSerializer> mockKStreamStringSpanJsonSerializer;
+    private KStream<String, String> mockKStreamStringString;
+    @Mock
+    private Detector mockDetector;
 
-    private ProtobufToJsonTransformer protobufToJsonTransformer;
+    private ProtobufSpanToEmailInKafkaTransformer protobufSpanToEmailInKafkaTransformer;
 
     @Before
     public void setUp() {
-        protobufToJsonTransformer = new ProtobufToJsonTransformer(mockKafkaStreamStarter, new SpanSerdeFactory());
+        protobufSpanToEmailInKafkaTransformer = new ProtobufSpanToEmailInKafkaTransformer(
+                mockKafkaStreamStarter, new SpanSerdeFactory(), mockDetector);
     }
 
     @After
     public void tearDown() {
         verifyNoMoreInteractions(mockKafkaStreamStarter, mockKStreamBuilder, mockKStreamStringSpan,
-                mockKStreamStringSpanJsonSerializer);
+                mockKStreamStringString, mockDetector);
     }
 
     @Test
     public void testMain() {
-        protobufToJsonTransformer.main();
+        protobufSpanToEmailInKafkaTransformer.main();
 
-        verify(mockKafkaStreamStarter).createAndStartStream(protobufToJsonTransformer);
+        verify(mockKafkaStreamStarter).createAndStartStream(protobufSpanToEmailInKafkaTransformer);
     }
 
     @SuppressWarnings("unchecked")
@@ -77,17 +88,20 @@ public class ProtobufToJsonTransformerTest {
     public void testBuildStreamTopology() {
         when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
                 .thenReturn(mockKStreamStringSpan);
-        when(mockKStreamStringSpan.mapValues(Matchers.<ValueMapper<Span, SpanJsonSerializer>>any()))
-                .thenReturn(mockKStreamStringSpanJsonSerializer);
+        when(mockKStreamStringSpan.flatMapValues(Matchers.<ValueMapper<Span, List<String>>>any()))
+                .thenReturn(mockKStreamStringString);
+        when(mockDetector.apply(any(Span.class))).thenReturn(LIST_OF_SECRETS);
 
-        protobufToJsonTransformer.buildStreamTopology(mockKStreamBuilder);
+        protobufSpanToEmailInKafkaTransformer.buildStreamTopology(mockKStreamBuilder);
 
         verify(mockKStreamBuilder).stream(any(), Matchers.<Serde<Span>>any(), eq("proto-spans"));
         ArgumentCaptor<ValueMapper> argumentCaptor = ArgumentCaptor.forClass(ValueMapper.class);
-        verify(mockKStreamStringSpan).mapValues(argumentCaptor.capture());
-        final ValueMapper<Span, Span> valueMapper = argumentCaptor.getValue();
-        final Span span = Span.getDefaultInstance();
-        assertSame(span, valueMapper.apply(span));
-        verify(mockKStreamStringSpanJsonSerializer).to(any(),  any(), eq("json-spans"));
+        verify(mockKStreamStringSpan).flatMapValues(argumentCaptor.capture());
+        final ValueMapper<Span, Iterable<String>> valueMapper = argumentCaptor.getValue();
+        final Iterable<String> apply = valueMapper.apply(EMAIL_ADDRESS_SPAN);
+        final Iterator<String> iterator = apply.iterator();
+        assertSame(SECRET, iterator.next());
+        verify(mockDetector).apply(EMAIL_ADDRESS_SPAN);
+        verify(mockKStreamStringString).to(any(), any(), eq("detected-secrets"));
     }
 }

@@ -19,19 +19,29 @@ package com.expedia.www.haystack.pipes.secretDetector;
 import com.expedia.open.tracing.Log;
 import com.expedia.open.tracing.Span;
 import com.expedia.open.tracing.Tag;
+import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction;
 import io.dataapps.chlorine.finder.FinderEngine;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.kafka.streams.kstream.ValueMapper;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Finds that tag keys and field keys in a Span that contain secrets.
  */
-public class Detector {
+@Component
+public class Detector implements ValueMapper<Span, Iterable<String>> {
     private final FinderEngine finderEngine;
+    private final Logger logger;
 
-    Detector(FinderEngine finderEngine) {
+    @Autowired
+    Detector(Logger detectorLogger, FinderEngine finderEngine) {
+        this.logger = detectorLogger;
         this.finderEngine = finderEngine;
     }
 
@@ -47,16 +57,16 @@ public class Detector {
     }
 
     private void findSecretsInLogFields(List<String> listOfKeysOfSecrets, Span span) {
-        for(final Log log : span.getLogsList()) {
+        for (final Log log : span.getLogsList()) {
             findSecrets(listOfKeysOfSecrets, log.getFieldsList());
         }
     }
 
     private void findSecrets(List<String> listOfKeysOfSecrets, List<Tag> tags) {
-        for(final Tag tag : tags) {
-            if(StringUtils.isNotEmpty(tag.getVStr())) {
+        for (final Tag tag : tags) {
+            if (StringUtils.isNotEmpty(tag.getVStr())) {
                 putKeysOfSecretsIntoList(listOfKeysOfSecrets, tag, finderEngine.find(tag.getVStr()));
-            } else if(tag.getVBytes().size() > 0) {
+            } else if (tag.getVBytes().size() > 0) {
                 final String input = new String(tag.getVBytes().toByteArray());
                 putKeysOfSecretsIntoList(listOfKeysOfSecrets, tag, finderEngine.find(input));
             }
@@ -64,9 +74,19 @@ public class Detector {
     }
 
     private void putKeysOfSecretsIntoList(List<String> listOfKeysOfSecrets, Tag tag, List<String> secretsList) {
-        if(!secretsList.isEmpty()) {
+        if (!secretsList.isEmpty()) {
             listOfKeysOfSecrets.add(tag.getKey());
         }
     }
 
+    @Override
+    public Iterable<String> apply(Span span) {
+        final List<String> listOfKeysOfSecrets = findSecrets(span);
+        if (listOfKeysOfSecrets.isEmpty()) {
+            return null;
+        }
+        final String emailText = EmailerDetectedAction.getEmailText(span, listOfKeysOfSecrets);
+        logger.info(emailText);
+        return Collections.singleton(emailText);
+    }
 }

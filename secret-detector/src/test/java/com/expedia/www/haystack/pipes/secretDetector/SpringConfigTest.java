@@ -135,7 +135,7 @@ public class SpringConfigTest {
 
     @Test
     public void testDetector() {
-        assertNotNull(springConfig.detector(mockFinderEngine));
+        assertNotNull(springConfig.detector(mockLogger, mockFinderEngine));
     }
 
     @Test

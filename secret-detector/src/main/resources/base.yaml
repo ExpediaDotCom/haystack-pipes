@@ -3,7 +3,7 @@ haystack:
     brokers: "haystack.local"
     port: 9092
     fromtopic: "proto-spans"
-    totopic: ""
+    totopic: "detected-secrets"
     threadcount: 1
     sessiontimeout: 15000
   pipe:
@@ -16,7 +16,7 @@ haystack:
     pollintervalseconds: 300
     queuesize: 10
   secretsnotifications:
-    mainbean: "detectorProducer"  # (method) name of the bean in SpringConfig.java
+    mainbean: "protobufSpanToEmailInKafkaTransformer"  # (method) name of the bean in SpringConfig.java
     actionfactories:
       - "emailerDetectedActionFactory" # (method) name of the bean in SpringConfig.java
     email:
