@@ -27,12 +27,12 @@ import org.springframework.stereotype.Component;
 import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATION;
 
 @Component
-public class DetectorProducer extends KafkaStreamBuilderBase {
+public class ProtobufToDetectorAction extends KafkaStreamBuilderBase {
     @Autowired
-    public DetectorProducer(KafkaStreamStarter kafkaStreamStarter,
-                            SpanSerdeFactory spanSerdeFactory,
-                            DetectorAction detectorAction,
-                            KafkaConfigurationProvider kafkaConfigurationProvider) {
+    public ProtobufToDetectorAction(KafkaStreamStarter kafkaStreamStarter,
+                                    SpanSerdeFactory spanSerdeFactory,
+                                    DetectorAction detectorAction,
+                                    KafkaConfigurationProvider kafkaConfigurationProvider) {
         super(kafkaStreamStarter, spanSerdeFactory, APPLICATION, kafkaConfigurationProvider, detectorAction);
     }
 }

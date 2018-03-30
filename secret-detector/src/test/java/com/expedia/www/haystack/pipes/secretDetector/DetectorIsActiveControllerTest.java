@@ -3,7 +3,7 @@ package com.expedia.www.haystack.pipes.secretDetector;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilderBase;
 import com.expedia.www.haystack.pipes.secretDetector.DetectorIsActiveController.Factory;
 import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
-import com.expedia.www.haystack.pipes.secretDetector.mains.DetectorProducer;
+import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufToDetectorAction;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +37,7 @@ public class DetectorIsActiveControllerTest {
     @Mock
     private SpringApplication mockSpringApplication;
     @Mock
-    private DetectorProducer mockDetectorProducer;
+    private ProtobufToDetectorAction mockProtobufToDetectorAction;
     @Mock
     private ActionsConfigurationProvider mockActionsConfigurationProvider;
     @Mock
@@ -60,7 +60,7 @@ public class DetectorIsActiveControllerTest {
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockFactory, mockLogger, mockSpringApplication, mockDetectorProducer,
+        verifyNoMoreInteractions(mockFactory, mockLogger, mockSpringApplication, mockProtobufToDetectorAction,
                 mockActionsConfigurationProvider, mockAnnotationConfigApplicationContext, mockMainBean);
         clearKafkaProducerIsActiveControllerInStaticInstance();
     }
@@ -75,7 +75,7 @@ public class DetectorIsActiveControllerTest {
         when(mockActionsConfigurationProvider.mainbean()).thenReturn(beanName);
         when(mockFactory.createSpringApplication(DetectorIsActiveController.class)).thenReturn(mockSpringApplication);
         when(mockFactory.createBean(any(AnnotationConfigApplicationContext.class), anyString()))
-                .thenReturn(mockDetectorProducer);
+                .thenReturn(mockProtobufToDetectorAction);
 
         final String[] args = new String[0];
         DetectorIsActiveController.main(args);
@@ -84,7 +84,7 @@ public class DetectorIsActiveControllerTest {
         verify(mockFactory).createSpringApplication(DetectorIsActiveController.class);
         verify(mockActionsConfigurationProvider).mainbean();
         verify(mockFactory).createBean(any(AnnotationConfigApplicationContext.class), eq(beanName));
-        verify(mockDetectorProducer).main();
+        verify(mockProtobufToDetectorAction).main();
         verify(mockSpringApplication).run(args);
     }
 
