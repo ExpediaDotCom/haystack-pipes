@@ -6,7 +6,7 @@
 		<enabled>true</enabled>
 	</finder>
 	<finder>
-		<class>io.dataapps.chlorine.pattern.CompositeCreditCardFinder</class>
+		<class>com.expedia.www.haystack.pipes.secretDetector.HaystackCompositeCreditCardFinder</class>
 		<enabled>true</enabled>
 	</finder>
 	<finder>
