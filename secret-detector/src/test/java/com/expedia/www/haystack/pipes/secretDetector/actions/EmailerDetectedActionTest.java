@@ -4,6 +4,7 @@ import com.expedia.www.haystack.pipes.secretDetector.config.SecretsEmailConfigur
 import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.Factory;
 import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.Sender;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +18,9 @@ import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
@@ -58,8 +61,9 @@ public class EmailerDetectedActionTest {
     }
     private static final String SUBJECT = RANDOM.nextLong() + "SUBJECT";
     private static final String HOST = "localhost"; //RANDOM.nextLong() + "HOST";
+    private static final String KEY = RANDOM.nextLong() + "KEY";
     private static final String SECRET = RANDOM.nextLong() + "SECRET";
-    private static final List<String> SECRETS = ImmutableList.of(SECRET);
+    private static final Map<String, List<String>> SECRETS = ImmutableMap.of(KEY, Collections.singletonList(SECRET));
     private static final String EMAIL_TEXT =
             String.format(TEXT_TEMPLATE, SERVICE_NAME, OPERATION_NAME, SPAN_ID, TRACE_ID, SECRETS);
 

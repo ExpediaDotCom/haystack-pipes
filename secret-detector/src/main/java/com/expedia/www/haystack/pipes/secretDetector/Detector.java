@@ -20,6 +20,7 @@ import com.expedia.open.tracing.Log;
 import com.expedia.open.tracing.Span;
 import com.expedia.open.tracing.Tag;
 import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction;
+import com.google.common.annotations.VisibleForTesting;
 import io.dataapps.chlorine.finder.FinderEngine;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.streams.kstream.ValueMapper;
@@ -29,7 +30,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Finds that tag keys and field keys in a Span that contain secrets.
@@ -45,47 +48,50 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
         this.finderEngine = finderEngine;
     }
 
-    List<String> findSecrets(Span span) {
-        final List<String> listOfKeysOfSecrets = new ArrayList<>();
-        findSecretsInTags(listOfKeysOfSecrets, span);
-        findSecretsInLogFields(listOfKeysOfSecrets, span);
-        return listOfKeysOfSecrets;
+    @VisibleForTesting
+    Map<String, List<String>> findSecrets(Span span) {
+        final Map<String, List<String>> mapOfTypeToKeysOfSecrets = new HashMap<>();
+        findSecretsInTags(mapOfTypeToKeysOfSecrets, span);
+        findSecretsInLogFields(mapOfTypeToKeysOfSecrets, span);
+        return mapOfTypeToKeysOfSecrets;
     }
 
-    private void findSecretsInTags(List<String> listOfKeysOfSecrets, Span span) {
-        findSecrets(listOfKeysOfSecrets, span.getTagsList());
+    private void findSecretsInTags(Map<String, List<String>> mapOfTypeToKeysOfSecrets, Span span) {
+        findSecrets(mapOfTypeToKeysOfSecrets, span.getTagsList());
     }
 
-    private void findSecretsInLogFields(List<String> listOfKeysOfSecrets, Span span) {
+    private void findSecretsInLogFields(Map<String, List<String>> mapOfTypeToKeysOfSecrets, Span span) {
         for (final Log log : span.getLogsList()) {
-            findSecrets(listOfKeysOfSecrets, log.getFieldsList());
+            findSecrets(mapOfTypeToKeysOfSecrets, log.getFieldsList());
         }
     }
 
-    private void findSecrets(List<String> listOfKeysOfSecrets, List<Tag> tags) {
+    private void findSecrets(Map<String, List<String>> mapOfTypeToKeysOfSecrets, List<Tag> tags) {
         for (final Tag tag : tags) {
             if (StringUtils.isNotEmpty(tag.getVStr())) {
-                putKeysOfSecretsIntoList(listOfKeysOfSecrets, tag, finderEngine.find(tag.getVStr()));
+                putKeysOfSecretsIntoMap(mapOfTypeToKeysOfSecrets, tag, finderEngine.findWithType(tag.getVStr()));
             } else if (tag.getVBytes().size() > 0) {
                 final String input = new String(tag.getVBytes().toByteArray());
-                putKeysOfSecretsIntoList(listOfKeysOfSecrets, tag, finderEngine.find(input));
+                putKeysOfSecretsIntoMap(mapOfTypeToKeysOfSecrets, tag, finderEngine.findWithType(input));
             }
         }
     }
 
-    private void putKeysOfSecretsIntoList(List<String> listOfKeysOfSecrets, Tag tag, List<String> secretsList) {
-        if (!secretsList.isEmpty()) {
-            listOfKeysOfSecrets.add(tag.getKey());
+    private void putKeysOfSecretsIntoMap(Map<String, List<String>> mapOfTypeToKeysOfSecrets,
+                                         Tag tag,
+                                         Map<String, List<String>> mapOfTypeToKeysOfSecretsJustFound) {
+        for (String key : mapOfTypeToKeysOfSecretsJustFound.keySet()) {
+            mapOfTypeToKeysOfSecrets.computeIfAbsent(key, (l -> new ArrayList<>())).add(tag.getKey());
         }
     }
 
     @Override
     public Iterable<String> apply(Span span) {
-        final List<String> listOfKeysOfSecrets = findSecrets(span);
-        if (listOfKeysOfSecrets.isEmpty()) {
+        final Map<String, List<String>> mapOfTypeToKeysOfSecrets = findSecrets(span);
+        if (mapOfTypeToKeysOfSecrets.isEmpty()) {
             return Collections.emptyList();
         }
-        final String emailText = EmailerDetectedAction.getEmailText(span, listOfKeysOfSecrets);
+        final String emailText = EmailerDetectedAction.getEmailText(span, mapOfTypeToKeysOfSecrets);
         logger.info(emailText);
         return Collections.singleton(emailText);
     }

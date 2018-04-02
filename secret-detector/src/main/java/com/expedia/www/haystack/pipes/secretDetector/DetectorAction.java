@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class DetectorAction implements ForeachAction<String, Span> {
@@ -55,13 +56,13 @@ public class DetectorAction implements ForeachAction<String, Span> {
         countersAndTimer.incrementRequestCounter();
         final Stopwatch stopwatch = countersAndTimer.startTimer();
         try {
-            final List<String> listOfKeysOfSecrets = detector.findSecrets(span);
-            if (!listOfKeysOfSecrets.isEmpty()) {
+            final Map<String, List<String>> mapOfTypeToKeysOfSecrets = detector.findSecrets(span);
+            if (!mapOfTypeToKeysOfSecrets.isEmpty()) {
                 final List<DetectedAction> detectedActions = actionsConfigurationProvider.getDetectedActions();
                 detectorActionLogger.info(String.format(CONFIDENTIAL_DATA_MSG, span.getServiceName(),
-                        span.getOperationName(), span.getSpanId(), span.getTraceId(), listOfKeysOfSecrets));
+                        span.getOperationName(), span.getSpanId(), span.getTraceId(), mapOfTypeToKeysOfSecrets));
                 for (DetectedAction detectedAction : detectedActions) {
-                    detectedAction.send(span, listOfKeysOfSecrets);
+                    detectedAction.send(span, mapOfTypeToKeysOfSecrets);
                 }
 
             }

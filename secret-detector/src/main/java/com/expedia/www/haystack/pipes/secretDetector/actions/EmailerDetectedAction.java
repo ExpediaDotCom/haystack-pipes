@@ -29,6 +29,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.util.List;
+import java.util.Map;
 
 public class EmailerDetectedAction implements DetectedAction {
     @VisibleForTesting
@@ -92,12 +93,12 @@ public class EmailerDetectedAction implements DetectedAction {
     }
 
     @Override
-    public void send(Span span, List<String> listOfKeysOfSecrets) {
+    public void send(Span span, Map<String, List<String>> mapOfTypeToKeysOfSecrets) {
         final MimeMessage message = factory.createMimeMessage();
         try {
             message.setFrom(from);
             message.setSubject(subject);
-            final String text = getEmailText(span, listOfKeysOfSecrets);
+            final String text = getEmailText(span, mapOfTypeToKeysOfSecrets);
             message.setText(text);
             sender.send(message, toAddresses);
         } catch (MessagingException e) {
@@ -105,9 +106,9 @@ public class EmailerDetectedAction implements DetectedAction {
         }
     }
 
-    public static String getEmailText(Span span, List<String> listOfKeysOfSecrets) {
+    public static String getEmailText(Span span, Map<String, List<String>> mapOfTypeToKeysOfSecrets) {
         return String.format(TEXT_TEMPLATE, span.getServiceName(), span.getOperationName(), span.getSpanId(),
-                span.getTraceId(), listOfKeysOfSecrets.toString());
+                span.getTraceId(), mapOfTypeToKeysOfSecrets.toString());
     }
 
     public interface Sender {
