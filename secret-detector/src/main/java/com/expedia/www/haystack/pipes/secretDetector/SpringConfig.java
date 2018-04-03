@@ -167,9 +167,16 @@ public class SpringConfig {
     }
 
     @Bean
+    Detector.Factory detectorFactory(MetricObjects metricObjects) {
+        return new Detector.Factory(metricObjects);
+    }
+
+    @Bean
     @Autowired
-    Detector detector(Logger detectorLogger, FinderEngine finderEngine) {
-        return new Detector(detectorLogger, finderEngine);
+    Detector detector(Logger detectorLogger,
+                      FinderEngine finderEngine,
+                      Detector.Factory detectorFactory) {
+        return new Detector(detectorLogger, finderEngine, detectorFactory);
     }
 
     @Bean

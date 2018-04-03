@@ -55,6 +55,8 @@ public class SpringConfigTest {
     private FinderEngine mockFinderEngine;
     @Mock
     private ActionsConfigurationProvider mockActionsConfigurationProvider;
+    @Mock
+    private Detector.Factory mockDetectorFactory;
 
     private SpringConfig springConfig;
 
@@ -67,7 +69,7 @@ public class SpringConfigTest {
     public void tearDown() {
         verifyNoMoreInteractions(mockMetricObjects, mockCounter, mockTimer, mockHealthController,
                 mockHealthStatusListener, mockCountersAndTimer, mockDetector, mockLogger, mockFinderEngine,
-                mockActionsConfigurationProvider);
+                mockActionsConfigurationProvider, mockDetectorFactory);
     }
 
     @Test
@@ -135,7 +137,7 @@ public class SpringConfigTest {
 
     @Test
     public void testDetector() {
-        assertNotNull(springConfig.detector(mockLogger, mockFinderEngine));
+        assertNotNull(springConfig.detector(mockLogger, mockFinderEngine, mockDetectorFactory));
     }
 
     @Test
