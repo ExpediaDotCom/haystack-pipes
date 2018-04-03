@@ -24,24 +24,24 @@ import org.springframework.stereotype.Component;
 @Component
 public class EmailerDetectedActionFactory implements DetectedActionFactory {
 
-    private final EmailerDetectedAction.Factory emailerFactory;
+    private final EmailerDetectedAction.MimeMessageFactory mimeMessageFactory;
     private final Logger emailerLogger;
     private final EmailerDetectedAction.Sender sender;
     private final SecretsEmailConfigurationProvider secretsEmailConfigurationProvider;
 
     @Autowired
-    public EmailerDetectedActionFactory(EmailerDetectedAction.Factory emailerFactory,
-                                        Logger emailerLogger,
+    public EmailerDetectedActionFactory(EmailerDetectedAction.MimeMessageFactory mimeMessageFactory,
+                                        Logger emailerDetectedActionLogger,
                                         EmailerDetectedAction.Sender sender,
                                         SecretsEmailConfigurationProvider secretsEmailConfigurationProvider) {
-        this.emailerFactory = emailerFactory;
-        this.emailerLogger = emailerLogger;
+        this.mimeMessageFactory = mimeMessageFactory;
+        this.emailerLogger = emailerDetectedActionLogger;
         this.sender = sender;
         this.secretsEmailConfigurationProvider = secretsEmailConfigurationProvider;
     }
 
     @Override
     public DetectedAction create() {
-        return new EmailerDetectedAction(emailerFactory, emailerLogger, sender, secretsEmailConfigurationProvider);
+        return new EmailerDetectedAction(mimeMessageFactory, emailerLogger, sender, secretsEmailConfigurationProvider);
     }
 }

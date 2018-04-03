@@ -19,7 +19,8 @@ package com.expedia.www.haystack.pipes.secretDetector.actions;
 import com.expedia.open.tracing.Span;
 
 import java.util.List;
+import java.util.Map;
 
 public interface DetectedAction {
-    void send(Span span, List<String> listOfKeysOfSecrets);
+    void send(Span span, Map<String, List<String>> mapOfTypeToKeysOfSecrets);
 }

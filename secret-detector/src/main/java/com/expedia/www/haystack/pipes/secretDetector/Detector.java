@@ -19,7 +19,10 @@ package com.expedia.www.haystack.pipes.secretDetector;
 import com.expedia.open.tracing.Log;
 import com.expedia.open.tracing.Span;
 import com.expedia.open.tracing.Tag;
+import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction;
+import com.google.common.annotations.VisibleForTesting;
+import com.netflix.servo.monitor.Counter;
 import io.dataapps.chlorine.finder.FinderEngine;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.streams.kstream.ValueMapper;
@@ -29,64 +32,123 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
+import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATION;
 
 /**
  * Finds that tag keys and field keys in a Span that contain secrets.
  */
 @Component
 public class Detector implements ValueMapper<Span, Iterable<String>> {
+    @VisibleForTesting
+    static Map<FinderNameAndServiceName, Counter> COUNTERS = Collections.synchronizedMap(new HashMap<>());
+    @VisibleForTesting
+    static final String COUNTER_NAME = "SECRET_COUNTER";
     private final FinderEngine finderEngine;
     private final Logger logger;
+    private final Factory factory;
 
     @Autowired
-    Detector(Logger detectorLogger, FinderEngine finderEngine) {
+    Detector(Logger detectorLogger, FinderEngine finderEngine, Factory detectorFactory) {
         this.logger = detectorLogger;
         this.finderEngine = finderEngine;
+        this.factory = detectorFactory;
     }
 
-    List<String> findSecrets(Span span) {
-        final List<String> listOfKeysOfSecrets = new ArrayList<>();
-        findSecretsInTags(listOfKeysOfSecrets, span);
-        findSecretsInLogFields(listOfKeysOfSecrets, span);
-        return listOfKeysOfSecrets;
+    @VisibleForTesting
+    Map<String, List<String>> findSecrets(Span span) {
+        final Map<String, List<String>> mapOfTypeToKeysOfSecrets = new HashMap<>();
+        findSecretsInTags(mapOfTypeToKeysOfSecrets, span);
+        findSecretsInLogFields(mapOfTypeToKeysOfSecrets, span);
+        return mapOfTypeToKeysOfSecrets;
     }
 
-    private void findSecretsInTags(List<String> listOfKeysOfSecrets, Span span) {
-        findSecrets(listOfKeysOfSecrets, span.getTagsList());
+    private void findSecretsInTags(Map<String, List<String>> mapOfTypeToKeysOfSecrets, Span span) {
+        findSecrets(mapOfTypeToKeysOfSecrets, span.getTagsList(), span);
     }
 
-    private void findSecretsInLogFields(List<String> listOfKeysOfSecrets, Span span) {
+    private void findSecretsInLogFields(Map<String, List<String>> mapOfTypeToKeysOfSecrets, Span span) {
         for (final Log log : span.getLogsList()) {
-            findSecrets(listOfKeysOfSecrets, log.getFieldsList());
+            findSecrets(mapOfTypeToKeysOfSecrets, log.getFieldsList(), span);
         }
     }
 
-    private void findSecrets(List<String> listOfKeysOfSecrets, List<Tag> tags) {
+    private void findSecrets(Map<String, List<String>> mapOfTypeToKeysOfSecrets, List<Tag> tags, Span span) {
         for (final Tag tag : tags) {
             if (StringUtils.isNotEmpty(tag.getVStr())) {
-                putKeysOfSecretsIntoList(listOfKeysOfSecrets, tag, finderEngine.find(tag.getVStr()));
+                putKeysOfSecretsIntoMap(mapOfTypeToKeysOfSecrets, tag, finderEngine.findWithType(tag.getVStr()), span);
             } else if (tag.getVBytes().size() > 0) {
                 final String input = new String(tag.getVBytes().toByteArray());
-                putKeysOfSecretsIntoList(listOfKeysOfSecrets, tag, finderEngine.find(input));
+                putKeysOfSecretsIntoMap(mapOfTypeToKeysOfSecrets, tag, finderEngine.findWithType(input), span);
             }
         }
     }
 
-    private void putKeysOfSecretsIntoList(List<String> listOfKeysOfSecrets, Tag tag, List<String> secretsList) {
-        if (!secretsList.isEmpty()) {
-            listOfKeysOfSecrets.add(tag.getKey());
+    private void putKeysOfSecretsIntoMap(Map<String, List<String>> mapOfTypeToKeysOfSecrets,
+                                         Tag tag,
+                                         Map<String, List<String>> mapOfTypeToKeysOfSecretsJustFound,
+                                         Span span) {
+        for (String finderName : mapOfTypeToKeysOfSecretsJustFound.keySet()) {
+            mapOfTypeToKeysOfSecrets.computeIfAbsent(finderName, (l -> new ArrayList<>())).add(tag.getKey());
+            final FinderNameAndServiceName finderNameAndServiceName =
+                    new FinderNameAndServiceName(finderName, span.getServiceName());
+            COUNTERS.computeIfAbsent(finderNameAndServiceName, (c -> factory.createCounter(finderNameAndServiceName)))
+                    .increment();
         }
     }
 
     @Override
     public Iterable<String> apply(Span span) {
-        final List<String> listOfKeysOfSecrets = findSecrets(span);
-        if (listOfKeysOfSecrets.isEmpty()) {
+        final Map<String, List<String>> mapOfTypeToKeysOfSecrets = findSecrets(span);
+        if (mapOfTypeToKeysOfSecrets.isEmpty()) {
             return Collections.emptyList();
         }
-        final String emailText = EmailerDetectedAction.getEmailText(span, listOfKeysOfSecrets);
+        final String emailText = EmailerDetectedAction.getEmailText(span, mapOfTypeToKeysOfSecrets);
         logger.info(emailText);
         return Collections.singleton(emailText);
+    }
+
+    static class FinderNameAndServiceName {
+        private final String finderName;
+        private final String serviceName;
+
+        FinderNameAndServiceName(String finderName, String serviceName) {
+            this.finderName = finderName;
+            this.serviceName = serviceName;
+        }
+
+        // equals and hashCode are overridden with this IDE-created code so that FinderNameAndServiceName objects can
+        // be the key in the static Detector.COUNTERS object.
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            FinderNameAndServiceName that = (FinderNameAndServiceName) o;
+            return Objects.equals(finderName, that.finderName) &&
+                    Objects.equals(serviceName, that.serviceName);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(finderName, serviceName);
+        }
+    }
+
+    public static class Factory {
+        private final MetricObjects metricObjects;
+
+        public Factory(MetricObjects metricObjects) {
+            this.metricObjects = metricObjects;
+        }
+
+        Counter createCounter(FinderNameAndServiceName finderAndServiceName) {
+            return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
+                    finderAndServiceName.finderName, finderAndServiceName.serviceName, COUNTER_NAME);
+        }
     }
 }

@@ -20,6 +20,8 @@ import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.secretDetector.config.SecretsEmailConfigurationProvider;
 import com.netflix.servo.util.VisibleForTesting;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.mail.Address;
 import javax.mail.Message;
@@ -29,7 +31,9 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.util.List;
+import java.util.Map;
 
+@Component
 public class EmailerDetectedAction implements DetectedAction {
     @VisibleForTesting
     static final String TEXT_TEMPLATE =
@@ -43,7 +47,7 @@ public class EmailerDetectedAction implements DetectedAction {
     @VisibleForTesting
     static final String HOST_KEY = "mail.smtp.host";
 
-    private final Factory factory;
+    private final MimeMessageFactory mimeMessageFactory;
     private final Sender sender;
     private final Logger logger;
 
@@ -51,12 +55,13 @@ public class EmailerDetectedAction implements DetectedAction {
     private final Address[] toAddresses;
     private final String subject;
 
-    EmailerDetectedAction(Factory emailerFactory,
-                          Logger emailerLogger,
+    @Autowired
+    public EmailerDetectedAction(MimeMessageFactory mimeMessageFactory,
+                          Logger emailerDetectedActionLogger,
                           Sender sender,
                           SecretsEmailConfigurationProvider secretsEmailConfigurationProvider) {
-        this.factory = emailerFactory;
-        this.logger = emailerLogger;
+        this.mimeMessageFactory = mimeMessageFactory;
+        this.logger = emailerDetectedActionLogger;
         this.sender = sender;
 
         this.from = createFromAddress(secretsEmailConfigurationProvider);
@@ -92,12 +97,12 @@ public class EmailerDetectedAction implements DetectedAction {
     }
 
     @Override
-    public void send(Span span, List<String> listOfKeysOfSecrets) {
-        final MimeMessage message = factory.createMimeMessage();
+    public void send(Span span, Map<String, List<String>> mapOfTypeToKeysOfSecrets) {
+        final MimeMessage message = mimeMessageFactory.createMimeMessage();
         try {
             message.setFrom(from);
             message.setSubject(subject);
-            final String text = getEmailText(span, listOfKeysOfSecrets);
+            final String text = getEmailText(span, mapOfTypeToKeysOfSecrets);
             message.setText(text);
             sender.send(message, toAddresses);
         } catch (MessagingException e) {
@@ -105,16 +110,16 @@ public class EmailerDetectedAction implements DetectedAction {
         }
     }
 
-    public static String getEmailText(Span span, List<String> listOfKeysOfSecrets) {
+    public static String getEmailText(Span span, Map<String, List<String>> mapOfTypeToKeysOfSecrets) {
         return String.format(TEXT_TEMPLATE, span.getServiceName(), span.getOperationName(), span.getSpanId(),
-                span.getTraceId(), listOfKeysOfSecrets.toString());
+                span.getTraceId(), mapOfTypeToKeysOfSecrets.toString());
     }
 
     public interface Sender {
         void send(Message message, Address[] toAddresses) throws MessagingException;
     }
 
-    public static class Factory {
+    public static class MimeMessageFactory {
         MimeMessage createMimeMessage() {
             return new MimeMessage(Session.getDefaultInstance(System.getProperties()));
         }
