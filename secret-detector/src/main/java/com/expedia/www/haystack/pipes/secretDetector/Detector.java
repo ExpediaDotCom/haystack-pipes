@@ -46,9 +46,11 @@ import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATIO
 @Component
 public class Detector implements ValueMapper<Span, Iterable<String>> {
     @VisibleForTesting
+    static final String ERRORS_METRIC_GROUP = "errors";
+    @VisibleForTesting
     static Map<FinderNameAndServiceName, Counter> COUNTERS = Collections.synchronizedMap(new HashMap<>());
     @VisibleForTesting
-    static final String COUNTER_NAME = "SECRET_COUNTER";
+    static final String COUNTER_NAME = "SECRETS";
     private final FinderEngine finderEngine;
     private final Logger logger;
     private final Factory factory;
@@ -147,7 +149,7 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
         }
 
         Counter createCounter(FinderNameAndServiceName finderAndServiceName) {
-            return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
+            return metricObjects.createAndRegisterResettingCounter(ERRORS_METRIC_GROUP, APPLICATION,
                     finderAndServiceName.finderName, finderAndServiceName.serviceName, COUNTER_NAME);
         }
     }

@@ -52,6 +52,7 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.STRING_TAG_KEY;
 import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATION;
 import static com.expedia.www.haystack.pipes.secretDetector.Detector.COUNTER_NAME;
+import static com.expedia.www.haystack.pipes.secretDetector.Detector.ERRORS_METRIC_GROUP;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -195,7 +196,7 @@ public class DetectorTest {
 
         assertSame(mockCounter, counter);
         verify(mockMetricObjects).createAndRegisterResettingCounter(
-                SUBSYSTEM, APPLICATION, FINDER_NAME, SERVICE_NAME, COUNTER_NAME);
+                ERRORS_METRIC_GROUP, APPLICATION, FINDER_NAME, SERVICE_NAME, COUNTER_NAME);
     }
 
     @Test
