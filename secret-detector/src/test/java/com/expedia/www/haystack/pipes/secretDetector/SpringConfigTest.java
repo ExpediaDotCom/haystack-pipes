@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018 Expedia, Inc.
+ *
+ *       Licensed under the Apache License, Version 2.0 (the "License");
+ *       you may not use this file except in compliance with the License.
+ *       You may obtain a copy of the License at
+ *
+ *           http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *       Unless required by applicable law or agreed to in writing, software
+ *       distributed under the License is distributed on an "AS IS" BASIS,
+ *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *       See the License for the specific language governing permissions and
+ *       limitations under the License.
+ *
+ */
 package com.expedia.www.haystack.pipes.secretDetector;
 
 import com.expedia.www.haystack.metrics.MetricObjects;
@@ -5,6 +21,7 @@ import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.HealthStatusListener;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
+import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction;
 import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
 import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufToDetectorAction;
 import com.netflix.servo.monitor.Counter;
@@ -80,6 +97,27 @@ public class SpringConfigTest {
     }
 
     @Test
+    public void testDetectorActionLogger() {
+        final Logger logger = springConfig.detectorActionLogger();
+
+        assertEquals(DetectorAction.class.getName(), logger.getName());
+    }
+
+    @Test
+    public void testEmailerDetectedActionLogger() {
+        final Logger logger = springConfig.emailerDetectedActionLogger();
+
+        assertEquals(EmailerDetectedAction.class.getName(), logger.getName());
+    }
+
+    @Test
+    public void testDetectorLogger() {
+        final Logger logger = springConfig.detectorLogger();
+
+        assertEquals(Detector.class.getName(), logger.getName());
+    }
+
+    @Test
     public void testKafkaStreamStarter() {
         final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter(mockHealthController);
 
@@ -146,17 +184,17 @@ public class SpringConfigTest {
     }
 
     @Test
-    public void testKafkaConfigurationProvider() {
-        assertNotNull(springConfig.kafkaConfigurationProvider());
-    }
-
-    @Test
-    public void testKafkaProducerIsActiveControllerFactory() {
-        assertNotNull(springConfig.kafkaProducerIsActiveControllerFactory());
+    public void testDetectorIsActiveControllerFactory() {
+        assertNotNull(springConfig.detectorIsActiveControllerFactory());
     }
 
     @Test
     public void testFinderEngine() {
         assertNotNull(springConfig.finderEngine());
+    }
+
+    @Test
+    public void testEmailerDetectedActionFactory() {
+        assertNotNull(springConfig.emailerDetectedActionFactory());
     }
 }

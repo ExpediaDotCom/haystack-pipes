@@ -99,7 +99,7 @@ public class SpringConfig {
     }
 
     @Bean
-    Logger emailerLogger() {
+    Logger emailerDetectedActionLogger() {
         return LoggerFactory.getLogger(EmailerDetectedAction.class);
     }
 
@@ -145,12 +145,7 @@ public class SpringConfig {
     }
 
     @Bean
-    KafkaConfigurationProvider kafkaConfigurationProvider() {
-        return new KafkaConfigurationProvider();
-    }
-
-    @Bean
-    DetectorIsActiveController.Factory kafkaProducerIsActiveControllerFactory() {
+    DetectorIsActiveController.Factory detectorIsActiveControllerFactory() {
         return new DetectorIsActiveController.Factory();
     }
 
@@ -189,13 +184,8 @@ public class SpringConfig {
     }
 
     @Bean
-    SecretsEmailConfigurationProvider secretsEmailConfigurationProvider() {
-        return new SecretsEmailConfigurationProvider();
-    }
-
-    @Bean
-    EmailerDetectedAction.Factory emailerFactory() {
-        return new EmailerDetectedAction.Factory();
+    EmailerDetectedAction.MimeMessageFactory emailerDetectedActionFactory() {
+        return new EmailerDetectedAction.MimeMessageFactory();
     }
 
     @Bean
@@ -204,12 +194,30 @@ public class SpringConfig {
     }
 
     @Bean
+    EmailerDetectedAction.MimeMessageFactory mimeMessageFactory() {
+        return new EmailerDetectedAction.MimeMessageFactory();
+    }
+
+    @Bean
     @Autowired
-    EmailerDetectedActionFactory emailerDetectedActionFactory(EmailerDetectedAction.Factory emailerFactory,
-                                                              Logger emailerLogger,
+    EmailerDetectedActionFactory emailerDetectedActionFactory(EmailerDetectedAction.MimeMessageFactory mimeMessageFactory,
+                                                              Logger emailerDetectedActionLogger,
                                                               EmailerDetectedAction.Sender sender,
                                                               SecretsEmailConfigurationProvider secretsEmailConfigurationProvider) {
-        return new EmailerDetectedActionFactory(emailerFactory, emailerLogger, sender, secretsEmailConfigurationProvider);
+        return new EmailerDetectedActionFactory(mimeMessageFactory, emailerDetectedActionLogger,
+                sender, secretsEmailConfigurationProvider);
+    }
+
+    @Bean
+    @Autowired
+    EmailerDetectedAction emailerDetectedAction(EmailerDetectedAction.MimeMessageFactory mimeMessageFactory,
+                                                Logger emailerDetectedActionLogger,
+                                                EmailerDetectedAction.Sender sender,
+                                                SecretsEmailConfigurationProvider secretsEmailConfigurationProvider) {
+        return new EmailerDetectedAction(mimeMessageFactory,
+                emailerDetectedActionLogger,
+                sender,
+                secretsEmailConfigurationProvider);
     }
 
     /*
@@ -251,6 +259,16 @@ public class SpringConfig {
         ActionsConfigurationProvider actionsConfigurationProvider(Logger actionsConfigurationProviderLogger,
                                                                   ConfigurationProvider configurationProvider) {
             return new ActionsConfigurationProvider(actionsConfigurationProviderLogger, configurationProvider);
+        }
+
+        @Bean
+        SecretsEmailConfigurationProvider secretsEmailConfigurationProvider() {
+            return new SecretsEmailConfigurationProvider();
+        }
+
+        @Bean
+        KafkaConfigurationProvider kafkaConfigurationProvider() {
+            return new KafkaConfigurationProvider();
         }
 
     }

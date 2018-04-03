@@ -1,7 +1,23 @@
+/*
+ * Copyright 2018 Expedia, Inc.
+ *
+ *       Licensed under the Apache License, Version 2.0 (the "License");
+ *       you may not use this file except in compliance with the License.
+ *       You may obtain a copy of the License at
+ *
+ *           http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *       Unless required by applicable law or agreed to in writing, software
+ *       distributed under the License is distributed on an "AS IS" BASIS,
+ *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *       See the License for the specific language governing permissions and
+ *       limitations under the License.
+ *
+ */
 package com.expedia.www.haystack.pipes.secretDetector.actions;
 
 import com.expedia.www.haystack.pipes.secretDetector.config.SecretsEmailConfigurationProvider;
-import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.Factory;
+import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.MimeMessageFactory;
 import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.Sender;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -68,7 +84,7 @@ public class EmailerDetectedActionTest {
             String.format(TEXT_TEMPLATE, SERVICE_NAME, OPERATION_NAME, SPAN_ID, TRACE_ID, SECRETS);
 
     @Mock
-    private Factory mockFactory;
+    private MimeMessageFactory mockMimeMessageFactory;
     @Mock
     private Logger mockLogger;
     @Mock
@@ -79,15 +95,15 @@ public class EmailerDetectedActionTest {
     private MimeMessage mockMimeMessage;
 
     private EmailerDetectedAction emailerDetectedAction;
-    private Factory factory;
+    private MimeMessageFactory mimeMessageFactory;
     private int constructorTimes = 1;
 
     @Before
     public void setUp() {
         whensForConstructor(mockSecretsEmailConfigurationProvider);
         emailerDetectedAction = new EmailerDetectedAction(
-                mockFactory, mockLogger, mockSender, mockSecretsEmailConfigurationProvider);
-        factory = new Factory();
+                mockMimeMessageFactory, mockLogger, mockSender, mockSecretsEmailConfigurationProvider);
+        mimeMessageFactory = new MimeMessageFactory();
     }
 
     static void whensForConstructor(SecretsEmailConfigurationProvider mockSecretsEmailConfigurationProvider) {
@@ -101,7 +117,7 @@ public class EmailerDetectedActionTest {
     public void tearDown() {
         verifiesForConstructor(mockSecretsEmailConfigurationProvider, constructorTimes);
 
-        verifyNoMoreInteractions(mockFactory, mockLogger, mockSender, mockSecretsEmailConfigurationProvider);
+        verifyNoMoreInteractions(mockMimeMessageFactory, mockLogger, mockSender, mockSecretsEmailConfigurationProvider);
         verifyNoMoreInteractions(mockMimeMessage);
     }
 
@@ -135,7 +151,7 @@ public class EmailerDetectedActionTest {
 
     private void testConstructorAddressException(String message) {
         constructorTimes = 2;
-        new EmailerDetectedAction(mockFactory, mockLogger, mockSender, mockSecretsEmailConfigurationProvider);
+        new EmailerDetectedAction(mockMimeMessageFactory, mockLogger, mockSender, mockSecretsEmailConfigurationProvider);
         verify(mockLogger).error(message);
     }
 
@@ -154,11 +170,11 @@ public class EmailerDetectedActionTest {
     }
 
     private void testSend(MimeMessage mimeMessage) throws MessagingException {
-        when(mockFactory.createMimeMessage()).thenReturn(mimeMessage);
+        when(mockMimeMessageFactory.createMimeMessage()).thenReturn(mimeMessage);
 
         emailerDetectedAction.send(FULLY_POPULATED_SPAN, SECRETS);
 
-        verify(mockFactory).createMimeMessage();
+        verify(mockMimeMessageFactory).createMimeMessage();
         verify(mockMimeMessage).setFrom(new InternetAddress(FROM));
         verify(mockMimeMessage).setSubject(SUBJECT);
         verify(mockMimeMessage).setText(EMAIL_TEXT);
@@ -168,6 +184,6 @@ public class EmailerDetectedActionTest {
     @Test(expected = MessagingException.class)
     public void testSenderImplSend() throws MessagingException {
         final SenderImpl sender = new SenderImpl();
-        sender.send(factory.createMimeMessage(), TO_ADDRESSES);
+        sender.send(mimeMessageFactory.createMimeMessage(), TO_ADDRESSES);
     }
 }
