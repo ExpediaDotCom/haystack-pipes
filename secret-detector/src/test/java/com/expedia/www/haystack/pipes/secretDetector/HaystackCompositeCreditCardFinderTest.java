@@ -28,7 +28,10 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
+import static com.expedia.www.haystack.pipes.secretDetector.HaystackCreditCardFinderTest.FAKE_VISA_NUMBER_THAT_PASSES_LUHN;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
@@ -82,5 +85,19 @@ public class HaystackCompositeCreditCardFinderTest {
         assertSame(OUTPUT, haystackCompositeCreditCardFinder.getName());
 
         verify(mockCompositeFinder).getName();
+    }
+
+    @Test
+    public void testThatCreditCardValueIsEntireString() {
+        haystackCompositeCreditCardFinder = new HaystackCompositeCreditCardFinder();
+        final String [] creditCardNumbers = {
+                FAKE_VISA_NUMBER_THAT_PASSES_LUHN,
+                FAKE_VISA_NUMBER_THAT_PASSES_LUHN.replace('-', ' ')
+        };
+        for (final String creditCardNumber : creditCardNumbers) {
+            assertFalse(haystackCompositeCreditCardFinder.find(creditCardNumber).isEmpty());
+            assertTrue(haystackCompositeCreditCardFinder.find("-" + creditCardNumber).isEmpty());
+            assertTrue(haystackCompositeCreditCardFinder.find(creditCardNumber + "-").isEmpty());
+        }
     }
 }

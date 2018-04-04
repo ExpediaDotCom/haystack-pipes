@@ -36,8 +36,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
-import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATION;
 
 /**
@@ -45,6 +45,7 @@ import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATIO
  */
 @Component
 public class Detector implements ValueMapper<Span, Iterable<String>> {
+    private static final Set<String> FINDERS_TO_LOG = Collections.singleton("Credit_Card");
     @VisibleForTesting
     static final String ERRORS_METRIC_GROUP = "errors";
     @VisibleForTesting
@@ -111,7 +112,12 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
             return Collections.emptyList();
         }
         final String emailText = EmailerDetectedAction.getEmailText(span, mapOfTypeToKeysOfSecrets);
-        logger.info(emailText);
+        for (String finderName : mapOfTypeToKeysOfSecrets.keySet()) {
+            if(FINDERS_TO_LOG.contains(finderName)) {
+                logger.info(emailText);
+            }
+        }
+
         return Collections.singleton(emailText);
     }
 
