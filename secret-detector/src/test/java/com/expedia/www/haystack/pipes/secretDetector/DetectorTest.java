@@ -266,4 +266,5 @@ public class DetectorTest {
                 = new FinderNameAndServiceName("1", "3");
         assertNotEquals(finderNameAndServiceName12.hashCode(), finderNameAndServiceName13.hashCode());
     }
+
 }
