@@ -37,10 +37,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.BYTES_FIELD_KEY;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.BYTES_TAG_KEY;
-import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.CREDIT_CARD_PLUS_MORE_SPAN;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.CREDIT_CARD_LOG_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.EMAIL_ADDRESS_IN_TAG_BYTES_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.EMAIL_ADDRESS_LOG_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.EMAIL_ADDRESS_SPAN;
@@ -69,6 +68,7 @@ import static org.mockito.Mockito.when;
 public class DetectorTest {
     private static final String FINDER_NAME = RANDOM.nextLong() + "FINDER_NAME";
     private static final FinderEngine FINDER_ENGINE = new FinderEngine();
+    private static final String CREDIT_CARD_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML = "Credit_Card";
     private static final String EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML = "Email";
     private static final String IP_FINDER_NAME = NonLocalIpV4AddressFinder.class.getSimpleName();
     private static final FinderNameAndServiceName FINDER_NAME_AND_SERVICE_NAME
@@ -156,14 +156,23 @@ public class DetectorTest {
     }
 
     @Test
-    public void testFindSecretsCreditCardPlusMore() {
-        assertTrue(detector.findSecrets(CREDIT_CARD_PLUS_MORE_SPAN).isEmpty());
-    }
-
-    @Test
     public void testApplyNoSecret() {
         final Iterable<String> iterable = detector.apply(FULLY_POPULATED_SPAN);
         assertFalse(iterable.iterator().hasNext());
+    }
+
+    @Test
+    public void testApplyCreditCardInLog() {
+        when(mockFactory.createCounter(any())).thenReturn(mockCounter);
+        final Iterator<String> iterator = detector.apply(CREDIT_CARD_LOG_SPAN).iterator();
+
+        final String emailText = EmailerDetectedAction.getEmailText(
+                CREDIT_CARD_LOG_SPAN, Collections.singletonMap(CREDIT_CARD_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML,
+                        Collections.singletonList(STRING_FIELD_KEY)));
+        assertEquals(emailText, iterator.next());
+        assertFalse(iterator.hasNext());
+        verify(mockLogger).info(emailText);
+        verifyCounterIncrement(1, CREDIT_CARD_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML);
     }
 
     @Test
@@ -175,7 +184,6 @@ public class DetectorTest {
                 EMAIL_ADDRESS_LOG_SPAN, Collections.singletonMap(
                         EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML, Collections.singletonList(STRING_FIELD_KEY)));
         assertEquals(emailText, iterator.next());
-        verify(mockLogger).info(emailText);
         assertFalse(iterator.hasNext());
         verifyCounterIncrement(1, EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML);
     }
