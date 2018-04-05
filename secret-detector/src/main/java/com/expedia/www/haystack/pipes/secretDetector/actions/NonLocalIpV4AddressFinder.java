@@ -37,7 +37,7 @@ public class NonLocalIpV4AddressFinder implements Finder {
 
     @Override
     public String getName() {
-        return "NonLocalIpV4AddressFinder";
+        return "NonLocalIpV4Address";
     }
 
     @Override

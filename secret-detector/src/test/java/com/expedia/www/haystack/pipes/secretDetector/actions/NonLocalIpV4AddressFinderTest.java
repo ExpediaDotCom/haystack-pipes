@@ -95,7 +95,7 @@ public class NonLocalIpV4AddressFinderTest {
 
     @Test
     public void testGetName() {
-        assertEquals(NonLocalIpV4AddressFinder.class.getSimpleName(), nonLocalIpV4AddressFinder.getName());
+        assertEquals(NonLocalIpV4AddressFinder.class.getSimpleName().replace("Finder", ""), nonLocalIpV4AddressFinder.getName());
     }
 
     @Test

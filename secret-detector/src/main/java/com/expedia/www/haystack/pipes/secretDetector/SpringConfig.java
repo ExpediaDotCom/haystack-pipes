@@ -31,6 +31,7 @@ import com.expedia.www.haystack.pipes.secretDetector.actions.SenderImpl;
 import com.expedia.www.haystack.pipes.secretDetector.config.SecretsEmailConfigurationProvider;
 import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufSpanToEmailInKafkaTransformer;
 import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufToDetectorAction;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
 import io.dataapps.chlorine.finder.FinderEngine;
@@ -218,6 +219,11 @@ public class SpringConfig {
                 emailerDetectedActionLogger,
                 sender,
                 secretsEmailConfigurationProvider);
+    }
+
+    @Bean
+    PhoneNumberUtil phoneNumberUtil() {
+        return PhoneNumberUtil.getInstance();
     }
 
     /*

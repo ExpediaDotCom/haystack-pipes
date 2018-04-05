@@ -38,6 +38,10 @@
             <artifactId>haystack-metrics</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.googlecode.libphonenumber</groupId>
+            <artifactId>libphonenumber</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.dataapps.chlorine</groupId>
             <artifactId>chlorine-finder</artifactId>
         </dependency>
