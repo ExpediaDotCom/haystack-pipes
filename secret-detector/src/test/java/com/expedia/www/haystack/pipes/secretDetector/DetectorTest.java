@@ -70,7 +70,7 @@ public class DetectorTest {
     private static final FinderEngine FINDER_ENGINE = new FinderEngine();
     private static final String CREDIT_CARD_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML = "Credit_Card";
     private static final String EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML = "Email";
-    private static final String IP_FINDER_NAME = NonLocalIpV4AddressFinder.class.getSimpleName();
+    private static final String IP_FINDER_NAME = NonLocalIpV4AddressFinder.class.getSimpleName().replace("Finder", "");
     private static final FinderNameAndServiceName FINDER_NAME_AND_SERVICE_NAME
             = new FinderNameAndServiceName(FINDER_NAME, SERVICE_NAME);
 
