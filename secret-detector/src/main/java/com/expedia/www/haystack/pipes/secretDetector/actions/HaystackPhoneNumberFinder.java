@@ -25,10 +25,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class HaystackPhoneNumberFinder implements Finder {
     public static final String FINDER_NAME = "PhoneNumber";
     private static final String REGION = "US";
+    private static final Pattern ALPHAS_PATTERN = Pattern.compile("[A-Za-z]+");
     private final PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
 
     @Override
@@ -48,13 +51,20 @@ public class HaystackPhoneNumberFinder implements Finder {
     @Override
     public List<String> find(String input) {
         try {
-            final PhoneNumber phoneNumber = phoneNumberUtil.parseAndKeepRawInput(input, REGION);
-            if(phoneNumberUtil.isValidNumberForRegion(phoneNumber, REGION)) {
-                return Collections.singletonList(phoneNumber.getRawInput());
+            if(!containsAnyAlphabeticCharacters(input)) { //
+                final PhoneNumber phoneNumber = phoneNumberUtil.parseAndKeepRawInput(input, REGION);
+                if (phoneNumberUtil.isValidNumberForRegion(phoneNumber, REGION)) {
+                    return Collections.singletonList(phoneNumber.getRawInput());
+                }
             }
         } catch (NumberParseException e) {
             // Just ignore, it's not a phone number
         }
         return Collections.emptyList();
+    }
+
+    private boolean containsAnyAlphabeticCharacters(String input) {
+        final Matcher matcher = ALPHAS_PATTERN.matcher(input);
+        return matcher.find();
     }
 }
