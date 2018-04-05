@@ -18,25 +18,18 @@ package com.expedia.www.haystack.pipes.secretDetector.actions;
 
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.Phonenumber;
+import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import io.dataapps.chlorine.finder.Finder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-@Component
 public class HaystackPhoneNumberFinder implements Finder {
     public static final String FINDER_NAME = "PhoneNumber";
-    private final PhoneNumberUtil phoneNumberUtil;
-
-    @Autowired
-    public HaystackPhoneNumberFinder(PhoneNumberUtil phoneNumberUtil) {
-        this.phoneNumberUtil = phoneNumberUtil;
-    }
+    private static final String REGION = "US";
+    private final PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
 
     @Override
     public String getName() {
@@ -55,8 +48,10 @@ public class HaystackPhoneNumberFinder implements Finder {
     @Override
     public List<String> find(String input) {
         try {
-            final Phonenumber.PhoneNumber phoneNumber = phoneNumberUtil.parseAndKeepRawInput(input, "US");
-            return Collections.singletonList(phoneNumber.getRawInput());
+            final PhoneNumber phoneNumber = phoneNumberUtil.parseAndKeepRawInput(input, REGION);
+            if(phoneNumberUtil.isValidNumberForRegion(phoneNumber, REGION)) {
+                return Collections.singletonList(phoneNumber.getRawInput());
+            }
         } catch (NumberParseException e) {
             // Just ignore, it's not a phone number
         }
