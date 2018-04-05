@@ -16,7 +16,6 @@
  */
 package com.expedia.www.haystack.pipes.secretDetector.actions;
 
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,20 +29,20 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HaystackPhoneNumberFinderTest {
-    private static final String [] PHONE_NUMBERS = {
+    private static final String [] VALID_US_PHONE_NUMBERS = {
             "1-800-555-1212", "1 (800) 555-1212", "18005551212",
             "800-555-1212", "(800) 555-1212", "8005551212",
-            "555-1212", "555-1212", "5551212",
     };
 
-    private PhoneNumberUtil phoneNumberUtil;
+    private static final String [] INVALID_US_PHONE_NUMBERS = {
+            "4640-1234-5678-9120",
+    };
 
     private HaystackPhoneNumberFinder haystackPhoneNumberFinder;
 
     @Before
     public void setUp() {
-        phoneNumberUtil = PhoneNumberUtil.getInstance();
-        haystackPhoneNumberFinder = new HaystackPhoneNumberFinder(phoneNumberUtil);
+        haystackPhoneNumberFinder = new HaystackPhoneNumberFinder();
     }
 
     @Test
@@ -56,7 +55,7 @@ public class HaystackPhoneNumberFinderTest {
 
     @Test
     public void testFindStringValidNumbers() {
-        for (String phoneNumber : PHONE_NUMBERS) {
+        for (String phoneNumber : VALID_US_PHONE_NUMBERS) {
             final List<String> strings = haystackPhoneNumberFinder.find(phoneNumber);
             assertEquals(1, strings.size());
         }
@@ -70,13 +69,20 @@ public class HaystackPhoneNumberFinderTest {
 
     @Test
     public void testFindStringsValidNumbers() {
-        final List<String> phoneNumbers = Arrays.asList(PHONE_NUMBERS);
+        final List<String> phoneNumbers = Arrays.asList(VALID_US_PHONE_NUMBERS);
         final List<String> strings = haystackPhoneNumberFinder.find(phoneNumbers);
-        assertEquals(PHONE_NUMBERS.length, strings.size());
+        assertEquals(VALID_US_PHONE_NUMBERS.length, strings.size());
         final Iterator<String> phoneNumbersIterator = phoneNumbers.iterator();
         final Iterator<String> stringsIterator = strings.iterator();
         while(phoneNumbersIterator.hasNext()) {
             assertEquals(phoneNumbersIterator.next(), stringsIterator.next());
         }
+    }
+
+    @Test
+    public void testFindStringsInvalidNumbers() {
+        final List<String> phoneNumbers = Arrays.asList(INVALID_US_PHONE_NUMBERS);
+        final List<String> strings = haystackPhoneNumberFinder.find(phoneNumbers);
+        assertEquals(0, strings.size());
     }
 }

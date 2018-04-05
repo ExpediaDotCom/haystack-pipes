@@ -9,17 +9,17 @@
 		<class>com.expedia.www.haystack.pipes.secretDetector.HaystackCompositeCreditCardFinder</class>
 		<enabled>true</enabled>
 	</finder>
-    <!--
-        <finder>
-            <class>com.expedia.www.haystack.pipes.secretDetector.actions.HaystackPhoneNumberFinder</class>
-            <enabled>true</enabled>
-        </finder>
-    -->
-    <finder>
-        <name>US Phone#Formatted</name>
-        <pattern>(\D|^)[0-9]{3}[\)\ \-\.]{1,2}[0-9]{3}[\-\ \.][0-9]{4}(\D|$)</pattern>
-        <enabled>true</enabled>
-    </finder>
+	<finder>
+		<class>com.expedia.www.haystack.pipes.secretDetector.actions.HaystackPhoneNumberFinder</class>
+		<enabled>true</enabled>
+	</finder>
+<!--
+	<finder>
+		<name>US Phone#Formatted</name>
+		<pattern>(\D|^)[0-9]{3}[\)\ \-\.]{1,2}[0-9]{3}[\-\ \.][0-9]{4}(\D|$)</pattern>
+		<enabled>true</enabled>
+	</finder>
+-->
 	<finder>
 		<class>com.expedia.www.haystack.pipes.secretDetector.actions.NonLocalIpV4AddressFinder</class>
 		<name>NonLocalIpV4</name>
