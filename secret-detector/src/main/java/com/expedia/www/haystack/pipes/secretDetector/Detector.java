@@ -46,7 +46,8 @@ import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATIO
  */
 @Component
 public class Detector implements ValueMapper<Span, Iterable<String>> {
-    private static final Set<String> FINDERS_TO_LOG = ImmutableSet.of("Credit_Card", "US_Phone_formatted");
+    private static final Set<String> FINDERS_TO_LOG = ImmutableSet.of(
+            "Credit_Card", "US_Phone_formatted", "SSN-dashes");
     @VisibleForTesting
     static final String ERRORS_METRIC_GROUP = "errors";
     @VisibleForTesting
