@@ -32,6 +32,7 @@ public class HaystackPhoneNumberFinder implements Finder {
     public static final String FINDER_NAME = "PhoneNumber";
     private static final String REGION = "US";
     private static final Pattern ALPHAS_PATTERN = Pattern.compile("[A-Za-z]+");
+    private static final Pattern ALL_NUMBERS_PATTERN = Pattern.compile("^\\d+$");
     private final PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
 
     @Override
@@ -53,9 +54,11 @@ public class HaystackPhoneNumberFinder implements Finder {
         try {
             if(!containsAnyAlphabeticCharacters(input)) {
                 if(isNotIpV4Address(input)) {
-                    final PhoneNumber phoneNumber = phoneNumberUtil.parseAndKeepRawInput(input, REGION);
-                    if (phoneNumberUtil.isValidNumberForRegion(phoneNumber, REGION)) {
-                        return Collections.singletonList(phoneNumber.getRawInput());
+                    if(!containsOnlyNumbers(input)) {
+                        final PhoneNumber phoneNumber = phoneNumberUtil.parseAndKeepRawInput(input, REGION);
+                        if (phoneNumberUtil.isValidNumberForRegion(phoneNumber, REGION)) {
+                            return Collections.singletonList(phoneNumber.getRawInput());
+                        }
                     }
                 }
             }
@@ -66,11 +69,14 @@ public class HaystackPhoneNumberFinder implements Finder {
     }
 
     private boolean containsAnyAlphabeticCharacters(String input) {
-        final Matcher matcher = ALPHAS_PATTERN.matcher(input);
-        return matcher.find();
+        return ALPHAS_PATTERN.matcher(input).find();
     }
 
     private boolean isNotIpV4Address(String input) {
         return NonLocalIpV4AddressFinder.IPV4_FINDER.find(input).isEmpty();
+    }
+
+    private boolean containsOnlyNumbers(String input) {
+        return ALL_NUMBERS_PATTERN.matcher(input).find();
     }
 }
