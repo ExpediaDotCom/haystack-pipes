@@ -37,6 +37,7 @@ public class HaystackPhoneNumberFinderTest {
     private static final String [] INVALID_US_PHONE_NUMBERS = {
             "4640-1234-5678-9120",
             "/minify/min-2487701102.js",
+            "50.242.105.69",
     };
 
     private HaystackPhoneNumberFinder haystackPhoneNumberFinder;
