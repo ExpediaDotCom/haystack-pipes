@@ -4,7 +4,7 @@ haystack:
     port: 9092
     fromtopic: "proto-spans"
     totopic: "detected-secrets"
-    threadcount: 4
+    threadcount: 2
     sessiontimeout: 15000
   pipe:
     streams:

@@ -30,14 +30,16 @@ import static org.junit.Assert.assertEquals;
 @RunWith(MockitoJUnitRunner.class)
 public class HaystackPhoneNumberFinderTest {
     private static final String [] VALID_US_PHONE_NUMBERS = {
-            "1-800-555-1212", "1 (800) 555-1212", "18005551212",
-            "800-555-1212", "(800) 555-1212", "8005551212",
+            "1-800-555-1212", "1 (800) 555-1212",
+            "800-555-1212", "(800) 555-1212",
     };
 
     private static final String [] INVALID_US_PHONE_NUMBERS = {
             "4640-1234-5678-9120",
             "/minify/min-2487701102.js",
             "50.242.105.69",
+            "8005551212",
+            "18005551212",
     };
 
     private HaystackPhoneNumberFinder haystackPhoneNumberFinder;
@@ -59,14 +61,16 @@ public class HaystackPhoneNumberFinderTest {
     public void testFindStringValidNumbers() {
         for (String phoneNumber : VALID_US_PHONE_NUMBERS) {
             final List<String> strings = haystackPhoneNumberFinder.find(phoneNumber);
-            assertEquals(1, strings.size());
+            assertEquals(phoneNumber, 1, strings.size());
         }
     }
 
     @Test
     public void testFindStringInvalidNumber() {
-        final List<String> strings = haystackPhoneNumberFinder.find(("1"));
-        assertEquals(0, strings.size());
+        for (String phoneNumber : INVALID_US_PHONE_NUMBERS) {
+            final List<String> strings = haystackPhoneNumberFinder.find(phoneNumber);
+            assertEquals(phoneNumber, 0, strings.size());
+        }
     }
 
     @Test
