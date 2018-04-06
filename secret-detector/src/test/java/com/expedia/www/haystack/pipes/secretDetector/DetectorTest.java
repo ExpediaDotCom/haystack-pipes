@@ -16,7 +16,9 @@
  */
 package com.expedia.www.haystack.pipes.secretDetector;
 
+import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.metrics.MetricObjects;
+import com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode;
 import com.expedia.www.haystack.pipes.secretDetector.Detector.Factory;
 import com.expedia.www.haystack.pipes.secretDetector.Detector.FinderNameAndServiceName;
 import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction;
@@ -45,10 +47,13 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.EMAIL_ADDRESS_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.IP_ADDRESS_SPAN;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.JSON_SPAN_STRING;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.SERVICE_NAME;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.STRING_FIELD_KEY;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.STRING_FIELD_VALUE;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.STRING_TAG_KEY;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.buildSpan;
 import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATION;
 import static com.expedia.www.haystack.pipes.secretDetector.Detector.COUNTER_NAME;
 import static com.expedia.www.haystack.pipes.secretDetector.Detector.ERRORS_METRIC_GROUP;
@@ -153,6 +158,16 @@ public class DetectorTest {
     @Test
     public void testFindSecretsNoSecret() {
         assertTrue(detector.findSecrets(FULLY_POPULATED_SPAN).isEmpty());
+    }
+
+    @Test
+    public void testFindSecretsSocialSecurityNumberFalsePositive() {
+        when(mockFactory.createCounter(any())).thenReturn(mockCounter);
+        final String stringWithFalsePositiveSsn = "-250-14-9479-1-";
+        final String jsonWithFalsePositiveSsn = JSON_SPAN_STRING.replace(STRING_FIELD_VALUE, stringWithFalsePositiveSsn);
+        final Span span = buildSpan(jsonWithFalsePositiveSsn);
+        final Map<String, List<String>> secrets = detector.findSecrets(span);
+        assertTrue(secrets.isEmpty());
     }
 
     @Test
@@ -266,5 +281,4 @@ public class DetectorTest {
                 = new FinderNameAndServiceName("1", "3");
         assertNotEquals(finderNameAndServiceName12.hashCode(), finderNameAndServiceName13.hashCode());
     }
-
 }
