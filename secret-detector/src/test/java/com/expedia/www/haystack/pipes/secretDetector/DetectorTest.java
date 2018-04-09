@@ -18,7 +18,6 @@ package com.expedia.www.haystack.pipes.secretDetector;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.metrics.MetricObjects;
-import com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode;
 import com.expedia.www.haystack.pipes.secretDetector.Detector.Factory;
 import com.expedia.www.haystack.pipes.secretDetector.Detector.FinderNameAndServiceName;
 import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction;
@@ -57,6 +56,7 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATION;
 import static com.expedia.www.haystack.pipes.secretDetector.Detector.COUNTER_NAME;
 import static com.expedia.www.haystack.pipes.secretDetector.Detector.ERRORS_METRIC_GROUP;
+import static com.expedia.www.haystack.pipes.secretDetector.Detector.FINDERS_TO_LOG;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -186,7 +186,9 @@ public class DetectorTest {
                         Collections.singletonList(STRING_FIELD_KEY)));
         assertEquals(emailText, iterator.next());
         assertFalse(iterator.hasNext());
-        verify(mockLogger).info(emailText);
+        if(FINDERS_TO_LOG.contains("Credit_Card")) {
+            verify(mockLogger).info(emailText);
+        }
         verifyCounterIncrement(1, CREDIT_CARD_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML);
     }
 
