@@ -21,9 +21,7 @@ import com.expedia.open.tracing.Span;
 import com.expedia.open.tracing.Tag;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction;
-import com.expedia.www.haystack.pipes.secretDetector.actions.HaystackPhoneNumberFinder;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 import com.netflix.servo.monitor.Counter;
 import io.dataapps.chlorine.finder.FinderEngine;
 import org.apache.commons.lang3.StringUtils;
@@ -47,8 +45,8 @@ import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATIO
  */
 @Component
 public class Detector implements ValueMapper<Span, Iterable<String>> {
-    private static final Set<String> FINDERS_TO_LOG = ImmutableSet.of(
-            "Credit_Card", HaystackPhoneNumberFinder.FINDER_NAME, "SSN-dashes");
+    @VisibleForTesting
+    static final Set<String> FINDERS_TO_LOG = Collections.singleton("Credit_Card");
     @VisibleForTesting
     static final String ERRORS_METRIC_GROUP = "errors";
     @VisibleForTesting
