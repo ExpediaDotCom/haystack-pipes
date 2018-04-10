@@ -35,20 +35,23 @@ import java.util.concurrent.TimeUnit;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
+import static com.expedia.www.haystack.pipes.firehoseWriter.SpringConfig.BUCKETS_FOR_PUT_BATCH_REQUEST_TIMER;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.anyVararg;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SpringConfigTest {
-    private final static String URL = "https://firehose.us-west-2.amazonaws.com";
-    private final static String SIGNING_REGION = "us-west-2";
+    private static final String URL = "https://firehose.us-west-2.amazonaws.com";
+    private static final String SIGNING_REGION = "us-west-2";
 
     @Mock
     private MetricObjects mockMetricObjects;
@@ -131,13 +134,14 @@ public class SpringConfigTest {
 
     @Test
     public void testPutBatchRequestTimer() {
-        when(mockMetricObjects.createAndRegisterBasicTimer(anyString(), anyString(), anyString(),
-                anyString(), any(TimeUnit.class))).thenReturn(mockTimer);
+        when(mockMetricObjects.createAndRegisterBucketTimer(anyString(), anyString(), anyString(), anyString(),
+                any(TimeUnit.class), anyVararg())).thenReturn(mockTimer);
 
         assertNotNull(springConfig.putBatchRequestTimer());
 
-        verify(mockMetricObjects).createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, FirehoseProcessor.class.getName(),
-                "PUT_BATCH_REQUEST", TimeUnit.MICROSECONDS);
+        verify(mockMetricObjects).createAndRegisterBucketTimer(SUBSYSTEM, APPLICATION,
+                FirehoseProcessor.class.getName(), "PUT_BATCH_REQUEST", MILLISECONDS,
+                BUCKETS_FOR_PUT_BATCH_REQUEST_TIMER);
     }
 
     @Test
