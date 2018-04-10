@@ -30,6 +30,7 @@ import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.Printer;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
+import com.netflix.servo.util.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,9 @@ import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATIO
 @Configuration
 @ComponentScan(basePackageClasses = SpringConfig.class)
 class SpringConfig {
+    @VisibleForTesting
+    static final long[] BUCKETS_FOR_PUT_BATCH_REQUEST_TIMER = {1L, 2L, 5L, 10L, 20L, 50L, 100L, 200L, 500L,
+            1_000L, 2_000L, 5_000L, 10_000L, 20_000L, 50_000L, 100_000L, 200_000L, 500_000L};
     private final MetricObjects metricObjects;
 
     /**
@@ -95,8 +99,8 @@ class SpringConfig {
 
     @Bean
     Timer putBatchRequestTimer() {
-        return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, FirehoseProcessor.class.getName(),
-                "PUT_BATCH_REQUEST", TimeUnit.MICROSECONDS);
+        return metricObjects.createAndRegisterBucketTimer(SUBSYSTEM, APPLICATION, FirehoseProcessor.class.getName(),
+                "PUT_BATCH_REQUEST", TimeUnit.MILLISECONDS, BUCKETS_FOR_PUT_BATCH_REQUEST_TIMER);
     }
 
     @Bean
