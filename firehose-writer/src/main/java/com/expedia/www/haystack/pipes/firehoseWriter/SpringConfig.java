@@ -99,8 +99,8 @@ class SpringConfig {
 
     @Bean
     Timer putBatchRequestTimer() {
-        return metricObjects.createAndRegisterBucketTimer(SUBSYSTEM, APPLICATION, FirehoseProcessor.class.getName(),
-                "PUT_BATCH_REQUEST", TimeUnit.MILLISECONDS, BUCKETS_FOR_PUT_BATCH_REQUEST_TIMER);
+        return metricObjects.createAndRegisterBucketTimer(SUBSYSTEM, APPLICATION, "PUT_BATCH_REQUEST",
+                TimeUnit.MILLISECONDS, BUCKETS_FOR_PUT_BATCH_REQUEST_TIMER);
     }
 
     @Bean
