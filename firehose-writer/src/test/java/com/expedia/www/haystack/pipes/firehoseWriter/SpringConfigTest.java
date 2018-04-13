@@ -134,14 +134,13 @@ public class SpringConfigTest {
 
     @Test
     public void testPutBatchRequestTimer() {
-        when(mockMetricObjects.createAndRegisterBucketTimer(anyString(), anyString(), anyString(), anyString(),
-                any(TimeUnit.class), anyVararg())).thenReturn(mockTimer);
+        when(mockMetricObjects.createAndRegisterBucketTimer(anyString(), anyString(), anyString(), any(TimeUnit.class),
+                anyVararg())).thenReturn(mockTimer);
 
         assertNotNull(springConfig.putBatchRequestTimer());
 
-        verify(mockMetricObjects).createAndRegisterBucketTimer(SUBSYSTEM, APPLICATION,
-                FirehoseProcessor.class.getName(), "PUT_BATCH_REQUEST", MILLISECONDS,
-                BUCKETS_FOR_PUT_BATCH_REQUEST_TIMER);
+        verify(mockMetricObjects).createAndRegisterBucketTimer(SUBSYSTEM, APPLICATION, "PUT_BATCH_REQUEST",
+                MILLISECONDS, BUCKETS_FOR_PUT_BATCH_REQUEST_TIMER);
     }
 
     @Test
