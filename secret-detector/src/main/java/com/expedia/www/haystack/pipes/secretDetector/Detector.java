@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATION;
 
@@ -50,9 +51,11 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
     @VisibleForTesting
     static final String ERRORS_METRIC_GROUP = "errors";
     @VisibleForTesting
-    static Map<FinderNameAndServiceName, Counter> COUNTERS = Collections.synchronizedMap(new HashMap<>());
+    static final Map<FinderNameAndServiceName, Counter> COUNTERS = Collections.synchronizedMap(new HashMap<>());
     @VisibleForTesting
     static final String COUNTER_NAME = "SECRETS";
+    private static final Map<String, Map<String, FinderNameAndServiceName>> CACHED_FINDER_NAME_AND_SECRET_NAME_OBJECTS =
+            new ConcurrentHashMap<>();
     private final FinderEngine finderEngine;
     private final Logger logger;
     private final Factory factory;
@@ -99,8 +102,10 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
                                          Span span) {
         for (String finderName : mapOfTypeToKeysOfSecretsJustFound.keySet()) {
             mapOfTypeToKeysOfSecrets.computeIfAbsent(finderName, (l -> new ArrayList<>())).add(tag.getKey());
-            final FinderNameAndServiceName finderNameAndServiceName =
-                    new FinderNameAndServiceName(finderName, span.getServiceName());
+            final String serviceName = span.getServiceName();
+            final FinderNameAndServiceName finderNameAndServiceName = CACHED_FINDER_NAME_AND_SECRET_NAME_OBJECTS
+                    .computeIfAbsent(finderName, (v -> new HashMap<>()))
+                    .computeIfAbsent(serviceName, (v -> new FinderNameAndServiceName(finderName, serviceName)));
             COUNTERS.computeIfAbsent(finderNameAndServiceName, (c -> factory.createCounter(finderNameAndServiceName)))
                     .increment();
         }
