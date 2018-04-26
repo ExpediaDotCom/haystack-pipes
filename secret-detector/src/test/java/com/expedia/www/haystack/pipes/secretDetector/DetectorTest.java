@@ -102,7 +102,7 @@ public class DetectorTest {
 
     @After
     public void tearDown() {
-        Detector.COUNTERS = Collections.synchronizedMap(new HashMap<>());
+        Detector.COUNTERS.clear();
         verifyNoMoreInteractions(mockLogger, mockFactory, mockCounter, mockMetricObjects);
     }
 

@@ -15,6 +15,7 @@ haystack:
     port: 2003
     pollintervalseconds: 300
     queuesize: 10
+    sendasrate: false
   secretsnotifications:
     mainbean: "protobufSpanToEmailInKafkaTransformer"  # (method) name of the bean in SpringConfig.java
     actionfactories:
