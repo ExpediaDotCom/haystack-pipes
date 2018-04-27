@@ -100,7 +100,7 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
                                          Tag tag,
                                          Map<String, List<String>> mapOfTypeToKeysOfSecretsJustFound,
                                          Span span) {
-        for (String finderName : mapOfTypeToKeysOfSecretsJustFound.keySet()) {
+        for (final String finderName : mapOfTypeToKeysOfSecretsJustFound.keySet()) {
             mapOfTypeToKeysOfSecrets.computeIfAbsent(finderName, (l -> new ArrayList<>())).add(tag.getKey());
             final String serviceName = span.getServiceName();
             final FinderNameAndServiceName finderNameAndServiceName = CACHED_FINDER_NAME_AND_SECRET_NAME_OBJECTS
