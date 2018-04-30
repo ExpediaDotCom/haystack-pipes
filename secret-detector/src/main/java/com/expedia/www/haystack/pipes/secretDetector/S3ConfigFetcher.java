@@ -13,8 +13,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -26,8 +27,8 @@ public class S3ConfigFetcher {
     static final String ERROR_MESSAGE = "Exception getting white list items" +
             "; whitelisted finder/service/operation/tag combinations may not be correct";
     @VisibleForTesting
-    static final AtomicReference<List<WhiteListItem>> WHITE_LIST_ITEMS =
-            new AtomicReference<>(new ArrayList<>());
+    static final AtomicReference<Map<String, Map<String, Map<String, Set<String>>>>> WHITE_LIST_ITEMS =
+            new AtomicReference<>(new ConcurrentHashMap<>());
     @VisibleForTesting
     static final String INVALID_DATA_MSG = "The line [%s] does not contain at least three semicolons to separate "
             + "finderName, String serviceName, String operationName, String tagName";
@@ -55,9 +56,9 @@ public class S3ConfigFetcher {
         this.factory = s3ConfigFetcherFactory;
     }
 
-    List<WhiteListItem> getWhiteListItems() {
+    Map<String, Map<String, Map<String, Set<String>>>> getWhiteListItems() {
         final long now = factory.createCurrentTimeMillis();
-        if(now - lastUpdateTime.get() > ONE_HOUR) {
+        if (now - lastUpdateTime.get() > ONE_HOUR) {
             if (isUpdateInProgress.compareAndSet(false, true)) {
                 try {
                     WHITE_LIST_ITEMS.set(readAllWhiteListItemsFromS3());
@@ -74,17 +75,29 @@ public class S3ConfigFetcher {
         return WHITE_LIST_ITEMS.get();
     }
 
-    private List<WhiteListItem> readAllWhiteListItemsFromS3() throws IOException, InvalidWhitelistItemInputException {
-        try(final S3Object s3Object = amazonS3.getObject(bucket, key)) {
+    private Map<String, Map<String, Map<String, Set<String>>>> readAllWhiteListItemsFromS3()
+            throws IOException, InvalidWhitelistItemInputException {
+        try (final S3Object s3Object = amazonS3.getObject(bucket, key)) {
             final BufferedReader bufferedReader = getBufferedReader(s3Object);
-            final List<WhiteListItem> whiteListItems = new ArrayList<>();
+            final Map<String, Map<String, Map<String, Set<String>>>> whiteListItems = new ConcurrentHashMap<>();
             WhiteListItem whiteListItem = readSingleWhiteListItemFromS3(bufferedReader);
-            while(whiteListItem != null) {
-                whiteListItems.add(whiteListItem);
+            while (whiteListItem != null) {
+                putTagInWhiteListItems(whiteListItems, whiteListItem);
                 whiteListItem = readSingleWhiteListItemFromS3(bufferedReader);
             }
             return whiteListItems;
         }
+    }
+
+    private void putTagInWhiteListItems(Map<String, Map<String, Map<String, Set<String>>>> whiteListItems,
+                                        WhiteListItem whiteListItem) {
+        final Map<String, Map<String, Set<String>>> finderNameMap =
+                whiteListItems.computeIfAbsent(whiteListItem.finderName, v -> new ConcurrentHashMap<>());
+        final Map<String, Set<String>> serviceNameMap =
+                finderNameMap.computeIfAbsent(whiteListItem.serviceName, v -> new ConcurrentHashMap<>());
+        final Set<String> tags =
+                serviceNameMap.computeIfAbsent(whiteListItem.operationName, v -> ConcurrentHashMap.newKeySet());
+        tags.add(whiteListItem.tagName);
     }
 
     private BufferedReader getBufferedReader(S3Object s3Object) {
@@ -93,11 +106,27 @@ public class S3ConfigFetcher {
         return factory.createBufferedReader(inputStreamReader);
     }
 
+    public boolean isTagInWhiteList(String finderName, String serviceName, String operationName, String tagName) {
+        final Map<String, Map<String, Map<String, Set<String>>>> finderNameMap = WHITE_LIST_ITEMS.get();
+        final Map<String, Map<String, Set<String>>> serviceNameMap = finderNameMap.get(finderName);
+        if (serviceNameMap != null) {
+            final Map<String, Set<String>> operationNameMap = serviceNameMap.get(serviceName);
+            if (operationNameMap != null) {
+                final Set<String> tagNameSet = operationNameMap.get(operationName);
+                if (tagNameSet != null) {
+                    return tagNameSet.contains(tagName);
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Reads a line from S3 and transforms it to a WhiteListItem
+     *
      * @param reader the reader
      * @return a non-null WhiteListItem if the read was successful, else null (which indicates all lines have been read)
-     * @throws IOException if a problem occurs reading from S3
+     * @throws IOException                        if a problem occurs reading from S3
      * @throws InvalidWhitelistItemInputException if an input line in the S3 file is not formatted properly
      */
     private WhiteListItem readSingleWhiteListItemFromS3(BufferedReader reader)
@@ -107,7 +136,7 @@ public class S3ConfigFetcher {
             return null;
         }
         final String[] strings = line.split(";");
-        if(strings.length >= 4) {
+        if (strings.length >= 4) {
             return new WhiteListItem(strings[0], strings[1], strings[2], strings[3]);
         }
         throw new InvalidWhitelistItemInputException(line);

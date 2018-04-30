@@ -5,7 +5,6 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.expedia.www.haystack.pipes.secretDetector.S3ConfigFetcher.Factory;
 import com.expedia.www.haystack.pipes.secretDetector.config.WhiteListConfig;
-import com.expedia.www.haystack.pipes.secretDetector.config.WhiteListItem;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,9 +16,9 @@ import org.slf4j.Logger;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.secretDetector.S3ConfigFetcher.ERROR_MESSAGE;
@@ -52,8 +51,8 @@ public class S3ConfigFetcherTest {
             FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME, COMMENT);
     private static final String ONE_LINE_OF_BAD_DATA = String.format("%s;%s;%s",
             FINDER_NAME, SERVICE_NAME, OPERATION_NAME);
-    private static final WhiteListItem WHITE_LIST_ITEM = new WhiteListItem(
-            FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME);
+    private static final String MISSING_FINDER_NAME = "MissingFinderName";
+    private static final String MISSING_SERVICE_NAME = "MissingServiceName";
 
     @Mock
     private Logger mockS3ConfigFetcherLogger;
@@ -84,7 +83,7 @@ public class S3ConfigFetcherTest {
 
     @Before
     public void setUp() {
-        WHITE_LIST_ITEMS.set(new ArrayList<>());
+        WHITE_LIST_ITEMS.set(new ConcurrentHashMap<>());
         when(mockWhiteListConfig.bucket()).thenReturn(BUCKET);
         when(mockWhiteListConfig.key()).thenReturn(KEY);
         s3ConfigFetcher = new S3ConfigFetcher(
@@ -104,7 +103,7 @@ public class S3ConfigFetcherTest {
     public void testGetWhiteListItemsOneMillisecondEarly() {
         when(mockFactory.createCurrentTimeMillis()).thenReturn(ONE_HOUR);
 
-        final List<WhiteListItem> whiteListItems = s3ConfigFetcher.getWhiteListItems();
+        final Map<String, Map<String, Map<String, Set<String>>>> whiteListItems = s3ConfigFetcher.getWhiteListItems();
         assertTrue(whiteListItems.isEmpty());
 
         verify(mockFactory).createCurrentTimeMillis();
@@ -115,8 +114,13 @@ public class S3ConfigFetcherTest {
         whensForGetWhiteListItems();
         when(mockBufferedReader.readLine()).thenReturn(ONE_LINE_OF_GOOD_DATA).thenReturn(null);
 
-        final List<WhiteListItem> whiteListItems = s3ConfigFetcher.getWhiteListItems();
-        assertEquals(Collections.singletonList(WHITE_LIST_ITEM), whiteListItems);
+        s3ConfigFetcher.getWhiteListItems();
+
+        assertTrue(s3ConfigFetcher.isTagInWhiteList(FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME));
+        assertFalse(s3ConfigFetcher.isTagInWhiteList(MISSING_FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME));
+        assertFalse(s3ConfigFetcher.isTagInWhiteList(FINDER_NAME, MISSING_SERVICE_NAME, OPERATION_NAME, TAG_NAME));
+        assertFalse(s3ConfigFetcher.isTagInWhiteList(FINDER_NAME, SERVICE_NAME, "MissingOperationName", TAG_NAME));
+        assertFalse(s3ConfigFetcher.isTagInWhiteList(FINDER_NAME, SERVICE_NAME, OPERATION_NAME, "MissingTagName"));
         assertEquals(MORE_THAN_ONE_HOUR, s3ConfigFetcher.lastUpdateTime.get());
         assertFalse(s3ConfigFetcher.isUpdateInProgress.get());
 
@@ -129,9 +133,8 @@ public class S3ConfigFetcherTest {
         whensForGetWhiteListItems();
         when(mockBufferedReader.readLine()).thenReturn(ONE_LINE_OF_GOOD_DATA).thenReturn(null);
 
-        final List<WhiteListItem> whiteListItems = s3ConfigFetcher.getWhiteListItems();
+        final Map<String, Map<String, Map<String, Set<String>>>> whiteListItems = s3ConfigFetcher.getWhiteListItems();
         assertsForEmptyWhitelist(whiteListItems, true);
-
 
         verify(mockFactory).createCurrentTimeMillis();
     }
@@ -142,7 +145,7 @@ public class S3ConfigFetcherTest {
         whensForGetWhiteListItems();
         when(mockBufferedReader.readLine()).thenThrow(ioException);
 
-        final List<WhiteListItem> whiteListItems = s3ConfigFetcher.getWhiteListItems();
+        final Map<String, Map<String, Map<String, Set<String>>>> whiteListItems = s3ConfigFetcher.getWhiteListItems();
         assertsForEmptyWhitelist(whiteListItems, false);
 
         verifiesForGetWhiteListItems(1);
@@ -154,7 +157,7 @@ public class S3ConfigFetcherTest {
         whensForGetWhiteListItems();
         when(mockBufferedReader.readLine()).thenReturn(ONE_LINE_OF_BAD_DATA).thenReturn(null);
 
-        final List<WhiteListItem> whiteListItems = s3ConfigFetcher.getWhiteListItems();
+        final Map<String, Map<String, Map<String, Set<String>>>> whiteListItems = s3ConfigFetcher.getWhiteListItems();
         assertsForEmptyWhitelist(whiteListItems, false);
 
         verifiesForGetWhiteListItems(1);
@@ -162,7 +165,8 @@ public class S3ConfigFetcherTest {
                 any(S3ConfigFetcher.InvalidWhitelistItemInputException.class));
     }
 
-    private void assertsForEmptyWhitelist(List<WhiteListItem> whiteListItems, boolean isUpdateInProgress) {
+    private void assertsForEmptyWhitelist(Map<String, Map<String, Map<String, Set<String>>>> whiteListItems,
+                                          boolean isUpdateInProgress) {
         assertTrue(whiteListItems.isEmpty());
         assertEquals(0L, s3ConfigFetcher.lastUpdateTime.get());
         assertEquals(isUpdateInProgress, s3ConfigFetcher.isUpdateInProgress.get());
