@@ -22,14 +22,14 @@ import org.cfg4j.provider.ConfigurationProvider;
 import java.util.List;
 
 public class SecretsEmailConfigurationProvider implements SecretsEmailConfig {
-    private static final String HAYSTACK_SECRETS_CONFIG_PREFIX = "haystack.secretsnotifications.email";
+    private static final String HAYSTACK_SECRETS_EMAIL_CONFIG_PREFIX = "haystack.secretsnotifications.email";
 
     private final SecretsEmailConfig secretsEmailConfig;
 
     public SecretsEmailConfigurationProvider() {
         final Configuration configuration = new Configuration();
         final ConfigurationProvider configurationProvider = configuration.createMergeConfigurationProvider();
-        secretsEmailConfig = configurationProvider.bind(HAYSTACK_SECRETS_CONFIG_PREFIX, SecretsEmailConfig.class);
+        secretsEmailConfig = configurationProvider.bind(HAYSTACK_SECRETS_EMAIL_CONFIG_PREFIX, SecretsEmailConfig.class);
     }
 
     @Override

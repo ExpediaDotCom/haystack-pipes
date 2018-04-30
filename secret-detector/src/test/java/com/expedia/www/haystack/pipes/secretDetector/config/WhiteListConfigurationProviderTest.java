@@ -16,41 +16,30 @@
  */
 package com.expedia.www.haystack.pipes.secretDetector.config;
 
+import com.expedia.www.haystack.pipes.commons.Configuration;
+import org.cfg4j.provider.ConfigurationProvider;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
 
-public class SecretsConfigurationProviderTest {
-    private SecretsConfigurationProvider secretsConfigurationProvider;
+public class WhiteListConfigurationProviderTest {
+    private WhiteListConfigurationProvider whiteListConfigurationProvider;
 
     @Before
     public void setUp() {
-        secretsConfigurationProvider = new SecretsConfigurationProvider();
+        final Configuration configuration = new Configuration();
+        final ConfigurationProvider mergeConfigurationProvider = configuration.createMergeConfigurationProvider();
+        whiteListConfigurationProvider = new WhiteListConfigurationProvider(mergeConfigurationProvider);
     }
 
     @Test
-    public void testFrom() {
-        assertEquals("haystack@expedia.com", secretsConfigurationProvider.from());
+    public void testBucket() {
+        assertEquals("haystack-config", whiteListConfigurationProvider.bucket());
     }
 
     @Test
-    public void testTos() {
-        final List<String> expected = Arrays.asList("haystack@expedia.com", "test@expedia.com");
-
-        assertEquals(expected, secretsConfigurationProvider.tos());
-    }
-
-    @Test
-    public void testHost() {
-        assertEquals("localhost", secretsConfigurationProvider.host());
-    }
-
-    @Test
-    public void testSubject() {
-        assertEquals("[Action Required] Security alert in haystack spans!", secretsConfigurationProvider.subject());
+    public void testKey() {
+        assertEquals("secret-detector/whiteListItems.txt", whiteListConfigurationProvider.key());
     }
 }

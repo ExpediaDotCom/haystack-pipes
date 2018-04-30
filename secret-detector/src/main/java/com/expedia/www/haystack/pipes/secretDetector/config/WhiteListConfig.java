@@ -16,14 +16,8 @@
  */
 package com.expedia.www.haystack.pipes.secretDetector.config;
 
-import java.util.List;
+public interface WhiteListConfig {
+    String bucket();
 
-public interface SecretsConfig {
-    String from();
-
-    List<String> tos();
-
-    String host();
-
-    String subject();
+    String key();
 }
