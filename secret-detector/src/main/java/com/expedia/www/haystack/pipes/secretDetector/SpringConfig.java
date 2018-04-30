@@ -16,6 +16,9 @@
  */
 package com.expedia.www.haystack.pipes.secretDetector;
 
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
@@ -29,6 +32,7 @@ import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedActi
 import com.expedia.www.haystack.pipes.secretDetector.actions.SenderImpl;
 import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
 import com.expedia.www.haystack.pipes.secretDetector.config.SecretsEmailConfigurationProvider;
+import com.expedia.www.haystack.pipes.secretDetector.config.WhiteListConfig;
 import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufSpanToEmailInKafkaTransformer;
 import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufToDetectorAction;
 import com.netflix.servo.monitor.Counter;
@@ -106,6 +110,21 @@ public class SpringConfig {
     @Bean
     Logger detectorLogger() {
         return LoggerFactory.getLogger(Detector.class);
+    }
+
+    @Bean
+    Logger s3ConfigFetcherLogger() {
+        return LoggerFactory.getLogger(S3ConfigFetcher.class);
+    }
+
+    @Bean
+    AmazonS3 amazonS3Client() {
+        return AmazonS3ClientBuilder.standard().withRegion(Regions.US_WEST_2).build();
+    }
+
+    @Bean
+    S3ConfigFetcher.Factory s3ConfigFetcherFactory() {
+        return new S3ConfigFetcher.Factory();
     }
 
     @Bean
@@ -218,6 +237,15 @@ public class SpringConfig {
                 emailerDetectedActionLogger,
                 sender,
                 secretsEmailConfigurationProvider);
+    }
+
+    @Bean
+    @Autowired
+    S3ConfigFetcher s3ConfigFetcher(Logger s3ConfigFetcherLogger,
+                                    WhiteListConfig whiteListConfig,
+                                    AmazonS3 amazonS3,
+                                    S3ConfigFetcher.Factory s3ConfigFetcherFactory) {
+        return new S3ConfigFetcher(s3ConfigFetcherLogger, whiteListConfig, amazonS3, s3ConfigFetcherFactory);
     }
 
     /*

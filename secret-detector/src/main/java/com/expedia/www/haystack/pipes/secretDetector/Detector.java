@@ -114,11 +114,14 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
     @Override
     public Iterable<String> apply(Span span) {
         final Map<String, List<String>> mapOfTypeToKeysOfSecrets = findSecrets(span);
+        final String serviceName = span.getServiceName();
+        final String operationName = span.getOperationName();
         if (mapOfTypeToKeysOfSecrets.isEmpty()) {
             return Collections.emptyList();
         }
         final String emailText = EmailerDetectedAction.getEmailText(span, mapOfTypeToKeysOfSecrets);
         for (String finderName : mapOfTypeToKeysOfSecrets.keySet()) {
+            // TODO use finderName, serviceName, operationName, and tag name to not log/notify whitelisted items
             if(FINDERS_TO_LOG.contains(finderName)) {
                 logger.info(emailText);
             }
