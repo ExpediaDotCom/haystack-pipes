@@ -29,7 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class HaystackPhoneNumberFinder implements Finder {
-    public static final String FINDER_NAME = "PhoneNumber";
+    private static final String FINDER_NAME = "PhoneNumber";
     private static final String REGION = "US";
     private static final Pattern ALPHAS_PATTERN = Pattern.compile("[A-Za-z]+");
     private static final Pattern ALL_NUMBERS_PATTERN = Pattern.compile("^\\d+$");

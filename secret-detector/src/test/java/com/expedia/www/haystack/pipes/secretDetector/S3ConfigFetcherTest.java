@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018 Expedia, Inc.
+ *
+ *       Licensed under the Apache License, Version 2.0 (the "License");
+ *       you may not use this file except in compliance with the License.
+ *       You may obtain a copy of the License at
+ *
+ *           http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *       Unless required by applicable law or agreed to in writing, software
+ *       distributed under the License is distributed on an "AS IS" BASIS,
+ *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *       See the License for the specific language governing permissions and
+ *       limitations under the License.
+ *
+ */
 package com.expedia.www.haystack.pipes.secretDetector;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -23,6 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.secretDetector.S3ConfigFetcher.ERROR_MESSAGE;
 import static com.expedia.www.haystack.pipes.secretDetector.S3ConfigFetcher.INVALID_DATA_MSG;
+import static com.expedia.www.haystack.pipes.secretDetector.S3ConfigFetcher.SUCCESSFUL_WHITELIST_UPDATE_MSG;
 import static com.expedia.www.haystack.pipes.secretDetector.S3ConfigFetcher.WHITE_LIST_ITEMS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -125,6 +142,7 @@ public class S3ConfigFetcherTest {
         assertFalse(s3ConfigFetcher.isUpdateInProgress.get());
 
         verifiesForGetWhiteListItems(2);
+        verify(mockS3ConfigFetcherLogger).info(SUCCESSFUL_WHITELIST_UPDATE_MSG);
     }
 
     @Test
