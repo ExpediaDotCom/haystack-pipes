@@ -33,10 +33,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.BYTES_FIELD_KEY;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.BYTES_TAG_KEY;
@@ -47,6 +47,7 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.IP_ADDRESS_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.JSON_SPAN_STRING;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.OPERATION_NAME;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.SERVICE_NAME;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.STRING_FIELD_KEY;
@@ -73,7 +74,8 @@ import static org.mockito.Mockito.when;
 public class DetectorTest {
     private static final String FINDER_NAME = RANDOM.nextLong() + "FINDER_NAME";
     private static final FinderEngine FINDER_ENGINE = new FinderEngine();
-    private static final String CREDIT_CARD_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML = "Credit_Card";
+    private static final String CREDIT_CARD_FINDER_NAME = "Credit_Card";
+    private static final String CREDIT_CARD_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML = CREDIT_CARD_FINDER_NAME;
     private static final String EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML = "Email";
     private static final String IP_FINDER_NAME = NonLocalIpV4AddressFinder.class.getSimpleName().replace("Finder", "");
     private static final FinderNameAndServiceName FINDER_NAME_AND_SERVICE_NAME
@@ -91,19 +93,23 @@ public class DetectorTest {
     @Mock
     private MetricObjects mockMetricObjects;
 
+    @Mock
+    private S3ConfigFetcher mockS3ConfigFetcher;
+
     private Detector detector;
     private Factory factory;
 
     @Before
     public void setUp() {
-        detector = new Detector(mockLogger, FINDER_ENGINE, mockFactory);
+        S3ConfigFetcher.WHITE_LIST_ITEMS.set(new ConcurrentHashMap<>());
+        detector = new Detector(mockLogger, FINDER_ENGINE, mockFactory, mockS3ConfigFetcher);
         factory = new Factory(mockMetricObjects);
     }
 
     @After
     public void tearDown() {
         Detector.COUNTERS.clear();
-        verifyNoMoreInteractions(mockLogger, mockFactory, mockCounter, mockMetricObjects);
+        verifyNoMoreInteractions(mockLogger, mockFactory, mockCounter, mockMetricObjects, mockS3ConfigFetcher);
     }
 
     @Test
@@ -179,6 +185,7 @@ public class DetectorTest {
     @Test
     public void testApplyCreditCardInLog() {
         when(mockFactory.createCounter(any())).thenReturn(mockCounter);
+        when(mockS3ConfigFetcher.isTagInWhiteList(anyString(), anyString(), anyString(), anyString())).thenReturn(false);
         final Iterator<String> iterator = detector.apply(CREDIT_CARD_LOG_SPAN).iterator();
 
         final String emailText = EmailerDetectedAction.getEmailText(
@@ -186,7 +193,9 @@ public class DetectorTest {
                         Collections.singletonList(STRING_FIELD_KEY)));
         assertEquals(emailText, iterator.next());
         assertFalse(iterator.hasNext());
-        if(FINDERS_TO_LOG.contains("Credit_Card")) {
+        verify(mockS3ConfigFetcher).isTagInWhiteList(
+                CREDIT_CARD_FINDER_NAME, SERVICE_NAME, OPERATION_NAME, STRING_FIELD_KEY);
+        if(FINDERS_TO_LOG.contains(CREDIT_CARD_FINDER_NAME)) {
             verify(mockLogger).info(emailText);
         }
         verifyCounterIncrement(1, CREDIT_CARD_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML);
@@ -195,14 +204,18 @@ public class DetectorTest {
     @Test
     public void testApplyEMailAddressInLog() {
         when(mockFactory.createCounter(any())).thenReturn(mockCounter);
-        final Iterator<String> iterator = detector.apply(EMAIL_ADDRESS_LOG_SPAN).iterator();
-
-        final String emailText = EmailerDetectedAction.getEmailText(
-                EMAIL_ADDRESS_LOG_SPAN, Collections.singletonMap(
-                        EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML, Collections.singletonList(STRING_FIELD_KEY)));
-        assertEquals(emailText, iterator.next());
-        assertFalse(iterator.hasNext());
-        verifyCounterIncrement(1, EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML);
+        when(mockS3ConfigFetcher.isTagInWhiteList(anyString(), anyString(), anyString(), anyString())).thenReturn(true, false);
+        for (int i = 0 ; i < 2 ; i++) {
+            final Iterator<String> iterator = detector.apply(EMAIL_ADDRESS_LOG_SPAN).iterator();
+            final String emailText = EmailerDetectedAction.getEmailText(
+                    EMAIL_ADDRESS_LOG_SPAN, Collections.singletonMap(
+                            EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML, Collections.singletonList(STRING_FIELD_KEY)));
+            assertEquals(emailText, iterator.next());
+            assertFalse(iterator.hasNext());
+        }
+        verify(mockS3ConfigFetcher, times(2)).isTagInWhiteList(
+                "Email", SERVICE_NAME, OPERATION_NAME, STRING_FIELD_KEY);
+        verifyCounterIncrement(2, EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML);
     }
 
     private void verifyCounterIncrement(int wantedNumberOfInvocations, String finderName) {

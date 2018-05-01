@@ -189,8 +189,9 @@ public class SpringConfig {
     @Autowired
     Detector detector(Logger detectorLogger,
                       FinderEngine finderEngine,
-                      Detector.Factory detectorFactory) {
-        return new Detector(detectorLogger, finderEngine, detectorFactory);
+                      Detector.Factory detectorFactory,
+                      S3ConfigFetcher s3ConfigFetcher) {
+        return new Detector(detectorLogger, finderEngine, detectorFactory, s3ConfigFetcher);
     }
 
     @Bean

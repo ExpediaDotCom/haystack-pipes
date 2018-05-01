@@ -59,12 +59,17 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
     private final FinderEngine finderEngine;
     private final Logger logger;
     private final Factory factory;
+    private final S3ConfigFetcher s3ConfigFetcher;
 
     @Autowired
-    Detector(Logger detectorLogger, FinderEngine finderEngine, Factory detectorFactory) {
+    Detector(Logger detectorLogger,
+             FinderEngine finderEngine,
+             Factory detectorFactory,
+             S3ConfigFetcher s3ConfigFetcher) {
         this.logger = detectorLogger;
         this.finderEngine = finderEngine;
         this.factory = detectorFactory;
+        this.s3ConfigFetcher = s3ConfigFetcher;
     }
 
     @VisibleForTesting
@@ -120,9 +125,16 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
             return Collections.emptyList();
         }
         final String emailText = EmailerDetectedAction.getEmailText(span, mapOfTypeToKeysOfSecrets);
-        for (String finderName : mapOfTypeToKeysOfSecrets.keySet()) {
-            // TODO use finderName, serviceName, operationName, and tag name to not log/notify whitelisted items
-            if(FINDERS_TO_LOG.contains(finderName)) {
+        for (Map.Entry<String, List<String>> finderNameToKeysOfSecrets : mapOfTypeToKeysOfSecrets.entrySet()) {
+            final String finderName = finderNameToKeysOfSecrets.getKey();
+            final List<String> keysOfSecrets = finderNameToKeysOfSecrets.getValue();
+            for (int index = 0 ; index < keysOfSecrets.size() ; index++) {
+                final String tagName = keysOfSecrets.get(index);
+                if(s3ConfigFetcher.isTagInWhiteList(finderName, serviceName, operationName, tagName)) {
+                    keysOfSecrets.remove(index);
+                }
+            }
+            if(!keysOfSecrets.isEmpty() && FINDERS_TO_LOG.contains(finderName)) {
                 logger.info(emailText);
             }
         }

@@ -74,6 +74,8 @@ public class SpringConfigTest {
     private ActionsConfigurationProvider mockActionsConfigurationProvider;
     @Mock
     private Detector.Factory mockDetectorFactory;
+    @Mock
+    private S3ConfigFetcher mockS3ConfigFetcher;
 
     private SpringConfig springConfig;
 
@@ -149,7 +151,6 @@ public class SpringConfigTest {
                 DetectorAction.class.getSimpleName(), "DETECTOR_SPAN");
     }
 
-
     @Test
     public void testDetectorDetectTimer() {
         when(mockMetricObjects.createAndRegisterBasicTimer(
@@ -175,7 +176,7 @@ public class SpringConfigTest {
 
     @Test
     public void testDetector() {
-        assertNotNull(springConfig.detector(mockLogger, mockFinderEngine, mockDetectorFactory));
+        assertNotNull(springConfig.detector(mockLogger, mockFinderEngine, mockDetectorFactory, mockS3ConfigFetcher));
     }
 
     @Test
