@@ -45,6 +45,7 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.EMAIL_ADDRESS_LOG_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.EMAIL_ADDRESS_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.IP_ADDRESS;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.IP_ADDRESS_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.JSON_SPAN_STRING;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.OPERATION_NAME;
@@ -155,7 +156,7 @@ public class DetectorTest {
         when(mockFactory.createCounter(any())).thenReturn(mockCounter);
         final Map<String, List<String>> secrets = detector.findSecrets(IP_ADDRESS_SPAN);
 
-        assertEquals(1, secrets.size());
+        assertEquals(IP_ADDRESS + " should have been flagged as a secret", 1, secrets.size());
         assertEquals(IP_FINDER_NAME, secrets.keySet().iterator().next());
         assertEquals(STRING_TAG_KEY, secrets.get(IP_FINDER_NAME).iterator().next());
         verifyCounterIncrement(1, IP_FINDER_NAME);

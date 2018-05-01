@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018 Expedia, Inc.
+ *
+ *       Licensed under the Apache License, Version 2.0 (the "License");
+ *       you may not use this file except in compliance with the License.
+ *       You may obtain a copy of the License at
+ *
+ *           http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *       Unless required by applicable law or agreed to in writing, software
+ *       distributed under the License is distributed on an "AS IS" BASIS,
+ *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *       See the License for the specific language governing permissions and
+ *       limitations under the License.
+ *
+ */
 package com.expedia.www.haystack.pipes.secretDetector;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -32,6 +48,8 @@ public class S3ConfigFetcher {
     @VisibleForTesting
     static final String INVALID_DATA_MSG = "The line [%s] does not contain at least three semicolons to separate "
             + "finderName, String serviceName, String operationName, String tagName";
+    @VisibleForTesting
+    static final String SUCCESSFUL_WHITELIST_UPDATE_MSG = "Successfully updated the whitelist from S3";
 
     private static final long ONE_HOUR = TimeUnit.HOURS.toMillis(1);
     private final Logger logger;
@@ -63,6 +81,7 @@ public class S3ConfigFetcher {
                 try {
                     WHITE_LIST_ITEMS.set(readAllWhiteListItemsFromS3());
                     lastUpdateTime.set(now);
+                    logger.info(SUCCESSFUL_WHITELIST_UPDATE_MSG);
                 } catch (InvalidWhitelistItemInputException e) {
                     logger.error(e.getMessage(), e);
                 } catch (Exception e) {
@@ -106,7 +125,7 @@ public class S3ConfigFetcher {
         return factory.createBufferedReader(inputStreamReader);
     }
 
-    public boolean isTagInWhiteList(String finderName, String serviceName, String operationName, String tagName) {
+    boolean isTagInWhiteList(String finderName, String serviceName, String operationName, String tagName) {
         final Map<String, Map<String, Map<String, Set<String>>>> finderNameMap = WHITE_LIST_ITEMS.get();
         final Map<String, Map<String, Set<String>>> serviceNameMap = finderNameMap.get(finderName);
         if (serviceNameMap != null) {

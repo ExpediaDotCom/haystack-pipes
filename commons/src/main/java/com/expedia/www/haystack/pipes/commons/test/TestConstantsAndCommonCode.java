@@ -85,7 +85,7 @@ public interface TestConstantsAndCommonCode {
     String JSON_SPAN_STRING_WITH_EMAIL_ADDRESS_IN_TAG_BYTES_AND_LOG_BYTES =
             JSON_SPAN_STRING.replace(BASE_64_ENCODED_STRING, BASE_64_ENCODED_EMAIL);
     Span EMAIL_ADDRESS_IN_TAG_BYTES_SPAN = buildSpan(JSON_SPAN_STRING_WITH_EMAIL_ADDRESS_IN_TAG_BYTES_AND_LOG_BYTES);
-    String IP_ADDRESS = String.format("%d.%d.%d.%d", RANDOM.nextInt(Byte.MAX_VALUE), RANDOM.nextInt(Byte.MAX_VALUE),
+    String IP_ADDRESS = String.format("%d.%d.%d.%d", 193, RANDOM.nextInt(Byte.MAX_VALUE), // 192.168. and 10. are local
             RANDOM.nextInt(Byte.MAX_VALUE), RANDOM.nextInt(Byte.MAX_VALUE));
     String JSON_SPAN_STRING_WITH_IP_ADDRESS_IN_TAG = JSON_SPAN_STRING.replace(STRING_TAG_VALUE, IP_ADDRESS);
     Span IP_ADDRESS_SPAN = buildSpan(JSON_SPAN_STRING_WITH_IP_ADDRESS_IN_TAG);

@@ -23,6 +23,9 @@
     <logger name="com.netflix.servo.publish.graphite.GraphiteMetricObserver" additivity="false" level="INFO">
         <appender-ref ref="STDOUT" /><!-- Display start up message without flooding logs with other info messages -->
     </logger>
+    <logger name="com.expedia.www.haystack.pipes.secretDetector.S3ConfigFetcher" additivity="false" level="INFO">
+        <appender-ref ref="STDOUT" /><!-- S3ConfigFetcher.getWhiteListItems() logs hourly on refresh, providing a heartbeat  -->
+    </logger>
     <root level="WARN">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="EmitToGraphiteLogbackAppender" />
