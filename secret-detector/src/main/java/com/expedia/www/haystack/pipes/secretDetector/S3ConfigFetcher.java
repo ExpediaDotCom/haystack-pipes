@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -45,6 +46,8 @@ public class S3ConfigFetcher {
     @VisibleForTesting
     static final AtomicReference<Map<String, Map<String, Map<String, Set<String>>>>> WHITE_LIST_ITEMS =
             new AtomicReference<>(new ConcurrentHashMap<>());
+    @VisibleForTesting
+    static final AtomicInteger WHITE_LIST_ITEM_SIZE = new AtomicInteger(0);
     @VisibleForTesting
     static final String INVALID_DATA_MSG = "The line [%s] does not contain at least three semicolons to separate "
             + "finderName, String serviceName, String operationName, String tagName";
@@ -78,9 +81,11 @@ public class S3ConfigFetcher {
         final long now = factory.createCurrentTimeMillis();
         if (now - lastUpdateTime.get() > ONE_HOUR) {
             if (isUpdateInProgress.compareAndSet(false, true)) {
+                System.out.println("Starting whitelist update");
                 try {
                     WHITE_LIST_ITEMS.set(readAllWhiteListItemsFromS3());
                     lastUpdateTime.set(now);
+                    System.out.println(SUCCESSFUL_WHITELIST_UPDATE_MSG);
                     logger.info(SUCCESSFUL_WHITELIST_UPDATE_MSG);
                 } catch (InvalidWhitelistItemInputException e) {
                     logger.error(e.getMessage(), e);
@@ -97,12 +102,14 @@ public class S3ConfigFetcher {
     private Map<String, Map<String, Map<String, Set<String>>>> readAllWhiteListItemsFromS3()
             throws IOException, InvalidWhitelistItemInputException {
         try (final S3Object s3Object = amazonS3.getObject(bucket, key)) {
+            WHITE_LIST_ITEM_SIZE.set(0);
             final BufferedReader bufferedReader = getBufferedReader(s3Object);
             final Map<String, Map<String, Map<String, Set<String>>>> whiteListItems = new ConcurrentHashMap<>();
             WhiteListItem whiteListItem = readSingleWhiteListItemFromS3(bufferedReader);
             while (whiteListItem != null) {
                 putTagInWhiteListItems(whiteListItems, whiteListItem);
                 whiteListItem = readSingleWhiteListItemFromS3(bufferedReader);
+                WHITE_LIST_ITEM_SIZE.incrementAndGet();
             }
             return whiteListItems;
         }

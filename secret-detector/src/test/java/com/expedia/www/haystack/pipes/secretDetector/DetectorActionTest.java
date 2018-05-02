@@ -97,7 +97,7 @@ public class DetectorActionTest {
 
         verifiesForApply();
         verify(mockLogger).info(
-                String.format(CONFIDENTIAL_DATA_MSG, SERVICE_NAME, OPERATION_NAME, SPAN_ID, TRACE_ID, secrets));
+                String.format(CONFIDENTIAL_DATA_MSG, SERVICE_NAME, OPERATION_NAME, SPAN_ID, TRACE_ID, secrets, 0));
         verify(mockActionsConfigurationProvider).getDetectedActions();
         verify(mockDetectedAction).send(FULLY_POPULATED_SPAN, secrets);
     }
