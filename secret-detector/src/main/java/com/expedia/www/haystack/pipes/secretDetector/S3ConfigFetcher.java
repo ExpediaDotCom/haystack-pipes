@@ -80,6 +80,7 @@ public class S3ConfigFetcher {
     Map<String, Map<String, Map<String, Set<String>>>> getWhiteListItems() {
         final long now = factory.createCurrentTimeMillis();
         if (now - lastUpdateTime.get() > ONE_HOUR) {
+            System.out.println("Found that whitelist is too old");
             if (isUpdateInProgress.compareAndSet(false, true)) {
                 System.out.println("Starting whitelist update");
                 try {
