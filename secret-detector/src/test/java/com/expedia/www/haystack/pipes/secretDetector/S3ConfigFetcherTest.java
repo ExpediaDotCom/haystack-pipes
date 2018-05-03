@@ -141,7 +141,7 @@ public class S3ConfigFetcherTest {
         assertEquals(MORE_THAN_ONE_HOUR, s3ConfigFetcher.lastUpdateTime.get());
         assertFalse(s3ConfigFetcher.isUpdateInProgress.get());
 
-        verifiesForGetWhiteListItems(2);
+        verifiesForGetWhiteListItems(2, 6);
         verify(mockS3ConfigFetcherLogger).info(SUCCESSFUL_WHITELIST_UPDATE_MSG);
     }
 
@@ -166,7 +166,7 @@ public class S3ConfigFetcherTest {
         final Map<String, Map<String, Map<String, Set<String>>>> whiteListItems = s3ConfigFetcher.getWhiteListItems();
         assertsForEmptyWhitelist(whiteListItems, false);
 
-        verifiesForGetWhiteListItems(1);
+        verifiesForGetWhiteListItems(1, 1);
         verify(mockS3ConfigFetcherLogger).error(ERROR_MESSAGE, ioException);
     }
 
@@ -178,7 +178,7 @@ public class S3ConfigFetcherTest {
         final Map<String, Map<String, Map<String, Set<String>>>> whiteListItems = s3ConfigFetcher.getWhiteListItems();
         assertsForEmptyWhitelist(whiteListItems, false);
 
-        verifiesForGetWhiteListItems(1);
+        verifiesForGetWhiteListItems(1, 1);
         verify(mockS3ConfigFetcherLogger).error(eq(String.format(INVALID_DATA_MSG, ONE_LINE_OF_BAD_DATA)),
                 any(S3ConfigFetcher.InvalidWhitelistItemInputException.class));
     }
@@ -198,14 +198,15 @@ public class S3ConfigFetcherTest {
         when(mockFactory.createBufferedReader(any())).thenReturn(mockBufferedReader);
     }
 
-    private void verifiesForGetWhiteListItems(int wantedNumberOfInvocationsForReadLine) throws IOException {
-        verify(mockFactory).createCurrentTimeMillis();
+    private void verifiesForGetWhiteListItems(int wantedNumberOfInvocationsReadLine,
+                                              int wantedNumberOfInvocationsCreateCurrentTimeMillis) throws IOException {
+        verify(mockFactory, times(wantedNumberOfInvocationsCreateCurrentTimeMillis)).createCurrentTimeMillis();
         verify(mockAmazonS3).getObject(BUCKET, KEY);
         verify(mockS3Object).getObjectContent();
         verify(mockS3Object).close();
         verify(mockFactory).createInputStreamReader(mockS3ObjectInputStream);
         verify(mockFactory).createBufferedReader(mockInputStreamReader);
-        verify(mockBufferedReader, times(wantedNumberOfInvocationsForReadLine)).readLine();
+        verify(mockBufferedReader, times(wantedNumberOfInvocationsReadLine)).readLine();
     }
 
     @Test

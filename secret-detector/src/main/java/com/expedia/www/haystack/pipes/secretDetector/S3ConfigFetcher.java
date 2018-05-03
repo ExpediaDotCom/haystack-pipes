@@ -80,9 +80,7 @@ public class S3ConfigFetcher {
     Map<String, Map<String, Map<String, Set<String>>>> getWhiteListItems() {
         final long now = factory.createCurrentTimeMillis();
         if (now - lastUpdateTime.get() > ONE_HOUR) {
-            System.out.println("Found that whitelist is too old");
             if (isUpdateInProgress.compareAndSet(false, true)) {
-                System.out.println("Starting whitelist update");
                 try {
                     WHITE_LIST_ITEMS.set(readAllWhiteListItemsFromS3());
                     lastUpdateTime.set(now);
@@ -134,7 +132,7 @@ public class S3ConfigFetcher {
     }
 
     boolean isTagInWhiteList(String finderName, String serviceName, String operationName, String tagName) {
-        final Map<String, Map<String, Map<String, Set<String>>>> finderNameMap = WHITE_LIST_ITEMS.get();
+        final Map<String, Map<String, Map<String, Set<String>>>> finderNameMap = getWhiteListItems();
         final Map<String, Map<String, Set<String>>> serviceNameMap = finderNameMap.get(finderName);
         if (serviceNameMap != null) {
             final Map<String, Set<String>> operationNameMap = serviceNameMap.get(serviceName);
