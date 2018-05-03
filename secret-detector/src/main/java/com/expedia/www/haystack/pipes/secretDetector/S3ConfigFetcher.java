@@ -84,7 +84,6 @@ public class S3ConfigFetcher {
                 try {
                     WHITE_LIST_ITEMS.set(readAllWhiteListItemsFromS3());
                     lastUpdateTime.set(now);
-                    System.out.println(SUCCESSFUL_WHITELIST_UPDATE_MSG);
                     logger.info(SUCCESSFUL_WHITELIST_UPDATE_MSG);
                 } catch (InvalidWhitelistItemInputException e) {
                     logger.error(e.getMessage(), e);

@@ -19,6 +19,7 @@ package com.expedia.www.haystack.pipes.secretDetector.actions;
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.secretDetector.config.SecretsEmailConfigurationProvider;
 import com.netflix.servo.util.VisibleForTesting;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -72,26 +73,30 @@ public class EmailerDetectedAction implements DetectedAction {
 
     private Address createFromAddress(SecretsEmailConfigurationProvider secretsEmailConfigurationProvider) {
         final String sFrom = secretsEmailConfigurationProvider.from();
-        try {
-            return new InternetAddress(sFrom);
-        } catch (AddressException e) {
-            final String message = String.format(FROM_ADDRESS_EXCEPTION_MSG, sFrom);
-            logger.error(message);
+        if(!StringUtils.isBlank(sFrom)) {
+            try {
+                return new InternetAddress(sFrom);
+            } catch (AddressException e) {
+                final String message = String.format(FROM_ADDRESS_EXCEPTION_MSG, sFrom);
+                logger.error(message);
+            }
         }
         return null;
     }
 
     private Address[] createToAddresses(SecretsEmailConfigurationProvider secretsEmailConfigurationProvider) {
         final List<String> tos = secretsEmailConfigurationProvider.tos();
-        try {
-            final Address[] addresses = new Address[tos.size()];
-            for(int i = 0; i < tos.size() ; i++) {
-                addresses[i] = new InternetAddress(tos.get(i));
+        if(tos.size() > 0) {
+            try {
+                final Address[] addresses = new Address[tos.size()];
+                for (int i = 0; i < tos.size(); i++) {
+                    addresses[i] = new InternetAddress(tos.get(i));
+                }
+                return addresses;
+            } catch (AddressException e) {
+                final String message = String.format(TOS_ADDRESS_EXCEPTION_MSG, tos);
+                logger.error(message);
             }
-            return addresses;
-        } catch(AddressException e) {
-            final String message = String.format(TOS_ADDRESS_EXCEPTION_MSG, tos);
-            logger.error(message);
         }
         return null;
     }

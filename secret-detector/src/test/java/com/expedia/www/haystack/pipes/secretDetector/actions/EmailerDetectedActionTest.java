@@ -156,6 +156,18 @@ public class EmailerDetectedActionTest {
     }
 
     @Test
+    public void testConstructorNoEmailAddresses() {
+        constructorTimes = 2;
+        when(mockSecretsEmailConfigurationProvider.from()).thenReturn("");
+        when(mockSecretsEmailConfigurationProvider.tos()).thenReturn(Collections.emptyList());
+        when(mockSecretsEmailConfigurationProvider.subject()).thenReturn(SUBJECT);
+        when(mockSecretsEmailConfigurationProvider.host()).thenReturn(HOST);
+
+        new EmailerDetectedAction(
+                mockMimeMessageFactory, mockLogger, mockSender, mockSecretsEmailConfigurationProvider);
+    }
+
+    @Test
     public void testSendHappyCase() throws MessagingException {
         testSend(mockMimeMessage);
     }
