@@ -142,7 +142,7 @@ public class S3ConfigFetcherTest {
         assertFalse(s3ConfigFetcher.isUpdateInProgress.get());
 
         verifiesForGetWhiteListItems(2, 6);
-        verify(mockS3ConfigFetcherLogger).info(SUCCESSFUL_WHITELIST_UPDATE_MSG);
+        verify(mockS3ConfigFetcherLogger).info(String.format(SUCCESSFUL_WHITELIST_UPDATE_MSG, 1));
     }
 
     @Test

@@ -21,7 +21,7 @@ import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.secretDetector.Detector.Factory;
 import com.expedia.www.haystack.pipes.secretDetector.Detector.FinderNameAndServiceName;
 import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction;
-import com.expedia.www.haystack.pipes.secretDetector.actions.NonLocalIpV4AddressFinder;
+import com.expedia.www.haystack.commons.secretDetector.NonLocalIpV4AddressFinder;
 import com.netflix.servo.monitor.Counter;
 import io.dataapps.chlorine.finder.FinderEngine;
 import org.junit.After;
