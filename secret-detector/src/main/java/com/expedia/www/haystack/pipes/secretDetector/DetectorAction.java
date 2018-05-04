@@ -30,14 +30,11 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 
-import static com.expedia.www.haystack.pipes.secretDetector.S3ConfigFetcher.WHITE_LIST_ITEM_SIZE;
-
 @Component
 public class DetectorAction implements ForeachAction<String, Span> {
     @VisibleForTesting
     static final String CONFIDENTIAL_DATA_MSG =
-            "Confidential data has been found for service [%s] operation [%s] span [%s] trace [%s] tag(s) [%s]; " +
-            "WHITE_LIST_ITEM_SIZE=%d";
+            "Confidential data has been found for service [%s] operation [%s] span [%s] trace [%s] tag(s) [%s]";
     private final CountersAndTimer countersAndTimer;
     private final Detector detector;
     private final Logger detectorActionLogger;
@@ -63,8 +60,7 @@ public class DetectorAction implements ForeachAction<String, Span> {
             if (!mapOfTypeToKeysOfSecrets.isEmpty()) {
                 final List<DetectedAction> detectedActions = actionsConfigurationProvider.getDetectedActions();
                 detectorActionLogger.info(String.format(CONFIDENTIAL_DATA_MSG, span.getServiceName(),
-                        span.getOperationName(), span.getSpanId(), span.getTraceId(), mapOfTypeToKeysOfSecrets,
-                        WHITE_LIST_ITEM_SIZE.get()));
+                        span.getOperationName(), span.getSpanId(), span.getTraceId(), mapOfTypeToKeysOfSecrets));
                 for (DetectedAction detectedAction : detectedActions) {
                     detectedAction.send(span, mapOfTypeToKeysOfSecrets);
                 }
