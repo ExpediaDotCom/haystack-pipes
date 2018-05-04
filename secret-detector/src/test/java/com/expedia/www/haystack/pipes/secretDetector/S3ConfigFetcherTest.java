@@ -66,6 +66,8 @@ public class S3ConfigFetcherTest {
     private static final String COMMENT = "Comment";
     private static final String ONE_LINE_OF_GOOD_DATA = String.format("%s;%s;%s;%s;%s",
             FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME, COMMENT);
+    private static final String SECOND_LINE_OF_GOOD_DATA = String.format("%s;%s;%s;%s;%s",
+            "SecondFinderName", SERVICE_NAME, OPERATION_NAME, TAG_NAME, COMMENT);
     private static final String ONE_LINE_OF_BAD_DATA = String.format("%s;%s;%s",
             FINDER_NAME, SERVICE_NAME, OPERATION_NAME);
     private static final String MISSING_FINDER_NAME = "MissingFinderName";
@@ -129,7 +131,8 @@ public class S3ConfigFetcherTest {
     @Test
     public void testGetWhiteListItemsSuccessfulFetch() throws IOException {
         whensForGetWhiteListItems();
-        when(mockBufferedReader.readLine()).thenReturn(ONE_LINE_OF_GOOD_DATA).thenReturn(null);
+        when(mockBufferedReader.readLine()).thenReturn(ONE_LINE_OF_GOOD_DATA).thenReturn(SECOND_LINE_OF_GOOD_DATA)
+                .thenReturn(null);
 
         s3ConfigFetcher.getWhiteListItems();
 
@@ -141,8 +144,8 @@ public class S3ConfigFetcherTest {
         assertEquals(MORE_THAN_ONE_HOUR, s3ConfigFetcher.lastUpdateTime.get());
         assertFalse(s3ConfigFetcher.isUpdateInProgress.get());
 
-        verifiesForGetWhiteListItems(2, 6);
-        verify(mockS3ConfigFetcherLogger).info(String.format(SUCCESSFUL_WHITELIST_UPDATE_MSG, 1));
+        verifiesForGetWhiteListItems(3, 6);
+        verify(mockS3ConfigFetcherLogger).info(String.format(SUCCESSFUL_WHITELIST_UPDATE_MSG, 2));
     }
 
     @Test
