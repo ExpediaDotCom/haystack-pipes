@@ -29,6 +29,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,7 +51,7 @@ public class S3ConfigFetcher {
             + "finderName, String serviceName, String operationName, String tagName";
     @VisibleForTesting
     static final String SUCCESSFUL_WHITELIST_UPDATE_MSG = "Successfully updated the whitelist from S3" +
-            "; WHITE_LIST_ITEM_SIZE.get().size()=%d";
+            "; size=%d";
 
     private static final long ONE_HOUR = TimeUnit.HOURS.toMillis(1);
     private final Logger logger;
@@ -82,7 +83,7 @@ public class S3ConfigFetcher {
                 try {
                     WHITE_LIST_ITEMS.set(readAllWhiteListItemsFromS3());
                     lastUpdateTime.set(now);
-                    logger.info(String.format(SUCCESSFUL_WHITELIST_UPDATE_MSG, WHITE_LIST_ITEMS.get().size()));
+                    logger.info(String.format(SUCCESSFUL_WHITELIST_UPDATE_MSG, getWhiteListItemSize()));
                 } catch (InvalidWhitelistItemInputException e) {
                     logger.error(e.getMessage(), e);
                 } catch (Exception e) {
@@ -93,6 +94,19 @@ public class S3ConfigFetcher {
             }
         }
         return WHITE_LIST_ITEMS.get();
+    }
+
+    private int getWhiteListItemSize() {
+        int size = 0;
+        final Collection<Map<String, Map<String, Set<String>>>> values = WHITE_LIST_ITEMS.get().values();
+        for (final Map<String, Map<String, Set<String>>> stringMapMap : values) {
+            for (final Map<String, Set<String>> stringSetMap : stringMapMap.values()) {
+                for (final Set<String> strings : stringSetMap.values()) {
+                    size += strings.size();
+                }
+            }
+        }
+        return size;
     }
 
     private Map<String, Map<String, Map<String, Set<String>>>> readAllWhiteListItemsFromS3()
