@@ -81,38 +81,31 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
     }
 
     private void findSecretsInTags(Map<String, List<String>> mapOfTypeToKeysOfSecrets, Span span) {
-        findSecrets(mapOfTypeToKeysOfSecrets, span.getTagsList(), span);
+        findSecrets(mapOfTypeToKeysOfSecrets, span.getTagsList());
     }
 
     private void findSecretsInLogFields(Map<String, List<String>> mapOfTypeToKeysOfSecrets, Span span) {
         for (final Log log : span.getLogsList()) {
-            findSecrets(mapOfTypeToKeysOfSecrets, log.getFieldsList(), span);
+            findSecrets(mapOfTypeToKeysOfSecrets, log.getFieldsList());
         }
     }
 
-    private void findSecrets(Map<String, List<String>> mapOfTypeToKeysOfSecrets, List<Tag> tags, Span span) {
+    private void findSecrets(Map<String, List<String>> mapOfTypeToKeysOfSecrets, List<Tag> tags) {
         for (final Tag tag : tags) {
             if (StringUtils.isNotEmpty(tag.getVStr())) {
-                putKeysOfSecretsIntoMap(mapOfTypeToKeysOfSecrets, tag, finderEngine.findWithType(tag.getVStr()), span);
+                putKeysOfSecretsIntoMap(mapOfTypeToKeysOfSecrets, tag, finderEngine.findWithType(tag.getVStr()));
             } else if (tag.getVBytes().size() > 0) {
                 final String input = new String(tag.getVBytes().toByteArray());
-                putKeysOfSecretsIntoMap(mapOfTypeToKeysOfSecrets, tag, finderEngine.findWithType(input), span);
+                putKeysOfSecretsIntoMap(mapOfTypeToKeysOfSecrets, tag, finderEngine.findWithType(input));
             }
         }
     }
 
     private void putKeysOfSecretsIntoMap(Map<String, List<String>> mapOfTypeToKeysOfSecrets,
                                          Tag tag,
-                                         Map<String, List<String>> mapOfTypeToKeysOfSecretsJustFound,
-                                         Span span) {
+                                         Map<String, List<String>> mapOfTypeToKeysOfSecretsJustFound) {
         for (final String finderName : mapOfTypeToKeysOfSecretsJustFound.keySet()) {
             mapOfTypeToKeysOfSecrets.computeIfAbsent(finderName, (l -> new ArrayList<>())).add(tag.getKey());
-            final String serviceName = span.getServiceName();
-            final FinderNameAndServiceName finderNameAndServiceName = CACHED_FINDER_NAME_AND_SECRET_NAME_OBJECTS
-                    .computeIfAbsent(finderName, (v -> new HashMap<>()))
-                    .computeIfAbsent(serviceName, (v -> new FinderNameAndServiceName(finderName, serviceName)));
-            COUNTERS.computeIfAbsent(finderNameAndServiceName, (c -> factory.createCounter(finderNameAndServiceName)))
-                    .increment();
         }
     }
 
@@ -136,10 +129,19 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
             }
             if(!keysOfSecrets.isEmpty() && FINDERS_TO_LOG.contains(finderName)) {
                 logger.info(emailText);
+                incrementCounter(serviceName, finderName);
             }
         }
 
         return Collections.singleton(emailText);
+    }
+
+    private void incrementCounter(String serviceName, String finderName) {
+        final FinderNameAndServiceName finderNameAndServiceName = CACHED_FINDER_NAME_AND_SECRET_NAME_OBJECTS
+                .computeIfAbsent(finderName, (v -> new HashMap<>()))
+                .computeIfAbsent(serviceName, (v -> new FinderNameAndServiceName(finderName, serviceName)));
+        COUNTERS.computeIfAbsent(finderNameAndServiceName, (c -> factory.createCounter(finderNameAndServiceName)))
+                .increment();
     }
 
     static class FinderNameAndServiceName {

@@ -131,7 +131,6 @@ public class DetectorTest {
         final Iterator<String> iterator = tagsThatContainEmails.iterator();
         assertEquals(BYTES_TAG_KEY, iterator.next());
         assertEquals(BYTES_FIELD_KEY, iterator.next());
-        verifyCounterIncrement(2, EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML);
     }
 
     @Test
@@ -148,7 +147,6 @@ public class DetectorTest {
         final List<String> strings = secrets.get(EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML);
         assertEquals(1, strings.size());
         assertEquals(keyOfSecret, strings.iterator().next());
-        verifyCounterIncrement(1, EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML);
     }
 
     @Test
@@ -159,7 +157,6 @@ public class DetectorTest {
         assertEquals(IP_ADDRESS + " should have been flagged as a secret", 1, secrets.size());
         assertEquals(IP_FINDER_NAME, secrets.keySet().iterator().next());
         assertEquals(STRING_TAG_KEY, secrets.get(IP_FINDER_NAME).iterator().next());
-        verifyCounterIncrement(1, IP_FINDER_NAME);
     }
 
     @Test
@@ -216,7 +213,6 @@ public class DetectorTest {
         }
         verify(mockS3ConfigFetcher, times(2)).isTagInWhiteList(
                 "Email", SERVICE_NAME, OPERATION_NAME, STRING_FIELD_KEY);
-        verifyCounterIncrement(2, EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML);
     }
 
     private void verifyCounterIncrement(int wantedNumberOfInvocations, String finderName) {
