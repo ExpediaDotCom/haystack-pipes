@@ -17,11 +17,10 @@
 package com.expedia.www.haystack.pipes.secretDetector;
 
 import com.expedia.open.tracing.Span;
+import com.expedia.www.haystack.commons.secretDetector.NonLocalIpV4AddressFinder;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.secretDetector.Detector.Factory;
-import com.expedia.www.haystack.pipes.secretDetector.Detector.FinderNameAndServiceName;
 import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction;
-import com.expedia.www.haystack.commons.secretDetector.NonLocalIpV4AddressFinder;
 import com.netflix.servo.monitor.Counter;
 import io.dataapps.chlorine.finder.FinderEngine;
 import org.junit.After;
@@ -61,7 +60,6 @@ import static com.expedia.www.haystack.pipes.secretDetector.Detector.ERRORS_METR
 import static com.expedia.www.haystack.pipes.secretDetector.Detector.FINDERS_TO_LOG;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -196,7 +194,7 @@ public class DetectorTest {
         if(FINDERS_TO_LOG.contains(CREDIT_CARD_FINDER_NAME)) {
             verify(mockLogger).info(emailText);
         }
-        verifyCounterIncrement(1, CREDIT_CARD_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML);
+        verifyCounterIncrement();
     }
 
     @Test
@@ -215,11 +213,11 @@ public class DetectorTest {
                 "Email", SERVICE_NAME, OPERATION_NAME, STRING_FIELD_KEY);
     }
 
-    private void verifyCounterIncrement(int wantedNumberOfInvocations, String finderName) {
+    private void verifyCounterIncrement() {
         final FinderNameAndServiceName finderAndServiceName =
-                new FinderNameAndServiceName(finderName, SERVICE_NAME);
+                new FinderNameAndServiceName(CREDIT_CARD_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML, SERVICE_NAME);
         verify(mockFactory).createCounter(finderAndServiceName);
-        verify(mockCounter, times(wantedNumberOfInvocations)).increment();
+        verify(mockCounter, times(1)).increment();
     }
 
     @Test
@@ -234,63 +232,4 @@ public class DetectorTest {
                 ERRORS_METRIC_GROUP, APPLICATION, FINDER_NAME, SERVICE_NAME, COUNTER_NAME);
     }
 
-    @Test
-    public void testFinderNameAndServiceNameEqualsNullOther() {
-        //noinspection SimplifiableJUnitAssertion,ConstantConditions,ObjectEqualsNull
-        assertFalse(FINDER_NAME_AND_SERVICE_NAME.equals(null));
-    }
-
-    @Test
-    public void testFinderNameAndServiceNameEqualsSameOther() {
-        assertEquals(FINDER_NAME_AND_SERVICE_NAME, FINDER_NAME_AND_SERVICE_NAME);
-    }
-
-    @Test
-    public void testFinderNameAndServiceNameEqualsDifferentClassOther() {
-        //noinspection SimplifiableJUnitAssertion,EqualsBetweenInconvertibleTypes
-        assertFalse(FINDER_NAME_AND_SERVICE_NAME.equals(FINDER_NAME));
-    }
-
-    @Test
-    public void testFinderNameAndServiceNameEqualsTotalMatch() {
-        final FinderNameAndServiceName finderNameAndServiceName
-                = new FinderNameAndServiceName(FINDER_NAME, SERVICE_NAME);
-        assertEquals(FINDER_NAME_AND_SERVICE_NAME, finderNameAndServiceName);
-    }
-
-    @Test
-    public void testFinderNameAndServiceNameEqualsFinderNameMisMatch() {
-        final FinderNameAndServiceName finderNameAndServiceName13
-                = new FinderNameAndServiceName("1", "3");
-        final FinderNameAndServiceName finderNameAndServiceName23
-                = new FinderNameAndServiceName("2", "3");
-        assertNotEquals(finderNameAndServiceName13, finderNameAndServiceName23);
-    }
-
-    @Test
-    public void testFinderNameAndServiceNameEqualsServiceNameMisMatch() {
-        final FinderNameAndServiceName finderNameAndServiceName12
-                = new FinderNameAndServiceName("1", "2");
-        final FinderNameAndServiceName finderNameAndServiceName13
-                = new FinderNameAndServiceName("1", "3");
-        assertNotEquals(finderNameAndServiceName12, finderNameAndServiceName13);
-    }
-
-    @Test
-    public void testFinderNameAndServiceNameHashCodeFinderNameMisMatch() {
-        final FinderNameAndServiceName finderNameAndServiceName13
-                = new FinderNameAndServiceName("1", "3");
-        final FinderNameAndServiceName finderNameAndServiceName23
-                = new FinderNameAndServiceName("2", "3");
-        assertNotEquals(finderNameAndServiceName13.hashCode(), finderNameAndServiceName23.hashCode());
-    }
-
-    @Test
-    public void testFinderNameAndServiceNameHashCodeServiceNameMisMatch() {
-        final FinderNameAndServiceName finderNameAndServiceName12
-                = new FinderNameAndServiceName("1", "2");
-        final FinderNameAndServiceName finderNameAndServiceName13
-                = new FinderNameAndServiceName("1", "3");
-        assertNotEquals(finderNameAndServiceName12.hashCode(), finderNameAndServiceName13.hashCode());
-    }
 }

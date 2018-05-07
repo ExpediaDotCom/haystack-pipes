@@ -27,15 +27,12 @@ import io.dataapps.chlorine.finder.FinderEngine;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.streams.kstream.ValueMapper;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -44,7 +41,6 @@ import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATIO
 /**
  * Finds that tag keys and field keys in a Span that contain secrets.
  */
-@Component
 public class Detector implements ValueMapper<Span, Iterable<String>> {
     @VisibleForTesting
     static final Set<String> FINDERS_TO_LOG = Collections.singleton("Credit_Card");
@@ -61,11 +57,10 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
     private final Factory factory;
     private final S3ConfigFetcher s3ConfigFetcher;
 
-    @Autowired
-    Detector(Logger detectorLogger,
-             FinderEngine finderEngine,
-             Factory detectorFactory,
-             S3ConfigFetcher s3ConfigFetcher) {
+    public Detector(Logger detectorLogger,
+                    FinderEngine finderEngine,
+                    Factory detectorFactory,
+                    S3ConfigFetcher s3ConfigFetcher) {
         this.logger = detectorLogger;
         this.finderEngine = finderEngine;
         this.factory = detectorFactory;
@@ -121,13 +116,13 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
         for (Map.Entry<String, List<String>> finderNameToKeysOfSecrets : mapOfTypeToKeysOfSecrets.entrySet()) {
             final String finderName = finderNameToKeysOfSecrets.getKey();
             final List<String> keysOfSecrets = finderNameToKeysOfSecrets.getValue();
-            for (int index = 0 ; index < keysOfSecrets.size() ; index++) {
+            for (int index = 0; index < keysOfSecrets.size(); index++) {
                 final String tagName = keysOfSecrets.get(index);
-                if(s3ConfigFetcher.isTagInWhiteList(finderName, serviceName, operationName, tagName)) {
+                if (s3ConfigFetcher.isTagInWhiteList(finderName, serviceName, operationName, tagName)) {
                     keysOfSecrets.remove(index);
                 }
             }
-            if(!keysOfSecrets.isEmpty() && FINDERS_TO_LOG.contains(finderName)) {
+            if (!keysOfSecrets.isEmpty() && FINDERS_TO_LOG.contains(finderName)) {
                 logger.info(emailText);
                 incrementCounter(serviceName, finderName);
             }
@@ -144,32 +139,6 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
                 .increment();
     }
 
-    static class FinderNameAndServiceName {
-        private final String finderName;
-        private final String serviceName;
-
-        FinderNameAndServiceName(String finderName, String serviceName) {
-            this.finderName = finderName;
-            this.serviceName = serviceName;
-        }
-
-        // equals and hashCode are overridden with this IDE-created code so that FinderNameAndServiceName objects can
-        // be the key in the static Detector.COUNTERS object.
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            FinderNameAndServiceName that = (FinderNameAndServiceName) o;
-            return Objects.equals(finderName, that.finderName) &&
-                    Objects.equals(serviceName, that.serviceName);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(finderName, serviceName);
-        }
-    }
-
     public static class Factory {
         private final MetricObjects metricObjects;
 
@@ -179,7 +148,7 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
 
         Counter createCounter(FinderNameAndServiceName finderAndServiceName) {
             return metricObjects.createAndRegisterResettingCounter(ERRORS_METRIC_GROUP, APPLICATION,
-                    finderAndServiceName.finderName, finderAndServiceName.serviceName, COUNTER_NAME);
+                    finderAndServiceName.getFinderName(), finderAndServiceName.getServiceName(), COUNTER_NAME);
         }
     }
 }

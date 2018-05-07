@@ -22,8 +22,6 @@ import com.expedia.www.haystack.pipes.secretDetector.config.WhiteListConfig;
 import com.expedia.www.haystack.pipes.secretDetector.config.WhiteListItem;
 import com.netflix.servo.util.VisibleForTesting;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -38,7 +36,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-@Component
 public class S3ConfigFetcher {
     @VisibleForTesting
     static final String ERROR_MESSAGE = "Exception getting white list items" +
@@ -64,7 +61,6 @@ public class S3ConfigFetcher {
     @VisibleForTesting
     AtomicBoolean isUpdateInProgress = new AtomicBoolean(false);
 
-    @Autowired
     S3ConfigFetcher(Logger s3ConfigFetcherLogger,
                     WhiteListConfig whiteListConfig,
                     AmazonS3 amazonS3,
