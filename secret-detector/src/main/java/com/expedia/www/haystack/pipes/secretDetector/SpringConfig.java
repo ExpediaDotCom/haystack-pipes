@@ -187,11 +187,11 @@ public class SpringConfig {
 
     @Bean
     @Autowired
-    Detector detector(Logger detectorLogger,
-                      FinderEngine finderEngine,
-                      Detector.Factory detectorFactory,
-                      S3ConfigFetcher s3ConfigFetcher) {
-        return new Detector(detectorLogger, finderEngine, detectorFactory, s3ConfigFetcher);
+    SpringWiredDetector detector(Logger detectorLogger,
+                                 FinderEngine finderEngine,
+                                 Detector.Factory detectorFactory,
+                                 S3ConfigFetcher s3ConfigFetcher) {
+        return new SpringWiredDetector(detectorLogger, finderEngine, detectorFactory, s3ConfigFetcher);
     }
 
     @Bean
@@ -246,7 +246,7 @@ public class SpringConfig {
                                     WhiteListConfig whiteListConfig,
                                     AmazonS3 amazonS3,
                                     S3ConfigFetcher.Factory s3ConfigFetcherFactory) {
-        return new S3ConfigFetcher(s3ConfigFetcherLogger, whiteListConfig, amazonS3, s3ConfigFetcherFactory);
+        return new SpringWiredS3ConfigFetcher(s3ConfigFetcherLogger, whiteListConfig, amazonS3, s3ConfigFetcherFactory);
     }
 
     /*
@@ -299,6 +299,5 @@ public class SpringConfig {
         KafkaConfigurationProvider kafkaConfigurationProvider() {
             return new KafkaConfigurationProvider();
         }
-
     }
 }
