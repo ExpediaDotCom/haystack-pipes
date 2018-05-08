@@ -16,6 +16,8 @@
  */
 package com.expedia.www.haystack.pipes.secretDetector;
 
+import com.expedia.www.haystack.commons.secretDetector.Detector;
+import com.expedia.www.haystack.commons.secretDetector.S3ConfigFetcher;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;

@@ -17,9 +17,9 @@
 package com.expedia.www.haystack.pipes.secretDetector.mains;
 
 import com.expedia.open.tracing.Span;
+import com.expedia.www.haystack.commons.secretDetector.Detector;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
-import com.expedia.www.haystack.pipes.secretDetector.Detector;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
