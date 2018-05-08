@@ -17,9 +17,10 @@
 package com.expedia.www.haystack.pipes.secretDetector;
 
 import com.expedia.open.tracing.Span;
+import com.expedia.www.haystack.commons.secretDetector.Detector;
 import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
-import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
 import com.expedia.www.haystack.pipes.secretDetector.actions.DetectedAction;
+import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
 import com.netflix.servo.monitor.Stopwatch;
 import org.junit.After;
 import org.junit.Before;
@@ -97,7 +98,7 @@ public class DetectorActionTest {
 
         verifiesForApply();
         verify(mockLogger).info(
-                String.format(CONFIDENTIAL_DATA_MSG, SERVICE_NAME, OPERATION_NAME, SPAN_ID, TRACE_ID, secrets, 0));
+                String.format(CONFIDENTIAL_DATA_MSG, SERVICE_NAME, OPERATION_NAME, SPAN_ID, TRACE_ID, secrets));
         verify(mockActionsConfigurationProvider).getDetectedActions();
         verify(mockDetectedAction).send(FULLY_POPULATED_SPAN, secrets);
     }
