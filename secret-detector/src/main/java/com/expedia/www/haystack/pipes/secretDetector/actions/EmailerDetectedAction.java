@@ -90,7 +90,10 @@ public class EmailerDetectedAction implements DetectedAction {
             try {
                 final Address[] addresses = new Address[tos.size()];
                 for (int i = 0; i < tos.size(); i++) {
-                    addresses[i] = new InternetAddress(tos.get(i));
+                    final String address = tos.get(i);
+                    if(!StringUtils.isBlank(address)) {
+                        addresses[i] = new InternetAddress(address);
+                    }
                 }
                 return addresses;
             } catch (AddressException e) {
@@ -115,7 +118,7 @@ public class EmailerDetectedAction implements DetectedAction {
         }
     }
 
-    public static String getEmailText(Span span, Map<String, List<String>> mapOfTypeToKeysOfSecrets) {
+    private static String getEmailText(Span span, Map<String, List<String>> mapOfTypeToKeysOfSecrets) {
         return String.format(TEXT_TEMPLATE, span.getServiceName(), span.getOperationName(), span.getSpanId(),
                 span.getTraceId(), mapOfTypeToKeysOfSecrets.toString());
     }

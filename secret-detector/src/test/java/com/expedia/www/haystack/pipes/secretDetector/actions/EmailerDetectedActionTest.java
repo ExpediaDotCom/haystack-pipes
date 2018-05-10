@@ -198,4 +198,12 @@ public class EmailerDetectedActionTest {
         final SenderImpl sender = new SenderImpl();
         sender.send(mimeMessageFactory.createMimeMessage(), TO_ADDRESSES);
     }
+
+    @Test
+    public void testToAddressEmpty() {
+        constructorTimes = 2;
+        when(mockSecretsEmailConfigurationProvider.tos()).thenReturn(ImmutableList.of(""));
+        emailerDetectedAction = new EmailerDetectedAction(
+                mockMimeMessageFactory, mockLogger, mockSender, mockSecretsEmailConfigurationProvider);
+    }
 }
