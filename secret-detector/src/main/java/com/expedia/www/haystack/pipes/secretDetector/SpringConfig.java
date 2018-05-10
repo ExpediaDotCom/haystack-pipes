@@ -21,7 +21,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.expedia.www.haystack.commons.secretDetector.Detector;
 import com.expedia.www.haystack.commons.secretDetector.S3ConfigFetcher;
-import com.expedia.www.haystack.commons.secretDetector.WhiteListConfig;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
@@ -35,6 +34,7 @@ import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedActi
 import com.expedia.www.haystack.pipes.secretDetector.actions.SenderImpl;
 import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
 import com.expedia.www.haystack.pipes.secretDetector.config.SecretsEmailConfigurationProvider;
+import com.expedia.www.haystack.pipes.secretDetector.config.SpringWiredWhiteListConfigurationProvider;
 import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufSpanToEmailInKafkaTransformer;
 import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufToDetectorAction;
 import com.netflix.servo.monitor.Counter;
@@ -245,7 +245,7 @@ public class SpringConfig {
     @Bean
     @Autowired
     S3ConfigFetcher s3ConfigFetcher(Logger s3ConfigFetcherLogger,
-                                    WhiteListConfig whiteListConfig,
+                                    SpringWiredWhiteListConfigurationProvider whiteListConfig,
                                     AmazonS3 amazonS3,
                                     S3ConfigFetcher.Factory s3ConfigFetcherFactory) {
         return new S3ConfigFetcher(s3ConfigFetcherLogger, whiteListConfig, amazonS3, s3ConfigFetcherFactory);

@@ -18,16 +18,12 @@ package com.expedia.www.haystack.pipes.secretDetector.config;
 
 import com.expedia.www.haystack.commons.secretDetector.WhiteListConfig;
 import org.cfg4j.provider.ConfigurationProvider;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-@Component
 public class WhiteListConfigurationProvider implements WhiteListConfig {
     private static final String HAYSTACK_WHITELIST_CONFIG_PREFIX = "haystack.secretsnotifications.whitelist";
 
     private final WhiteListConfig whiteListConfig;
 
-    @Autowired
     public WhiteListConfigurationProvider(ConfigurationProvider configurationProvider) {
         this(configurationProvider.bind(HAYSTACK_WHITELIST_CONFIG_PREFIX, WhiteListConfig.class));
     }
