@@ -16,6 +16,7 @@
  */
 package com.expedia.www.haystack.pipes.secretDetector.config;
 
+import com.expedia.www.haystack.commons.config.WhiteListConfigurationProvider;
 import org.cfg4j.provider.ConfigurationProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

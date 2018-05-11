@@ -16,7 +16,7 @@
  */
 package com.expedia.www.haystack.pipes.secretDetector.config;
 
-import com.expedia.www.haystack.pipes.commons.Configuration;
+import com.expedia.www.haystack.commons.config.Configuration;
 import com.expedia.www.haystack.pipes.secretDetector.actions.DetectedAction;
 import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction;
 import org.cfg4j.provider.ConfigurationProvider;

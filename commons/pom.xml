@@ -20,6 +20,10 @@
         </dependency>
         <dependency>
             <groupId>com.expedia.www</groupId>
+            <artifactId>haystack-commons</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.expedia.www</groupId>
             <artifactId>haystack-metrics</artifactId>
         </dependency>
         <dependency>
