@@ -32,7 +32,7 @@ Streams to read the protobuf records from Kafka, transform them to JSON, and sen
 Kafka Streams to read the protobuf records from Kafka and search the tags of those protobuf records (the records are
 "Span" objects from the [haystack-idl package](https://github.com/ExpediaDotCom/haystack-idl)) for "personal" data.
 This personal data is either [PCI](https://en.wikipedia.org/wiki/Payment_card_industry) data (credit card numbers) or 
-[PII](https://en.wikipedia.org/wiki/Personally_identifiable_information) data (address, phone number, etc.), 
+[PII](https://en.wikipedia.org/wiki/Personally_identifiable_information) data (address, phone number, etc.).
 Which kind of personal data to search for is under configuration control. This secret-detector uses the open source
 [chlorine-finder](https://github.com/dataApps/chlorine-finder) package for detection.
 When a secret is found, information identifying the secret (but not the secret itself), is written back to Kafka.
