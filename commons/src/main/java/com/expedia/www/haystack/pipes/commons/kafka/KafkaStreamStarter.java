@@ -16,7 +16,7 @@
  */
 package com.expedia.www.haystack.pipes.commons.kafka;
 
-import com.expedia.www.haystack.pipes.commons.Configuration;
+import com.expedia.www.haystack.commons.config.Configuration;
 import com.expedia.www.haystack.pipes.commons.IntermediateStreamsConfig;
 import com.expedia.www.haystack.pipes.commons.SystemExitUncaughtExceptionHandler;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
@@ -32,6 +32,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
+import static com.expedia.www.haystack.pipes.commons.Configuration.HAYSTACK_KAFKA_CONFIG_PREFIX;
+import static com.expedia.www.haystack.pipes.commons.Configuration.HAYSTACK_PIPE_STREAMS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class KafkaStreamStarter {
@@ -55,7 +57,7 @@ public class KafkaStreamStarter {
 
     public final Class<? extends KafkaStreamBuilder> containingClass;
     public final String clientId;
-    final StreamsConfig streamsConfig;
+    private final StreamsConfig streamsConfig;
 
     public KafkaStreamStarter(Class<? extends KafkaStreamBuilder> containingClass,
                               String clientId,
@@ -123,7 +125,7 @@ public class KafkaStreamStarter {
 
     private int getReplicationFactor() {
         final IntermediateStreamsConfig intermediateStreamsConfig = CONFIGURATION_PROVIDER.bind(
-                Configuration.HAYSTACK_PIPE_STREAMS, IntermediateStreamsConfig.class);
+                HAYSTACK_PIPE_STREAMS, IntermediateStreamsConfig.class);
         return intermediateStreamsConfig.replicationfactor();
     }
 
@@ -133,7 +135,7 @@ public class KafkaStreamStarter {
     }
 
     private static KafkaConfig getKafkaConfig() {
-        return CONFIGURATION_PROVIDER.bind(Configuration.HAYSTACK_KAFKA_CONFIG_PREFIX, KafkaConfig.class);
+        return CONFIGURATION_PROVIDER.bind(HAYSTACK_KAFKA_CONFIG_PREFIX, KafkaConfig.class);
     }
 
     static class Factory {

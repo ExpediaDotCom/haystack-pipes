@@ -16,7 +16,7 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
-import com.expedia.www.haystack.pipes.commons.Configuration;
+import com.expedia.www.haystack.commons.config.Configuration;
 import org.cfg4j.provider.ConfigurationProvider;
 
 import static com.expedia.www.haystack.pipes.commons.Configuration.HAYSTACK_FIREHOSE_CONFIG_PREFIX;

@@ -280,8 +280,8 @@ public class SpringConfig {
 
         @Bean
         ConfigurationProvider configurationProvider() {
-            final com.expedia.www.haystack.pipes.commons.Configuration configuration
-                    = new com.expedia.www.haystack.pipes.commons.Configuration();
+            final com.expedia.www.haystack.commons.config.Configuration configuration
+                    = new com.expedia.www.haystack.commons.config.Configuration();
             return configuration.createMergeConfigurationProvider();
         }
 

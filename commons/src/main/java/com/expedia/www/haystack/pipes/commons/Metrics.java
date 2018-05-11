@@ -16,9 +16,12 @@
  */
 package com.expedia.www.haystack.pipes.commons;
 
+import com.expedia.www.haystack.commons.config.Configuration;
 import com.expedia.www.haystack.metrics.GraphiteConfig;
 import com.expedia.www.haystack.metrics.MetricPublishing;
 import org.cfg4j.provider.ConfigurationProvider;
+
+import static com.expedia.www.haystack.pipes.commons.Configuration.HAYSTACK_GRAPHITE_CONFIG_PREFIX;
 
 // TODO is this class still needed? Do non-appender usages of Counters and Timers still publish to InfluxDb?
 // TODO Do these non-appender usages shut down properly?
@@ -37,7 +40,7 @@ class Metrics {
 
     void startMetricsPolling() {
         final GraphiteConfig graphiteConfig = configurationProvider.bind(
-                Configuration.HAYSTACK_GRAPHITE_CONFIG_PREFIX, GraphiteConfig.class);
+                HAYSTACK_GRAPHITE_CONFIG_PREFIX, GraphiteConfig.class);
         metricPublishing.start(graphiteConfig);
     }
 }

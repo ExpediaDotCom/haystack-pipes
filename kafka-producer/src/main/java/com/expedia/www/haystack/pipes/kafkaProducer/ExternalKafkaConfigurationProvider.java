@@ -16,7 +16,7 @@
  */
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
-import com.expedia.www.haystack.pipes.commons.Configuration;
+import com.expedia.www.haystack.commons.config.Configuration;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;

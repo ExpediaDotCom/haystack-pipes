@@ -1,6 +1,6 @@
 package com.expedia.www.haystack.pipes.httpPoster;
 
-import com.expedia.www.haystack.pipes.commons.Configuration;
+import com.expedia.www.haystack.commons.config.Configuration;
 import org.cfg4j.provider.ConfigurationProvider;
 
 import java.util.Map;
