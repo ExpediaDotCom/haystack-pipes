@@ -28,6 +28,19 @@ them to JSON, and write them to another topic in Kafka.
 4. [http-poster](https://github.com/ExpediaDotCom/haystack-pipes/tree/master/http-poster): this package uses Kafka 
 Streams to read the protobuf records from Kafka, transform them to JSON, and send them to another service, via an
 [HTTP POST](https://en.wikipedia.org/wiki/POST_(HTTP)) request.
+5. [secret-detector](https://github.com/ExpediaDotCom/haystack-pipes/tree/master/secret-detector): this package uses
+Kafka Streams to read the protobuf records from Kafka and search the tags of those protobuf records (the records are
+"Span" objects from the [haystack-idl package](https://github.com/ExpediaDotCom/haystack-idl)) for "personal" data.
+This personal data is either [PCI](https://en.wikipedia.org/wiki/Payment_card_industry) data (credit card numbers) or 
+[PII](https://en.wikipedia.org/wiki/Personally_identifiable_information) data (address, phone number, etc.), 
+Which kind of personal data to search for is under configuration control. This secret-detector uses the open source
+[chlorine-finder](https://github.com/dataApps/chlorine-finder) package for detection.
+When a secret is found, information identifying the secret (but not the secret itself), is written back to Kafka.
+To minimize the frequency of false positives (data thought to be secret that isn't really secret), a text file of
+whitelisted tags is stored in S3. The format of this text file is one or more lines of
+`<finder name>;<service name>;<operation name>;<tag name>\n`, that is, semi-colon delimited "four-ples" of fields
+from the Span, where a "four-ples" is separated from the next "four-ple" by a new line. Configurations controls where 
+this text file is found in S3 (i.e. in what bucket and under what key).
 
 In all of the cases above, "transform to JSON" implies "tag flattening": the 
 [OpenTracing API](https://github.com/opentracing/specification/blob/master/semantic_conventions.md) specifies tags in a 
