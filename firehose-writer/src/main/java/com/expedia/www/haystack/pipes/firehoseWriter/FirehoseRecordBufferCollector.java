@@ -19,6 +19,7 @@ package com.expedia.www.haystack.pipes.firehoseWriter;
 import java.nio.ByteBuffer;
 import java.time.Clock;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,17 +31,7 @@ import com.netflix.servo.util.VisibleForTesting;
  * of the payload (both of which are specified by Firehose documents) is reached.
  */
 class FirehoseRecordBufferCollector implements FirehoseCollector {
-    /**
-     * Maximum record size in bytes; see https://docs.aws.amazon.com/firehose/latest/dev/limits.html to read that "The
-     * PutRecordBatch operation can take up to 500 records per call or 4 MB per call, whichever is smaller."
-     */
-    static final int MAX_BYTES_IN_BATCH = 4 * 1024 * 1024; // = 4 MB
-    /**
-     * Maximum number of Records allowed in a batch; see https://docs.aws.amazon.com/firehose/latest/dev/limits.html to
-     * read that "The PutRecordBatch operation can take up to 500 records per call or 4 MB per call, whichever is
-     * smaller."
-     */
-    static final int MAX_RECORDS_IN_BATCH = 500;
+
 
     @VisibleForTesting
     static final long LAST_BATCH_TIME_DIFF_ALLOWED_MILLIS = 3000;
@@ -88,7 +79,7 @@ class FirehoseRecordBufferCollector implements FirehoseCollector {
                 || batchCreationTimedOut();
     }
 
-    public List<Record> addRecordAndReturnBatch(final byte[] data) {
+    public Collection<Record> addRecordAndReturnBatch(final byte[] data) {
         final Record record = new Record().withData(ByteBuffer.wrap(data));
         if (shouldCreateNewBatch(record)) {
             final List<Record> records = this.records;
@@ -101,7 +92,7 @@ class FirehoseRecordBufferCollector implements FirehoseCollector {
         }
     }
 
-    public List<Record> returnIncompleteBatch() {
+    public Collection<Record> returnIncompleteBatch() {
         final List<Record> records = this.records;
         initialize();
         return records;
