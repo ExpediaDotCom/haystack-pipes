@@ -1,6 +1,6 @@
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
-import java.util.Collection;
+import java.util.List;
 
 import com.amazonaws.services.kinesisfirehose.model.Record;
 
@@ -31,12 +31,12 @@ public interface FirehoseCollector {
      * @param data data to be appended to the next batch
      * @return full batch that is ready to be dispatched
      */
-    Collection<Record> addRecordAndReturnBatch(byte[] data);
+    List<Record> addRecordAndReturnBatch(byte[] data);
 
     /**
      * This method return the remaining data if any that has been buffered as a collection of
      * Records to be dispatched to firehose
      * @return collection of records or an empty collection
      */
-    Collection<Record> returnIncompleteBatch();
+    List<Record> returnIncompleteBatch();
 }

@@ -19,7 +19,6 @@ package com.expedia.www.haystack.pipes.firehoseWriter;
 import java.nio.ByteBuffer;
 import java.time.Clock;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -79,7 +78,7 @@ class FirehoseRecordBufferCollector implements FirehoseCollector {
                 || batchCreationTimedOut();
     }
 
-    public Collection<Record> addRecordAndReturnBatch(final byte[] data) {
+    public List<Record> addRecordAndReturnBatch(final byte[] data) {
         final Record record = new Record().withData(ByteBuffer.wrap(data));
         if (shouldCreateNewBatch(record)) {
             final List<Record> records = this.records;
@@ -92,7 +91,7 @@ class FirehoseRecordBufferCollector implements FirehoseCollector {
         }
     }
 
-    public Collection<Record> returnIncompleteBatch() {
+    public List<Record> returnIncompleteBatch() {
         final List<Record> records = this.records;
         initialize();
         return records;
