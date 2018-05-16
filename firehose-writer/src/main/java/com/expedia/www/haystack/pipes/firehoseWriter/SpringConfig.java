@@ -16,6 +16,14 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehose;
@@ -31,15 +39,9 @@ import com.google.protobuf.util.JsonFormat.Printer;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
 import com.netflix.servo.util.VisibleForTesting;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
@@ -176,7 +178,7 @@ class SpringConfig {
 
     @Bean
     Supplier<FirehoseCollector> firehoseCollector() {
-        return FirehoseCollector::new;
+        return FirehoseRecordBufferCollector::new;
     }
 
     @Bean
