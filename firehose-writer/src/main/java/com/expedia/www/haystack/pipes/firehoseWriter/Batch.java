@@ -16,6 +16,19 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.function.Supplier;
+
+import org.apache.commons.lang3.StringUtils;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchRequest;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResponseEntry;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResult;
@@ -26,19 +39,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.util.VisibleForTesting;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.function.Supplier;
+import org.slf4j.Logger;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.PROTOBUF_ERROR_MSG;
 
@@ -75,8 +77,7 @@ class Batch {
         try {
             final String jsonWithOpenTracingTags = printer.print(span);
             final String jsonWithFlattenedTags = tagFlattener.flattenTags(jsonWithOpenTracingTags);
-            final Record record = new Record().withData(ByteBuffer.wrap(jsonWithFlattenedTags.getBytes()));
-            return firehoseCollector.addRecordAndReturnBatch(record);
+            return firehoseCollector.addRecordAndReturnBatch(jsonWithFlattenedTags.getBytes());
         } catch (InvalidProtocolBufferException exception) {
             // Must format below because log4j2 underneath slf4j doesn't handle .error(varargs) properly
             logger.error(String.format(PROTOBUF_ERROR_MSG, span.toString(), exception.getMessage()), exception);

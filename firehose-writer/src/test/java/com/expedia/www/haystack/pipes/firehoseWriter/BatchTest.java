@@ -16,6 +16,12 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchRequest;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResponseEntry;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResult;
@@ -24,6 +30,7 @@ import com.expedia.open.tracing.Span;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.netflix.servo.monitor.Counter;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,13 +39,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
-
-import java.nio.ByteBuffer;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.PROTOBUF_ERROR_MSG;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.EXCEPTION_MESSAGE;
@@ -124,16 +124,14 @@ public class BatchTest {
 
     @Test
     public void testGetRecordListHappyPath() {
-        when(mockFirehoseCollector.addRecordAndReturnBatch(any(Record.class))).thenReturn(Collections.emptyList());
+        when(mockFirehoseCollector.addRecordAndReturnBatch(any())).thenReturn(Collections.emptyList());
 
         final List<Record> recordList = batch.getRecordList(NO_TAGS_SPAN);
 
         assertSame(Collections.<Record>emptyList(), recordList);
-        ArgumentCaptor<Record> argumentCaptor = ArgumentCaptor.forClass(Record.class);
+        ArgumentCaptor<byte[]> argumentCaptor = ArgumentCaptor.forClass(byte[].class);
         verify(mockFirehoseCollector).addRecordAndReturnBatch(argumentCaptor.capture());
-        final Record record = argumentCaptor.getValue();
-        final ByteBuffer byteBuffer = record.getData();
-        assertArrayEquals(JSON_SPAN_STRING_WITH_NO_TAGS.getBytes(), byteBuffer.array());
+        assertArrayEquals(JSON_SPAN_STRING_WITH_NO_TAGS.getBytes(), argumentCaptor.getValue());
     }
 
     @Test
