@@ -26,4 +26,8 @@ public interface FirehoseConfig {
     int initialretrysleep();
 
     int maxretrysleep();
+
+    boolean usestringbuffering();
+
+    int maxbatchinterval();
 }

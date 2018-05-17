@@ -45,6 +45,16 @@ public class FirehoseConfigurationProviderTest {
     }
 
     @Test
+    public void testUseStringBuffering() {
+        assertEquals(true, firehoseConfigurationProvider.usestringbuffering());
+    }
+
+    @Test
+    public void testMaxBatchInterval() {
+        assertEquals( 3000, firehoseConfigurationProvider.maxbatchinterval());
+    }
+
+    @Test
     public void testStreamName() {
         assertEquals("haystack-traces-test", firehoseConfigurationProvider.streamname());
     }

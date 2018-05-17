@@ -53,6 +53,16 @@ public class FirehoseConfigurationProvider implements FirehoseConfig {
         return firehoseConfig.maxretrysleep();
     }
 
+    @Override
+    public boolean usestringbuffering() {
+        return firehoseConfig.usestringbuffering();
+    }
+
+    @Override
+    public int maxbatchinterval() {
+        return firehoseConfig.maxbatchinterval();
+    }
+
     private void reload() {
         final Configuration configuration = new Configuration();
         final ConfigurationProvider configurationProvider = configuration.createMergeConfigurationProvider();

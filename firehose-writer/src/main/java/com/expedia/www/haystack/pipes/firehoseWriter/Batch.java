@@ -77,7 +77,7 @@ class Batch {
         try {
             final String jsonWithOpenTracingTags = printer.print(span);
             final String jsonWithFlattenedTags = tagFlattener.flattenTags(jsonWithOpenTracingTags);
-            return firehoseCollector.addRecordAndReturnBatch(jsonWithFlattenedTags.getBytes());
+            return firehoseCollector.addRecordAndReturnBatch(jsonWithFlattenedTags);
         } catch (InvalidProtocolBufferException exception) {
             // Must format below because log4j2 underneath slf4j doesn't handle .error(varargs) properly
             logger.error(String.format(PROTOBUF_ERROR_MSG, span.toString(), exception.getMessage()), exception);
