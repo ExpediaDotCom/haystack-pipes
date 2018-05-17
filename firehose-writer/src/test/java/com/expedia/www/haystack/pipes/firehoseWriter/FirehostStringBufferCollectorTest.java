@@ -162,28 +162,28 @@ public class FirehostStringBufferCollectorTest {
 
     @Test
     public void testAddToRecordBufferShouldAppendANewLineIfBufferHasData() {
-        final String data = "Hello World!";
+        final String data = "Hello World!\n";
         final FirehoseStringBufferCollector firehoseCollector = new FirehoseStringBufferCollector(factory, 100, 1, 10);
         firehoseCollector.addToRecordBuffer(data);
         firehoseCollector.addToRecordBuffer(data);
-        assertEquals(25, firehoseCollector.getTotalBatchSize());
+        assertEquals(26, firehoseCollector.getTotalBatchSize());
         final List<Record> batch = firehoseCollector.returnIncompleteBatch();
         final Record actual = batch.get(0);
-        assertEquals("Hello World!\nHello World!", new String(actual.getData().array()));
+        assertEquals("Hello World!\nHello World!\n", new String(actual.getData().array()));
     }
 
     @Test
     public void testAddingRecordsToABatchShouldReturnRightBatchSize() {
-        final String data = "Hello World!";
+        final String data = "Hello World!\n";
         final FirehoseStringBufferCollector firehoseCollector = new FirehoseStringBufferCollector(factory, 30, 3, 10);
         firehoseCollector.addRecordAndReturnBatch(data);
         firehoseCollector.addRecordAndReturnBatch(data);
         firehoseCollector.addRecordAndReturnBatch(data);
         firehoseCollector.addRecordAndReturnBatch(data);
-        assertEquals(50, firehoseCollector.getTotalBatchSize());
+        assertEquals(52, firehoseCollector.getTotalBatchSize());
         final List<Record> batch = firehoseCollector.returnIncompleteBatch();
-        assertEquals("Hello World!\nHello World!", new String(batch.get(0).getData().array()));
-        assertEquals("Hello World!\nHello World!", new String(batch.get(1).getData().array()));
+        assertEquals("Hello World!\nHello World!\n", new String(batch.get(0).getData().array()));
+        assertEquals("Hello World!\nHello World!\n", new String(batch.get(1).getData().array()));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -195,15 +195,15 @@ public class FirehostStringBufferCollectorTest {
 
     @Test
     public void testShouldReturnBatchOfRecordsWhenBufferIsFull() {
-        final String data = "Hello World!";
+        final String data = "Hello World!\n";
         final FirehoseStringBufferCollector firehoseCollector = new FirehoseStringBufferCollector(factory, 40, 2, 10);
         List<Record> batch = Collections.emptyList();
         while (batch.isEmpty()) {
             batch = firehoseCollector.addRecordAndReturnBatch(data);
         }
         assertEquals(2, batch.size());
-        assertEquals("Hello World!\nHello World!\nHello World!", new String(batch.get(0).getData().array()));
-        assertEquals("Hello World!\nHello World!\nHello World!", new String(batch.get(1).getData().array()));
+        assertEquals("Hello World!\nHello World!\nHello World!\n", new String(batch.get(0).getData().array()));
+        assertEquals("Hello World!\nHello World!\nHello World!\n", new String(batch.get(1).getData().array()));
     }
 
 }

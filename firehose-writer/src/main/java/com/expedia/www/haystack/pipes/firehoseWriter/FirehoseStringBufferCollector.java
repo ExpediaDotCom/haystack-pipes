@@ -13,7 +13,6 @@ import com.netflix.servo.util.VisibleForTesting;
 
 public class FirehoseStringBufferCollector implements FirehoseCollector {
 
-    private static final Character NEW_LINE = '\n';
     private final Factory factory;
     private final int maxBatchInterval;
     private final int maxRecordsInBatch;
@@ -142,10 +141,6 @@ public class FirehoseStringBufferCollector implements FirehoseCollector {
 
     @VisibleForTesting
     void addToRecordBuffer(final String data) {
-        if (bufferSize() != 0) {
-            buffer.append(NEW_LINE);
-            totalBatchSize += 1;
-        }
         buffer.append(data);
         totalBatchSize += data.length();
     }
