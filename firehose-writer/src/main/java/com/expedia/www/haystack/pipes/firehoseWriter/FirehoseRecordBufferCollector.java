@@ -31,10 +31,6 @@ import com.netflix.servo.util.VisibleForTesting;
  */
 class FirehoseRecordBufferCollector implements FirehoseCollector {
 
-
-    @VisibleForTesting
-    static final long LAST_BATCH_TIME_DIFF_ALLOWED_MILLIS = 3000;
-
     private final Factory factory;
     private final Clock clock;
 
@@ -78,7 +74,8 @@ class FirehoseRecordBufferCollector implements FirehoseCollector {
                 || batchCreationTimedOut();
     }
 
-    public List<Record> addRecordAndReturnBatch(final byte[] data) {
+    @VisibleForTesting
+    List<Record> addRecordAndReturnBatch(final byte[] data) {
         final Record record = new Record().withData(ByteBuffer.wrap(data));
         if (shouldCreateNewBatch(record)) {
             final List<Record> records = this.records;
@@ -91,6 +88,11 @@ class FirehoseRecordBufferCollector implements FirehoseCollector {
         }
     }
 
+    @Override
+    public List<Record> addRecordAndReturnBatch(String data) {
+        return addRecordAndReturnBatch(data.getBytes());
+    }
+
     public List<Record> returnIncompleteBatch() {
         final List<Record> records = this.records;
         initialize();
@@ -100,11 +102,5 @@ class FirehoseRecordBufferCollector implements FirehoseCollector {
     private void addRecord(Record record) {
         records.add(record);
         totalDataSizeOfRecords += record.getData().array().length;
-    }
-
-    static class Factory {
-        long currentTimeMillis() {
-            return System.currentTimeMillis();
-        }
     }
 }

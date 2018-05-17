@@ -129,9 +129,9 @@ public class BatchTest {
         final List<Record> recordList = batch.getRecordList(NO_TAGS_SPAN);
 
         assertSame(Collections.<Record>emptyList(), recordList);
-        ArgumentCaptor<byte[]> argumentCaptor = ArgumentCaptor.forClass(byte[].class);
+        ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(String.class);
         verify(mockFirehoseCollector).addRecordAndReturnBatch(argumentCaptor.capture());
-        assertArrayEquals(JSON_SPAN_STRING_WITH_NO_TAGS.getBytes(), argumentCaptor.getValue());
+        assertArrayEquals(JSON_SPAN_STRING_WITH_NO_TAGS.getBytes(), argumentCaptor.getValue().getBytes());
     }
 
     @Test

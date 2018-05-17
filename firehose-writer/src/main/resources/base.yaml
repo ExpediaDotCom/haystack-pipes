@@ -22,4 +22,6 @@ haystack:
     url: "https://firehose.us-west-2.amazonaws.com"
     streamname: "haystack-traces-test"
     signingregion: "us-west-2"
+    usestringbuffering: true
+    maxbatchinterval: 3000
 

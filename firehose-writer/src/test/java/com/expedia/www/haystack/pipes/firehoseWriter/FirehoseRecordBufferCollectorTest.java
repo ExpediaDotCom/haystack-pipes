@@ -21,7 +21,6 @@ import java.time.Clock;
 import java.util.List;
 
 import com.amazonaws.services.kinesisfirehose.model.Record;
-import com.expedia.www.haystack.pipes.firehoseWriter.FirehoseRecordBufferCollector.Factory;
 
 import org.junit.After;
 import org.junit.Before;
@@ -54,26 +53,34 @@ public class FirehoseRecordBufferCollectorTest {
     private Record mockRecord;
 
     @Mock
-    private Factory mockFactory;
+    private FirehoseCollector.Factory mockFactory;
 
     @Mock
     private Clock mockClock;
 
     private int timesClockMillis = 1;
     private FirehoseRecordBufferCollector firehoseCollector;
-    private Factory factory;
+    private FirehoseCollector.Factory factory;
 
     @Before
     public void setUp() {
         when(mockClock.millis()).thenReturn(BATCH_LAST_CREATED_AT);
         firehoseCollector = new FirehoseRecordBufferCollector(mockFactory, mockClock);
-        factory = new Factory();
+        factory = new FirehoseCollector.Factory();
     }
 
     @After
     public void tearDown() {
         verify(mockClock, times(timesClockMillis)).millis();
         verifyNoMoreInteractions(mockRecord, mockClock);
+    }
+
+    @Test
+    public void testShoudCallTheOverloadWhenCalledWithString() {
+        final String data = "{\"hello\":\"world\"}";
+        timesClockMillis = 2;
+        firehoseCollector.addRecordAndReturnBatch(data);
+        assertEquals(1, firehoseCollector.returnIncompleteBatch().size());
     }
 
     @Test
