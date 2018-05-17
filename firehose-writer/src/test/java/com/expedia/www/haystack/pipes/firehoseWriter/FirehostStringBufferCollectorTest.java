@@ -47,7 +47,7 @@ public class FirehostStringBufferCollectorTest {
     @Test
     public void testDefaultConstructorInitializedWithProvidedDefaults() {
         final FirehoseStringBufferCollector firehoseStringBufferCollector = new FirehoseStringBufferCollector();
-        assertEquals(1000 * 1024, firehoseStringBufferCollector.getMaxBytesInRecord());
+        assertEquals(1000 * 1000, firehoseStringBufferCollector.getMaxBytesInRecord());
         assertEquals(4, firehoseStringBufferCollector.getMaxRecordsInBatch());
         assertEquals( 0, firehoseStringBufferCollector.getMaxBatchInterval());
     }

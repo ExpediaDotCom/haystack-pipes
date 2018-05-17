@@ -29,13 +29,13 @@ public interface FirehoseCollector {
      * Maximum batch size in bytes; see https://docs.aws.amazon.com/firehose/latest/dev/limits.html to read that "The
      * PutRecordBatch operation can take up to 500 records per call or 4 MB per call, whichever is smaller."
      */
-    int MAX_BYTES_IN_BATCH = 4 * 1024 * 1024; // = 4 MB
+    int MAX_BYTES_IN_BATCH = 4 * 1000 * 1000; // ~ 4 MB
 
     /**
      * Maximum record size in bytes; see https://docs.aws.amazon.com/firehose/latest/dev/limits.html to read that "The
      * maximum size of a record sent to Kinesis Data Firehose, before base64-encoding, is 1,000 KB."
      */
-    int MAX_BYTES_IN_RECORD = 1000 * 1024; // = 1000 KB
+    int MAX_BYTES_IN_RECORD = 1000 * 1000; // ~ 1 MB
 
     /**
      * Maximum number of Records allowed in a batch; see https://docs.aws.amazon.com/firehose/latest/dev/limits.html to
