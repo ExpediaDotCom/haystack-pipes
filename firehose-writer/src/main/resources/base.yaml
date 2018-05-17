@@ -23,5 +23,9 @@ haystack:
     streamname: "haystack-traces-test"
     signingregion: "us-west-2"
     usestringbuffering: true
+<<<<<<< HEAD
     maxbatchinterval: 0
+=======
+    maxbatchinterval: 3000
+>>>>>>> 4ed948ad394e0c4a4f490367c8eb4a402cf56178
 
