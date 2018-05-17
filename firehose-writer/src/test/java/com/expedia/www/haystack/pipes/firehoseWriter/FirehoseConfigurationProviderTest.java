@@ -51,7 +51,7 @@ public class FirehoseConfigurationProviderTest {
 
     @Test
     public void testMaxBatchInterval() {
-        assertEquals( 3000, firehoseConfigurationProvider.maxbatchinterval());
+        assertEquals( 0, firehoseConfigurationProvider.maxbatchinterval());
     }
 
     @Test
