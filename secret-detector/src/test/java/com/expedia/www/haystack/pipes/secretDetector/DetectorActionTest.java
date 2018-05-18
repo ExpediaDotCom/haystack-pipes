@@ -17,7 +17,7 @@
 package com.expedia.www.haystack.pipes.secretDetector;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.commons.secretDetector.Detector;
+import com.expedia.www.haystack.commons.secretDetector.span.SpanDetector;
 import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
 import com.expedia.www.haystack.pipes.secretDetector.actions.DetectedAction;
 import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
@@ -53,7 +53,7 @@ public class DetectorActionTest {
     @Mock
     private CountersAndTimer mockCountersAndTimer;
     @Mock
-    private Detector mockDetector;
+    private SpanDetector mockSpanDetector;
     @Mock
     private Logger mockLogger;
     @Mock
@@ -70,12 +70,12 @@ public class DetectorActionTest {
     public void setUp() {
         detectedActions = Collections.singletonList(mockDetectedAction);
         detectorAction = new DetectorAction(
-                mockCountersAndTimer, mockDetector, mockLogger, mockActionsConfigurationProvider);
+                mockCountersAndTimer, mockSpanDetector, mockLogger, mockActionsConfigurationProvider);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockCountersAndTimer, mockDetector, mockLogger, mockTimer,
+        verifyNoMoreInteractions(mockCountersAndTimer, mockSpanDetector, mockLogger, mockTimer,
                 mockActionsConfigurationProvider, mockDetectedAction);
     }
 
@@ -105,13 +105,13 @@ public class DetectorActionTest {
 
     private void whensForApply(Map<String, List<String>> secrets) {
         when(mockCountersAndTimer.startTimer()).thenReturn(mockTimer);
-        when(mockDetector.findSecrets(any(Span.class))).thenReturn(secrets);
+        when(mockSpanDetector.findSecrets(any(Span.class))).thenReturn(secrets);
     }
 
     private void verifiesForApply() {
         verify(mockCountersAndTimer).incrementRequestCounter();
         verify(mockCountersAndTimer).startTimer();
-        verify(mockDetector).findSecrets(FULLY_POPULATED_SPAN);
+        verify(mockSpanDetector).findSecrets(FULLY_POPULATED_SPAN);
         verify(mockTimer).stop();
     }
 }

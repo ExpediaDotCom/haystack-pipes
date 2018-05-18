@@ -16,8 +16,8 @@
  */
 package com.expedia.www.haystack.pipes.secretDetector;
 
-import com.expedia.www.haystack.commons.secretDetector.Detector;
-import com.expedia.www.haystack.commons.secretDetector.S3ConfigFetcher;
+import com.expedia.www.haystack.commons.secretDetector.span.SpanDetector;
+import com.expedia.www.haystack.commons.secretDetector.span.SpanS3ConfigFetcher;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
@@ -67,7 +67,7 @@ public class SpringConfigTest {
     @Mock
     private CountersAndTimer mockCountersAndTimer;
     @Mock
-    private Detector mockDetector;
+    private SpanDetector mockSpanDetector;
     @Mock
     private Logger mockLogger;
     @Mock
@@ -75,9 +75,9 @@ public class SpringConfigTest {
     @Mock
     private ActionsConfigurationProvider mockActionsConfigurationProvider;
     @Mock
-    private Detector.Factory mockDetectorFactory;
+    private SpanDetector.Factory mockSpanDetectorFactory;
     @Mock
-    private S3ConfigFetcher mockS3ConfigFetcher;
+    private SpanS3ConfigFetcher mockSpanS3ConfigFetcher;
 
     private SpringConfig springConfig;
 
@@ -89,8 +89,8 @@ public class SpringConfigTest {
     @After
     public void tearDown() {
         verifyNoMoreInteractions(mockMetricObjects, mockCounter, mockTimer, mockHealthController,
-                mockHealthStatusListener, mockCountersAndTimer, mockDetector, mockLogger, mockFinderEngine,
-                mockActionsConfigurationProvider, mockDetectorFactory);
+                mockHealthStatusListener, mockCountersAndTimer, mockSpanDetector, mockLogger, mockFinderEngine,
+                mockActionsConfigurationProvider, mockSpanDetectorFactory);
     }
 
     @Test
@@ -118,7 +118,7 @@ public class SpringConfigTest {
     public void testDetectorLogger() {
         final Logger logger = springConfig.detectorLogger();
 
-        assertEquals(Detector.class.getName(), logger.getName());
+        assertEquals(SpanDetector.class.getName(), logger.getName());
     }
 
     @Test
@@ -173,12 +173,12 @@ public class SpringConfigTest {
     @Test
     public void testDetectorAction() {
         assertNotNull(springConfig.detectorAction(
-                mockCountersAndTimer, mockDetector, mockLogger, mockActionsConfigurationProvider));
+                mockCountersAndTimer, mockSpanDetector, mockLogger, mockActionsConfigurationProvider));
     }
 
     @Test
     public void testDetector() {
-        assertNotNull(springConfig.detector(mockLogger, mockFinderEngine, mockDetectorFactory, mockS3ConfigFetcher));
+        assertNotNull(springConfig.spanDetector(mockLogger, mockFinderEngine, mockSpanDetectorFactory, mockSpanS3ConfigFetcher));
     }
 
     @Test

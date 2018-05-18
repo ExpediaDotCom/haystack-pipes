@@ -19,8 +19,8 @@ package com.expedia.www.haystack.pipes.secretDetector;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.expedia.www.haystack.commons.secretDetector.Detector;
-import com.expedia.www.haystack.commons.secretDetector.S3ConfigFetcher;
+import com.expedia.www.haystack.commons.secretDetector.span.SpanDetector;
+import com.expedia.www.haystack.commons.secretDetector.span.SpanS3ConfigFetcher;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
@@ -81,8 +81,8 @@ public class SpringConfig {
     @Autowired
     ProtobufSpanToEmailInKafkaTransformer protobufSpanToEmailInKafkaTransformer(KafkaStreamStarter kafkaStreamStarter,
                                                                                 SpanSerdeFactory spanSerdeFactory,
-                                                                                Detector detector) {
-        return new ProtobufSpanToEmailInKafkaTransformer(kafkaStreamStarter, spanSerdeFactory, detector);
+                                                                                SpanDetector spanDetector) {
+        return new ProtobufSpanToEmailInKafkaTransformer(kafkaStreamStarter, spanSerdeFactory, spanDetector);
     }
 
     @Bean
@@ -111,12 +111,12 @@ public class SpringConfig {
 
     @Bean
     Logger detectorLogger() {
-        return LoggerFactory.getLogger(Detector.class);
+        return LoggerFactory.getLogger(SpanDetector.class);
     }
 
     @Bean
     Logger s3ConfigFetcherLogger() {
-        return LoggerFactory.getLogger(S3ConfigFetcher.class);
+        return LoggerFactory.getLogger(SpanS3ConfigFetcher.class);
     }
 
     @Bean
@@ -125,8 +125,8 @@ public class SpringConfig {
     }
 
     @Bean
-    S3ConfigFetcher.Factory s3ConfigFetcherFactory() {
-        return new S3ConfigFetcher.Factory();
+    SpanS3ConfigFetcher.SpanFactory s3ConfigFetcherFactory() {
+        return new SpanS3ConfigFetcher.SpanFactory();
     }
 
     @Bean
@@ -183,26 +183,26 @@ public class SpringConfig {
     }
 
     @Bean
-    Detector.Factory detectorFactory(MetricObjects metricObjects) {
-        return new Detector.Factory(metricObjects);
+    SpanDetector.Factory detectorFactory(MetricObjects metricObjects) {
+        return new SpanDetector.Factory(metricObjects);
     }
 
     @Bean
     @Autowired
-    SpringWiredDetector detector(Logger detectorLogger,
-                                 FinderEngine finderEngine,
-                                 Detector.Factory detectorFactory,
-                                 S3ConfigFetcher s3ConfigFetcher) {
+    SpringWiredDetector spanDetector(Logger detectorLogger,
+                                     FinderEngine finderEngine,
+                                     SpanDetector.Factory detectorFactory,
+                                     SpanS3ConfigFetcher s3ConfigFetcher) {
         return new SpringWiredDetector(detectorLogger, finderEngine, detectorFactory, s3ConfigFetcher);
     }
 
     @Bean
     @Autowired
     DetectorAction detectorAction(CountersAndTimer detectorDetectTimer,
-                                  Detector detector,
+                                  SpanDetector spanDetector,
                                   Logger detectorActionLogger,
                                   ActionsConfigurationProvider actionsConfigurationProvider) {
-        return new DetectorAction(detectorDetectTimer, detector, detectorActionLogger, actionsConfigurationProvider);
+        return new DetectorAction(detectorDetectTimer, spanDetector, detectorActionLogger, actionsConfigurationProvider);
     }
 
     @Bean
@@ -244,11 +244,11 @@ public class SpringConfig {
 
     @Bean
     @Autowired
-    S3ConfigFetcher s3ConfigFetcher(Logger s3ConfigFetcherLogger,
+    SpanS3ConfigFetcher s3ConfigFetcher(Logger s3ConfigFetcherLogger,
                                     SpringWiredWhiteListConfigurationProvider whiteListConfig,
                                     AmazonS3 amazonS3,
-                                    S3ConfigFetcher.Factory s3ConfigFetcherFactory) {
-        return new S3ConfigFetcher(s3ConfigFetcherLogger, whiteListConfig, amazonS3, s3ConfigFetcherFactory);
+                                    SpanS3ConfigFetcher.SpanFactory s3ConfigFetcherFactory) {
+        return new SpanS3ConfigFetcher(s3ConfigFetcherLogger, whiteListConfig, amazonS3, s3ConfigFetcherFactory);
     }
 
     /*
