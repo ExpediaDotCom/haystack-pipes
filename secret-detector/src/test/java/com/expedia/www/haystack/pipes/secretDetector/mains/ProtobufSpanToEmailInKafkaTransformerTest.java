@@ -17,7 +17,7 @@
 package com.expedia.www.haystack.pipes.secretDetector.mains;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.commons.secretDetector.Detector;
+import com.expedia.www.haystack.commons.secretDetector.span.SpanDetector;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
 import org.apache.kafka.common.serialization.Serde;
@@ -60,20 +60,20 @@ public class ProtobufSpanToEmailInKafkaTransformerTest {
     @Mock
     private KStream<String, String> mockKStreamStringString;
     @Mock
-    private Detector mockDetector;
+    private SpanDetector mockSpanDetector;
 
     private ProtobufSpanToEmailInKafkaTransformer protobufSpanToEmailInKafkaTransformer;
 
     @Before
     public void setUp() {
         protobufSpanToEmailInKafkaTransformer = new ProtobufSpanToEmailInKafkaTransformer(
-                mockKafkaStreamStarter, new SpanSerdeFactory(), mockDetector);
+                mockKafkaStreamStarter, new SpanSerdeFactory(), mockSpanDetector);
     }
 
     @After
     public void tearDown() {
         verifyNoMoreInteractions(mockKafkaStreamStarter, mockKStreamBuilder, mockKStreamStringSpan,
-                mockKStreamStringString, mockDetector);
+                mockKStreamStringString, mockSpanDetector);
     }
 
     @Test
@@ -90,7 +90,7 @@ public class ProtobufSpanToEmailInKafkaTransformerTest {
                 .thenReturn(mockKStreamStringSpan);
         when(mockKStreamStringSpan.flatMapValues(Matchers.<ValueMapper<Span, List<String>>>any()))
                 .thenReturn(mockKStreamStringString);
-        when(mockDetector.apply(any(Span.class))).thenReturn(LIST_OF_SECRETS);
+        when(mockSpanDetector.apply(any(Span.class))).thenReturn(LIST_OF_SECRETS);
 
         protobufSpanToEmailInKafkaTransformer.buildStreamTopology(mockKStreamBuilder);
 
@@ -101,7 +101,7 @@ public class ProtobufSpanToEmailInKafkaTransformerTest {
         final Iterable<String> apply = valueMapper.apply(EMAIL_ADDRESS_SPAN);
         final Iterator<String> iterator = apply.iterator();
         assertSame(SECRET, iterator.next());
-        verify(mockDetector).apply(EMAIL_ADDRESS_SPAN);
+        verify(mockSpanDetector).apply(EMAIL_ADDRESS_SPAN);
         verify(mockKStreamStringString).to(any(), any(), eq("detected-secrets"));
     }
 }

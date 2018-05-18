@@ -17,7 +17,7 @@
 package com.expedia.www.haystack.pipes.secretDetector.mains;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.commons.secretDetector.Detector;
+import com.expedia.www.haystack.commons.secretDetector.span.SpanDetector;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilder;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
@@ -37,15 +37,15 @@ public class ProtobufSpanToEmailInKafkaTransformer implements KafkaStreamBuilder
     private final KafkaStreamStarter kafkaStreamStarter;
     private final SpanSerdeFactory spanSerdeFactory;
     private final KafkaConfigurationProvider kafkaConfigurationProvider = new KafkaConfigurationProvider();
-    private final Detector detector;
+    private final SpanDetector spanDetector;
 
     @Autowired
     public ProtobufSpanToEmailInKafkaTransformer(KafkaStreamStarter kafkaStreamStarter,
                                           SpanSerdeFactory spanSerdeFactory,
-                                          Detector detector) {
+                                          SpanDetector springWiredDetector) {
         this.kafkaStreamStarter = kafkaStreamStarter;
         this.spanSerdeFactory = spanSerdeFactory;
-        this.detector = detector;
+        this.spanDetector = springWiredDetector;
     }
 
     @Override
@@ -59,6 +59,6 @@ public class ProtobufSpanToEmailInKafkaTransformer implements KafkaStreamBuilder
         final Serde<String> stringSerde = Serdes.String();
         final KStream<String, Span> stream = kStreamBuilder.stream(
                 stringSerde, spanSerde, kafkaConfigurationProvider.fromtopic());
-        stream.flatMapValues(detector::apply).to(stringSerde, stringSerde, kafkaConfigurationProvider.totopic());
+        stream.flatMapValues(spanDetector::apply).to(stringSerde, stringSerde, kafkaConfigurationProvider.totopic());
     }
 }

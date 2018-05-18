@@ -17,7 +17,7 @@
 package com.expedia.www.haystack.pipes.secretDetector;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.commons.secretDetector.Detector;
+import com.expedia.www.haystack.commons.secretDetector.span.SpanDetector;
 import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
 import com.expedia.www.haystack.pipes.secretDetector.actions.DetectedAction;
 import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
@@ -37,17 +37,17 @@ public class DetectorAction implements ForeachAction<String, Span> {
     static final String CONFIDENTIAL_DATA_MSG =
             "Confidential data has been found for service [%s] operation [%s] span [%s] trace [%s] tag(s) [%s]";
     private final CountersAndTimer countersAndTimer;
-    private final Detector detector;
+    private final SpanDetector spanDetector;
     private final Logger detectorActionLogger;
     private final ActionsConfigurationProvider actionsConfigurationProvider;
 
     @Autowired
     public DetectorAction(CountersAndTimer countersAndTimer,
-                          Detector detector,
+                          SpanDetector springWiredDetector,
                           Logger detectorActionLogger,
                           ActionsConfigurationProvider actionsConfigurationProvider) {
         this.countersAndTimer = countersAndTimer;
-        this.detector = detector;
+        this.spanDetector = springWiredDetector;
         this.detectorActionLogger = detectorActionLogger;
         this.actionsConfigurationProvider = actionsConfigurationProvider;
     }
@@ -57,7 +57,7 @@ public class DetectorAction implements ForeachAction<String, Span> {
         countersAndTimer.incrementRequestCounter();
         final Stopwatch stopwatch = countersAndTimer.startTimer();
         try {
-            final Map<String, List<String>> mapOfTypeToKeysOfSecrets = detector.findSecrets(span);
+            final Map<String, List<String>> mapOfTypeToKeysOfSecrets = spanDetector.findSecrets(span);
             if (!mapOfTypeToKeysOfSecrets.isEmpty()) {
                 final List<DetectedAction> detectedActions = actionsConfigurationProvider.getDetectedActions();
                 detectorActionLogger.info(String.format(CONFIDENTIAL_DATA_MSG, span.getServiceName(),

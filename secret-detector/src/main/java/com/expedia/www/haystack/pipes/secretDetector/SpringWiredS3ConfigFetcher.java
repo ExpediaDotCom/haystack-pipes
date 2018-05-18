@@ -1,19 +1,19 @@
 package com.expedia.www.haystack.pipes.secretDetector;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.expedia.www.haystack.commons.secretDetector.S3ConfigFetcher;
 import com.expedia.www.haystack.commons.secretDetector.WhiteListConfig;
+import com.expedia.www.haystack.commons.secretDetector.span.SpanS3ConfigFetcher;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SpringWiredS3ConfigFetcher extends S3ConfigFetcher {
+public class SpringWiredS3ConfigFetcher extends SpanS3ConfigFetcher {
     @Autowired
     SpringWiredS3ConfigFetcher(Logger s3ConfigFetcherLogger,
                                WhiteListConfig whiteListConfig,
                                AmazonS3 amazonS3,
-                               S3ConfigFetcher.Factory s3ConfigFetcherFactory) {
+                               SpanS3ConfigFetcher.SpanFactory s3ConfigFetcherFactory) {
         super(s3ConfigFetcherLogger, whiteListConfig, amazonS3, s3ConfigFetcherFactory);
     }
 }
