@@ -102,6 +102,6 @@ public class ProtobufSpanToEmailInKafkaTransformerTest {
         final Iterator<String> iterator = apply.iterator();
         assertSame(SECRET, iterator.next());
         verify(mockSpanDetector).apply(EMAIL_ADDRESS_SPAN);
-        verify(mockKStreamStringString).to(any(), any(), eq("detected-secrets"));
+        verify(mockKStreamStringString).to(any(), any(), eq("proto-spans-scrubbed"));
     }
 }

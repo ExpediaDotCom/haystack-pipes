@@ -3,7 +3,7 @@ haystack:
     brokers: "localhost"
     port: 9092
     fromtopic: "proto-spans"
-    totopic: "detected-secrets"
+    totopic: "proto-spans-scrubbed"
     threadcount: 1
     sessiontimeout: 15000
   pipe:
