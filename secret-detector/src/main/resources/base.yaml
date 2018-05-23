@@ -3,7 +3,7 @@ haystack:
     brokers: "haystack.local"
     port: 9092
     fromtopic: "proto-spans"
-    totopic: "detected-secrets"
+    totopic: "proto-spans-scrubbed"
     threadcount: 2
     sessiontimeout: 15000
   pipe:
@@ -17,13 +17,13 @@ haystack:
     queuesize: 10
     sendasrate: false
   secretsnotifications:
-    mainbean: "protobufSpanToEmailInKafkaTransformer"  # (method) name of the bean in SpringConfig.java
-    actionfactories:
+    mainbean: "protobufSpanMaskerToKafkaTransformer"  # (method) name of the bean in SpringConfig.java, always needed
+    actionfactories: # This section is not needed when masking, because masking is just reads from and writes to Kafka
       - "emailerDetectedActionFactory" # (method) name of the bean in SpringConfig.java
     whitelist:
       bucket: "haystack-config"
       key: "secret-detector/whiteListItems.txt"
-    email:
+    email: # This section is only necessary if sending emails
       from: "haystack@expedia.com"
       tos:
         - "haystack-alerts@expedia.com"

@@ -21,6 +21,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanDetector;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanS3ConfigFetcher;
+import com.expedia.www.haystack.commons.secretDetector.span.SpanSecretMasker;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
@@ -35,6 +36,7 @@ import com.expedia.www.haystack.pipes.secretDetector.actions.SenderImpl;
 import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
 import com.expedia.www.haystack.pipes.secretDetector.config.SecretsEmailConfigurationProvider;
 import com.expedia.www.haystack.pipes.secretDetector.config.SpringWiredWhiteListConfigurationProvider;
+import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufSpanMaskerToKafkaTransformer;
 import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufSpanToEmailInKafkaTransformer;
 import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufToDetectorAction;
 import com.netflix.servo.monitor.Counter;
@@ -83,6 +85,14 @@ public class SpringConfig {
                                                                                 SpanSerdeFactory spanSerdeFactory,
                                                                                 SpanDetector spanDetector) {
         return new ProtobufSpanToEmailInKafkaTransformer(kafkaStreamStarter, spanSerdeFactory, spanDetector);
+    }
+
+    @Bean
+    @Autowired
+    ProtobufSpanMaskerToKafkaTransformer protobufSpanMaskerToKafkaTransformer(KafkaStreamStarter kafkaStreamStarter,
+                                                                              SpanSerdeFactory spanSerdeFactory,
+                                                                              SpanSecretMasker spanSecretMasker) {
+        return new ProtobufSpanMaskerToKafkaTransformer(kafkaStreamStarter, spanSerdeFactory, spanSecretMasker);
     }
 
     @Bean
@@ -198,6 +208,12 @@ public class SpringConfig {
 
     @Bean
     @Autowired
+    SpanSecretMasker.Factory spanSecretMasterFactory(MetricObjects metricObjects) {
+        return new SpanSecretMasker.Factory(metricObjects);
+    }
+
+    @Bean
+    @Autowired
     DetectorAction detectorAction(CountersAndTimer detectorDetectTimer,
                                   SpanDetector spanDetector,
                                   Logger detectorActionLogger,
@@ -245,9 +261,9 @@ public class SpringConfig {
     @Bean
     @Autowired
     SpanS3ConfigFetcher s3ConfigFetcher(Logger s3ConfigFetcherLogger,
-                                    SpringWiredWhiteListConfigurationProvider whiteListConfig,
-                                    AmazonS3 amazonS3,
-                                    SpanS3ConfigFetcher.SpanFactory s3ConfigFetcherFactory) {
+                                        SpringWiredWhiteListConfigurationProvider whiteListConfig,
+                                        AmazonS3 amazonS3,
+                                        SpanS3ConfigFetcher.SpanFactory s3ConfigFetcherFactory) {
         return new SpanS3ConfigFetcher(s3ConfigFetcherLogger, whiteListConfig, amazonS3, s3ConfigFetcherFactory);
     }
 
