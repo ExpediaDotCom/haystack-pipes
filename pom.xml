@@ -20,7 +20,7 @@
         <commons-pool2.version>2.5.0</commons-pool2.version>
         <commons-text.version>1.1</commons-text.version>
         <coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
-        <haystack-commons.version>1.0.28</haystack-commons.version>
+        <haystack-commons.version>1.0.29</haystack-commons.version>
         <haystack-metrics.version>2.0.0</haystack-metrics.version>
         <haystack-logback-metrics-appender.version>1.0.2</haystack-logback-metrics-appender.version>
         <haystack-log4j-metrics-appender.version>1.0.2</haystack-log4j-metrics-appender.version>
@@ -62,11 +62,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>com.amazonaws</groupId>
-                <artifactId>aws-java-sdk</artifactId>
-                <version>${aws-java-sdk.version}</version>
-            </dependency>
             <dependency>
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-java-sdk-kinesis</artifactId>
