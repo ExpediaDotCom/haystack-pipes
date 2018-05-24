@@ -13,41 +13,42 @@
     <properties>
         <encoding>UTF-8</encoding>
         <!-- Versions -->
-        <aws-java-sdk-version>1.11.319</aws-java-sdk-version>
-        <cfg4j-core-version>4.4.1</cfg4j-core-version>
-        <chlorine-finder-version>1.1.5</chlorine-finder-version>
-        <commons-lang3-version>3.7</commons-lang3-version>
-        <commons-pool2-version>2.5.0</commons-pool2-version>
-        <commons-text-version>1.1</commons-text-version>
-        <coveralls-maven-plugin-version>4.3.0</coveralls-maven-plugin-version>
-        <haystack-commons-version>1.0.27</haystack-commons-version>
-        <haystack-metrics-version>2.0.0</haystack-metrics-version>
-        <haystack-logback-metrics-appender-version>1.0.2</haystack-logback-metrics-appender-version>
-        <haystack-log4j-metrics-appender-version>1.0.2</haystack-log4j-metrics-appender-version>
-        <haystack-pipes-commons-version>1.0-SNAPSHOT</haystack-pipes-commons-version>
-        <jacoco-maven-plugin-version>0.8.0</jacoco-maven-plugin-version>
+        <aws-java-sdk.version>1.11.319</aws-java-sdk.version>
+        <cfg4j-core.version>4.4.1</cfg4j-core.version>
+        <chlorine-finder.version>1.1.5</chlorine-finder.version>
+        <commons-lang3.version>3.7</commons-lang3.version>
+        <commons-pool2.version>2.5.0</commons-pool2.version>
+        <commons-text.version>1.1</commons-text.version>
+        <coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
+        <haystack-commons.version>1.0.28</haystack-commons.version>
+        <haystack-metrics.version>2.0.0</haystack-metrics.version>
+        <haystack-logback-metrics-appender.version>1.0.2</haystack-logback-metrics-appender.version>
+        <haystack-log4j-metrics-appender.version>1.0.2</haystack-log4j-metrics-appender.version>
+        <haystack-pipes-commons.version>1.0-SNAPSHOT</haystack-pipes-commons.version>
+        <guava.version>19.0</guava.version>
+        <jacoco-maven-plugin.version>0.8.0</jacoco-maven-plugin.version>
         <jacoco-percentage>1.0</jacoco-percentage>
-        <jackson-version>2.9.1</jackson-version>
-        <java-version>1.8</java-version>
-        <javax-mail-version>1.4.7</javax-mail-version>
-        <javax-activation-version>1.1.1</javax-activation-version>
-        <junit-version>4.12</junit-version>
-        <kafka-version>0.11.0.2</kafka-version>
-        <libphonenumber-version>8.9.2</libphonenumber-version>
-        <logback-version>1.2.3</logback-version>
-        <log4j-version>2.10.0</log4j-version>
-        <maven-compiler-plugin-version>3.6.1</maven-compiler-plugin-version>
-        <maven-jar-plugin-version>3.0.2</maven-jar-plugin-version>
-        <mockito-version>1.9.5</mockito-version>
-        <mockserver-netty-version>5.3.0</mockserver-netty-version>
+        <jackson.version>2.9.1</jackson.version>
+        <java.version>1.8</java.version>
+        <javax-mail.version>1.4.7</javax-mail.version>
+        <javax-activation.version>1.1.1</javax-activation.version>
+        <junit.version>4.12</junit.version>
+        <kafka.version>0.11.0.2</kafka.version>
+        <libphonenumber.version>8.9.2</libphonenumber.version>
+        <logback.version>1.2.3</logback.version>
+        <log4j.version>2.10.0</log4j.version>
+        <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
+        <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
+        <mockito.version>1.9.5</mockito.version>
+        <mockserver-netty.version>5.3.0</mockserver-netty.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <protobuf-java-util-version>3.3.1</protobuf-java-util-version>
-        <protoc-jar-maven-version>3.3.0.1</protoc-jar-maven-version>
-        <servo-version>0.12.17</servo-version>
-        <slf4j-version>1.7.25</slf4j-version>
-        <spring-boot-plugins-version>1.5.9.RELEASE</spring-boot-plugins-version>
-        <spring-context-version>4.3.13.RELEASE</spring-context-version>
-        <zookeeper-version>3.4.9</zookeeper-version>
+        <protobuf-java-util.version>3.3.1</protobuf-java-util.version>
+        <protoc-jar-maven.version>3.3.0.1</protoc-jar-maven.version>
+        <servo.version>0.12.17</servo.version>
+        <slf4j.version>1.7.25</slf4j.version>
+        <spring-boot-plugins.version>1.5.9.RELEASE</spring-boot-plugins.version>
+        <spring-context.version>4.3.13.RELEASE</spring-context.version>
+        <zookeeper.version>3.4.9</zookeeper.version>
     </properties>
 
     <modules>
@@ -64,122 +65,127 @@
             <dependency>
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-java-sdk</artifactId>
-                <version>${aws-java-sdk-version}</version>
+                <version>${aws-java-sdk.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-java-sdk-kinesis</artifactId>
-                <version>${aws-java-sdk-version}</version>
+                <version>${aws-java-sdk.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-java-sdk-s3</artifactId>
-                <version>${aws-java-sdk-version}</version>
+                <version>${aws-java-sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
             </dependency>
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
-                <version>${logback-version}</version>
+                <version>${logback.version}</version>
             </dependency>
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-core</artifactId>
-                <version>${logback-version}</version>
+                <version>${logback.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.expedia.www</groupId>
                 <artifactId>haystack-commons</artifactId>
-                <version>${haystack-commons-version}</version>
+                <version>${haystack-commons.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.expedia.www</groupId>
                 <artifactId>haystack-logback-metrics-appender</artifactId>
-                <version>${haystack-logback-metrics-appender-version}</version>
+                <version>${haystack-logback-metrics-appender.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.expedia.www</groupId>
                 <artifactId>haystack-log4j-metrics-appender</artifactId>
-                <version>${haystack-log4j-metrics-appender-version}</version>
+                <version>${haystack-log4j-metrics-appender.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.expedia.www</groupId>
                 <artifactId>haystack-metrics</artifactId>
-                <version>${haystack-metrics-version}</version>
+                <version>${haystack-metrics.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.expedia.www</groupId>
                 <artifactId>haystack-pipes-commons</artifactId>
-                <version>${haystack-pipes-commons-version}</version>
+                <version>${haystack-pipes-commons.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>${jackson-version}</version>
+                <version>${jackson.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-yaml</artifactId>
-                <version>${jackson-version}</version>
+                <version>${jackson.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java-util</artifactId>
-                <version>${protobuf-java-util-version}</version>
+                <version>${protobuf-java-util.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.googlecode.libphonenumber</groupId>
                 <artifactId>libphonenumber</artifactId>
-                <version>${libphonenumber-version}</version>
+                <version>${libphonenumber.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.netflix.servo</groupId>
                 <artifactId>servo-core</artifactId>
-                <version>${servo-version}</version>
+                <version>${servo.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.netflix.servo</groupId>
                 <artifactId>servo-graphite</artifactId>
-                <version>${servo-version}</version>
+                <version>${servo.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.dataapps.chlorine</groupId>
                 <artifactId>chlorine-finder</artifactId>
-                <version>${chlorine-finder-version}</version>
+                <version>${chlorine-finder.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.mail</groupId>
                 <artifactId>mail</artifactId>
-                <version>${javax-mail-version}</version>
+                <version>${javax-mail.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.activation</groupId>
                 <artifactId>activation</artifactId>
-                <version>${javax-activation-version}</version>
+                <version>${javax-activation.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>${commons-lang3-version}</version>
+                <version>${commons-lang3.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-pool2</artifactId>
-                <version>${commons-pool2-version}</version>
+                <version>${commons-pool2.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-text</artifactId>
-                <version>${commons-text-version}</version>
+                <version>${commons-text.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka-streams</artifactId>
-                <version>${kafka-version}</version>
+                <version>${kafka.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka_2.11</artifactId>
-                <version>${kafka-version}</version>
+                <version>${kafka.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.slf4j</groupId>
@@ -190,27 +196,27 @@
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-slf4j-impl</artifactId>
-                <version>${log4j-version}</version>
+                <version>${log4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-api</artifactId>
-                <version>${log4j-version}</version>
+                <version>${log4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-core</artifactId>
-                <version>${log4j-version}</version>
+                <version>${log4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-web</artifactId>
-                <version>${log4j-version}</version>
+                <version>${log4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.zookeeper</groupId>
                 <artifactId>zookeeper</artifactId>
-                <version>${zookeeper-version}</version>
+                <version>${zookeeper.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>log4j</groupId>
@@ -225,33 +231,33 @@
             <dependency>
                 <groupId>org.cfg4j</groupId>
                 <artifactId>cfg4j-core</artifactId>
-                <version>${cfg4j-core-version}</version>
+                <version>${cfg4j-core.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>${slf4j-version}</version>
+                <version>${slf4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-ext</artifactId>
-                <version>${slf4j-version}</version>
+                <version>${slf4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>jcl-over-slf4j</artifactId>
-                <version>${slf4j-version}</version>
+                <version>${slf4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-parent</artifactId>
-                <version>${spring-boot-plugins-version}</version>
+                <version>${spring-boot-plugins.version}</version>
                 <type>pom</type>
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-web</artifactId>
-                <version>${spring-boot-plugins-version}</version>
+                <version>${spring-boot-plugins.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>ch.qos.logback</groupId>
@@ -262,26 +268,26 @@
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
-                <version>${spring-context-version}</version>
+                <version>${spring-context.version}</version>
             </dependency>
 
             <!-- Test dependencies -->
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>${junit-version}</version>
+                <version>${junit.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.mock-server</groupId>
                 <artifactId>mockserver-netty</artifactId>
-                <version>${mockserver-netty-version}</version>
+                <version>${mockserver-netty.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-all</artifactId>
-                <version>${mockito-version}</version>
+                <version>${mockito.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
@@ -293,7 +299,7 @@
                 <plugin>
                     <groupId>com.github.os72</groupId>
                     <artifactId>protoc-jar-maven-plugin</artifactId>
-                    <version>${protoc-jar-maven-version}</version>
+                    <version>${protoc-jar-maven.version}</version>
                     <executions>
                         <execution>
                             <phase>generate-sources</phase>
@@ -315,21 +321,21 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>${maven-compiler-plugin-version}</version>
+                    <version>${maven-compiler-plugin.version}</version>
                     <configuration>
-                        <source>${java-version}</source>
-                        <target>${java-version}</target>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
                     </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>${maven-jar-plugin-version}</version>
+                    <version>${maven-jar-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>${jacoco-maven-plugin-version}</version>
+                    <version>${jacoco-maven-plugin.version}</version>
                     <configuration>
                         <excludes>
                             <exclude>**/com/expedia/open/tracing/**</exclude>
@@ -382,7 +388,7 @@
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
-                    <version>${spring-boot-plugins-version}</version>
+                    <version>${spring-boot-plugins.version}</version>
                     <executions>
                         <execution>
                             <goals>
@@ -394,7 +400,7 @@
                 <plugin>
                     <groupId>org.eluder.coveralls</groupId>
                     <artifactId>coveralls-maven-plugin</artifactId>
-                    <version>${coveralls-maven-plugin-version}</version>
+                    <version>${coveralls-maven-plugin.version}</version>
                     <configuration>
                         <repoToken>PutRepoTokenHere</repoToken>
                     </configuration>
