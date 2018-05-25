@@ -37,7 +37,6 @@ import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATIO
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -79,7 +78,6 @@ public class ProtobufToFirehoseProducerTest {
     public void testMain() {
         protobufToFirehoseProducer.main();
 
-        verify(mockKafkaConfigurationProvider).fromtopic();
         verify(mockKafkaStreamStarter).createAndStartStream(protobufToFirehoseProducer);
     }
 
@@ -94,7 +92,7 @@ public class ProtobufToFirehoseProducerTest {
         protobufToFirehoseProducer.buildStreamTopology(mockKStreamBuilder);
 
         verify(mockSpanSerdeFactory).createSpanSerde(APPLICATION);
-        verify(mockKafkaConfigurationProvider, times(2)).fromtopic();
+        verify(mockKafkaConfigurationProvider).fromtopic();
         verify(mockKStreamBuilder).stream(any(Serdes.StringSerde.class), eq(mockSpanSerde), eq(FROM_TOPIC));
         verify(mockKStream).process(mockFirehoseProcessorSupplier);
     }

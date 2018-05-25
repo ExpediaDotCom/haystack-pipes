@@ -20,7 +20,6 @@ import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilderBase;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +33,5 @@ class ProtobufToFirehoseProducer extends KafkaStreamBuilderBase {
                                FirehoseProcessorSupplier firehoseProcessorSupplier,
                                KafkaConfigurationProvider kafkaConfigurationProvider) {
         super(kafkaStreamStarter, spanSerdeFactory, APPLICATION, kafkaConfigurationProvider, firehoseProcessorSupplier);
-        LoggerFactory.getLogger(ProtobufToFirehoseProducer.class).error(
-                "Temporary log message: fromtopic=" + kafkaConfigurationProvider.fromtopic());
     }
 }
