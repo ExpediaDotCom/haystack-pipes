@@ -3,7 +3,7 @@ package com.expedia.www.haystack.pipes.jsonTransformer;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
-import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
+import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +37,8 @@ public class SpringConfig {
 
     // Beans without unit tests ////////////////////////////////////////////////////////////////////////////////////////
     @Bean
-    SpanSerdeFactory spanSerdeFactory() {
-        return new SpanSerdeFactory();
+    SerdeFactory serdeFactory() {
+        return new SerdeFactory();
     }
 
     @Bean
@@ -49,8 +49,8 @@ public class SpringConfig {
     @Bean
     @Autowired
     ProtobufToJsonTransformer protobufToJsonTransformer(KafkaStreamStarter kafkaStreamStarter,
-                                                        SpanSerdeFactory spanSerdeFactory) {
-        return new ProtobufToJsonTransformer(kafkaStreamStarter, spanSerdeFactory);
+                                                        SerdeFactory serdeFactory) {
+        return new ProtobufToJsonTransformer(kafkaStreamStarter, serdeFactory);
     }
 
 }

@@ -1,7 +1,7 @@
 package com.expedia.www.haystack.pipes.commons.kafka;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
+import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.kstream.ForeachAction;
 import org.apache.kafka.streams.kstream.KStream;
@@ -30,7 +30,7 @@ public class KafkaStreamBuilderBaseTest {
     @Mock
     private KafkaStreamStarter mockKafkaStreamStarter;
     @Mock
-    private SpanSerdeFactory mockSpanSerdeFactory;
+    private SerdeFactory mockSerdeFactory;
     @Mock
     private KafkaConfigurationProvider mockKafkaConfigurationProvider;
     @Mock
@@ -45,15 +45,17 @@ public class KafkaStreamBuilderBaseTest {
     private KStream<String, Span> mockKStream;
 
     class KafkaStreamBuilderBaseForeachActionImpl extends KafkaStreamBuilderBase {
+        @SuppressWarnings("WeakerAccess")
         public KafkaStreamBuilderBaseForeachActionImpl() {
-            super(mockKafkaStreamStarter, mockSpanSerdeFactory, APPLICATION, mockKafkaConfigurationProvider,
+            super(mockKafkaStreamStarter, mockSerdeFactory, APPLICATION, mockKafkaConfigurationProvider,
                     mockForeachAction);
         }
     }
 
     class KafkaStreamBuilderBaseProcessorSupplierImpl extends KafkaStreamBuilderBase {
+        @SuppressWarnings("WeakerAccess")
         public KafkaStreamBuilderBaseProcessorSupplierImpl() {
-            super(mockKafkaStreamStarter, mockSpanSerdeFactory, APPLICATION, mockKafkaConfigurationProvider,
+            super(mockKafkaStreamStarter, mockSerdeFactory, APPLICATION, mockKafkaConfigurationProvider,
                     mockProcessorSupplier);
         }
     }
@@ -69,7 +71,7 @@ public class KafkaStreamBuilderBaseTest {
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSpanSerdeFactory, mockKafkaConfigurationProvider,
+        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSerdeFactory, mockKafkaConfigurationProvider,
                 mockForeachAction, mockKStreamBuilder, mockSerdeSpan, mockKStream);
     }
 
@@ -94,14 +96,14 @@ public class KafkaStreamBuilderBaseTest {
     }
 
     private void whensForBuildStreamTopology() {
-        when(mockSpanSerdeFactory.createSpanSerde(anyString())).thenReturn(mockSerdeSpan);
+        when(mockSerdeFactory.createSpanSerde(anyString())).thenReturn(mockSerdeSpan);
         when(mockKafkaConfigurationProvider.fromtopic()).thenReturn(FROM_TOPIC);
         when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
                 .thenReturn(mockKStream);
     }
 
     private void verifiesForBuildStreamTopology() {
-        verify(mockSpanSerdeFactory).createSpanSerde(APPLICATION);
+        verify(mockSerdeFactory).createSpanSerde(APPLICATION);
         verify(mockKafkaConfigurationProvider).fromtopic();
         verify(mockKStreamBuilder).stream(Matchers.<Serde<String>>any(), Matchers.<Serde<String>>any(), eq(FROM_TOPIC));
     }

@@ -33,7 +33,7 @@ import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
-import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
+import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.Printer;
 import com.netflix.servo.monitor.Counter;
@@ -183,8 +183,8 @@ class SpringConfig {
     }
 
     @Bean
-    SpanSerdeFactory spanSerdeFactory() {
-        return new SpanSerdeFactory();
+    SerdeFactory serdeFactory() {
+        return new SerdeFactory();
     }
 
     @Bean
@@ -242,11 +242,11 @@ class SpringConfig {
     @Bean
     @Autowired
     ProtobufToFirehoseProducer protobufToFirehoseProducer(KafkaStreamStarter kafkaStreamStarter,
-                                                          SpanSerdeFactory spanSerdeFactory,
+                                                          SerdeFactory serdeFactory,
                                                           FirehoseProcessorSupplier firehoseProcessorSupplier,
                                                           KafkaConfigurationProvider kafkaConfigurationProvider) {
         return new ProtobufToFirehoseProducer(
-                kafkaStreamStarter, spanSerdeFactory, firehoseProcessorSupplier, kafkaConfigurationProvider);
+                kafkaStreamStarter, serdeFactory, firehoseProcessorSupplier, kafkaConfigurationProvider);
     }
 
     @Bean

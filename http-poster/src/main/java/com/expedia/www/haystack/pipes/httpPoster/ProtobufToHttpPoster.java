@@ -19,7 +19,7 @@ package com.expedia.www.haystack.pipes.httpPoster;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilderBase;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
-import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
+import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,9 +27,9 @@ import org.springframework.stereotype.Component;
 public class ProtobufToHttpPoster extends KafkaStreamBuilderBase {
     @Autowired
     ProtobufToHttpPoster(KafkaStreamStarter kafkaStreamStarter,
-                         SpanSerdeFactory spanSerdeFactory,
+                         SerdeFactory serdeFactory,
                          HttpPostAction httpPostAction,
                          KafkaConfigurationProvider kafkaConfigurationProvider) {
-        super(kafkaStreamStarter, spanSerdeFactory, Constants.APPLICATION, kafkaConfigurationProvider, httpPostAction);
+        super(kafkaStreamStarter, serdeFactory, Constants.APPLICATION, kafkaConfigurationProvider, httpPostAction);
     }
 }

@@ -19,7 +19,7 @@ package com.expedia.www.haystack.pipes.secretDetector.mains;
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanDetector;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
-import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
+import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
@@ -67,7 +67,7 @@ public class ProtobufSpanToEmailInKafkaTransformerTest {
     @Before
     public void setUp() {
         protobufSpanToEmailInKafkaTransformer = new ProtobufSpanToEmailInKafkaTransformer(
-                mockKafkaStreamStarter, new SpanSerdeFactory(), mockSpanDetector);
+                mockKafkaStreamStarter, new SerdeFactory(), mockSpanDetector);
     }
 
     @After

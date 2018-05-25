@@ -29,7 +29,7 @@ import com.expedia.www.haystack.pipes.commons.health.HealthStatusListener;
 import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
-import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
+import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction;
 import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedActionFactory;
 import com.expedia.www.haystack.pipes.secretDetector.actions.SenderImpl;
@@ -73,26 +73,26 @@ public class SpringConfig {
     @Bean
     @Autowired
     ProtobufToDetectorAction detectorProducer(KafkaStreamStarter kafkaStreamStarter,
-                                              SpanSerdeFactory spanSerdeFactory,
+                                              SerdeFactory serdeFactory,
                                               DetectorAction detectorAction,
                                               KafkaConfigurationProvider kafkaConfigurationProvider) {
-        return new ProtobufToDetectorAction(kafkaStreamStarter, spanSerdeFactory, detectorAction, kafkaConfigurationProvider);
+        return new ProtobufToDetectorAction(kafkaStreamStarter, serdeFactory, detectorAction, kafkaConfigurationProvider);
     }
 
     @Bean
     @Autowired
     ProtobufSpanToEmailInKafkaTransformer protobufSpanToEmailInKafkaTransformer(KafkaStreamStarter kafkaStreamStarter,
-                                                                                SpanSerdeFactory spanSerdeFactory,
+                                                                                SerdeFactory serdeFactory,
                                                                                 SpanDetector spanDetector) {
-        return new ProtobufSpanToEmailInKafkaTransformer(kafkaStreamStarter, spanSerdeFactory, spanDetector);
+        return new ProtobufSpanToEmailInKafkaTransformer(kafkaStreamStarter, serdeFactory, spanDetector);
     }
 
     @Bean
     @Autowired
     ProtobufSpanMaskerToKafkaTransformer protobufSpanMaskerToKafkaTransformer(KafkaStreamStarter kafkaStreamStarter,
-                                                                              SpanSerdeFactory spanSerdeFactory,
+                                                                              SerdeFactory serdeFactory,
                                                                               SpanSecretMasker spanSecretMasker) {
-        return new ProtobufSpanMaskerToKafkaTransformer(kafkaStreamStarter, spanSerdeFactory, spanSecretMasker);
+        return new ProtobufSpanMaskerToKafkaTransformer(kafkaStreamStarter, serdeFactory, spanSecretMasker);
     }
 
     @Bean
@@ -171,8 +171,8 @@ public class SpringConfig {
     }
 
     @Bean
-    SpanSerdeFactory spanSerdeFactory() {
-        return new SpanSerdeFactory();
+    SerdeFactory serdeFactory() {
+        return new SerdeFactory();
     }
 
     @Bean
