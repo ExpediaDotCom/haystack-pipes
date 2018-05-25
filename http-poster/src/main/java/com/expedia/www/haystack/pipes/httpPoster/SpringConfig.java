@@ -6,7 +6,7 @@ import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
-import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
+import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import com.google.protobuf.util.JsonFormat;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
@@ -111,8 +111,8 @@ public class SpringConfig {
     }
 
     @Bean
-    SpanSerdeFactory spanSerdeFactory() {
-        return new SpanSerdeFactory();
+    SerdeFactory serdeFactory() {
+        return new SerdeFactory();
     }
 
     @Bean

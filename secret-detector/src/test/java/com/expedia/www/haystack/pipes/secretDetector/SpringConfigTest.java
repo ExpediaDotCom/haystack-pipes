@@ -182,8 +182,8 @@ public class SpringConfigTest {
     }
 
     @Test
-    public void testSpanSerdeFactory() {
-        assertNotNull(springConfig.spanSerdeFactory());
+    public void testSerdeFactory() {
+        assertNotNull(springConfig.serdeFactory());
     }
 
     @Test

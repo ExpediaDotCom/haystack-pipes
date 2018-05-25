@@ -19,7 +19,7 @@ package com.expedia.www.haystack.pipes.secretDetector.mains;
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
-import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
+import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import com.expedia.www.haystack.pipes.secretDetector.DetectorAction;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -49,7 +49,7 @@ public class ProtobufToDetectorActionTest {
     @Mock
     private KafkaStreamStarter mockKafkaStreamStarter;
     @Mock
-    private SpanSerdeFactory mockSpanSerdeFactory;
+    private SerdeFactory mockSerdeFactory;
     @Mock
     private DetectorAction mockDetectorAction;
     @Mock
@@ -66,12 +66,12 @@ public class ProtobufToDetectorActionTest {
     @Before
     public void setUp() {
         protobufToDetectorAction = new ProtobufToDetectorAction(
-                mockKafkaStreamStarter, mockSpanSerdeFactory, mockDetectorAction, mockKafkaConfigurationProvider);
+                mockKafkaStreamStarter, mockSerdeFactory, mockDetectorAction, mockKafkaConfigurationProvider);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSpanSerdeFactory, mockDetectorAction,
+        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSerdeFactory, mockDetectorAction,
                 mockKafkaConfigurationProvider, mockKStreamBuilder, mockKStream, mockSpanSerde);
     }
 
@@ -85,14 +85,14 @@ public class ProtobufToDetectorActionTest {
     @SuppressWarnings("Duplicates")
     @Test
     public void testBuildStreamTopology() {
-        when(mockSpanSerdeFactory.createSpanSerde(anyString())).thenReturn(mockSpanSerde);
+        when(mockSerdeFactory.createSpanSerde(anyString())).thenReturn(mockSpanSerde);
         when(mockKafkaConfigurationProvider.fromtopic()).thenReturn(FROM_TOPIC);
         when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
                 .thenReturn(mockKStream);
 
         protobufToDetectorAction.buildStreamTopology(mockKStreamBuilder);
 
-        verify(mockSpanSerdeFactory).createSpanSerde(APPLICATION);
+        verify(mockSerdeFactory).createSpanSerde(APPLICATION);
         verify(mockKafkaConfigurationProvider).fromtopic();
         verify(mockKStreamBuilder).stream(any(Serdes.StringSerde.class), eq(mockSpanSerde), eq(FROM_TOPIC));
         verify(mockKStream).foreach(mockDetectorAction);

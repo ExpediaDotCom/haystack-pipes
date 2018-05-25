@@ -23,24 +23,32 @@ import org.junit.Test;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-public class SpanSerdeFactoryTest {
-    private final static String APPLICATION = RANDOM.nextLong() + "APPLICATION";
+public class SerdeFactoryTest {
+    private static final String APPLICATION = RANDOM.nextLong() + "APPLICATION";
 
-    private SpanSerdeFactory spanSerdeFactory;
+    private SerdeFactory serdeFactory;
 
     @Before
     public void setUp() {
-        spanSerdeFactory = new SpanSerdeFactory();
+        serdeFactory = new SerdeFactory();
     }
 
     @Test
     public void testCreateSpanSerde() {
-        final Serde<Span> spanSerde = spanSerdeFactory.createSpanSerde(APPLICATION);
+        final Serde<Span> spanSerde = serdeFactory.createSpanSerde(APPLICATION);
 
         final SpanProtobufDeserializer deserializer = (SpanProtobufDeserializer) spanSerde.deserializer();
         assertEquals(APPLICATION, deserializer.application);
         final SpanJsonSerializer serializer = (SpanJsonSerializer) spanSerde.serializer();
         assertEquals(APPLICATION, serializer.application);
+    }
+
+    @Test
+    public void testCreateStringSerde() {
+        final Serde<String> stringSerde = serdeFactory.createStringSerde();
+
+        assertNotNull(stringSerde);
     }
 }

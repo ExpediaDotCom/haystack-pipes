@@ -6,7 +6,7 @@ import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
-import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
+import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
 import org.slf4j.Logger;
@@ -85,8 +85,8 @@ public class SpringConfig {
 
     // Beans without unit tests ////////////////////////////////////////////////////////////////////////////////////////
     @Bean
-    SpanSerdeFactory spanSerdeFactory() {
-        return new SpanSerdeFactory();
+    SerdeFactory serdeFactory() {
+        return new SerdeFactory();
     }
 
     @Bean
@@ -141,11 +141,11 @@ public class SpringConfig {
     @Bean
     @Autowired
     ProtobufToKafkaProducer protobufToKafkaProducer(KafkaStreamStarter kafkaStreamStarter,
-                                                    SpanSerdeFactory spanSerdeFactory,
+                                                    SerdeFactory serdeFactory,
                                                     ProduceIntoExternalKafkaAction produceIntoExternalKafkaAction,
                                                     KafkaConfigurationProvider kafkaConfigurationProvider) {
         return new ProtobufToKafkaProducer(
-                kafkaStreamStarter, spanSerdeFactory, produceIntoExternalKafkaAction, kafkaConfigurationProvider);
+                kafkaStreamStarter, serdeFactory, produceIntoExternalKafkaAction, kafkaConfigurationProvider);
     }
 
     /*

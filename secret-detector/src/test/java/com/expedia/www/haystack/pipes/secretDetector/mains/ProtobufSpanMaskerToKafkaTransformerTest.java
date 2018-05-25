@@ -3,8 +3,7 @@ package com.expedia.www.haystack.pipes.secretDetector.mains;
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanSecretMasker;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
-import com.expedia.www.haystack.pipes.commons.serialization.SpanJsonSerializer;
-import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
+import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
@@ -18,10 +17,11 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATION;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -35,22 +35,30 @@ public class ProtobufSpanMaskerToKafkaTransformerTest {
     @Mock
     private KStreamBuilder mockKStreamBuilder;
     @Mock
-    private KStream<String, Span> mockKStreamStringSpan;
+    private KStream<String, Span> mockKStream;
     @Mock
-    private KStream<String, SpanJsonSerializer> mockKStreamStringSpanJsonSerializer;
+    private SerdeFactory mockSerdeFactory;
+    @Mock
+    private Serde<String> mockFromStringSerde;
+    @Mock
+    private Serde<String> mockToStringSerde;
+    @Mock
+    private Serde<Span> mockFromSpanSerde;
+    @Mock
+    private Serde<Span> mockToSpanSerde;
 
     private ProtobufSpanMaskerToKafkaTransformer protobufSpanMaskerToKafkaTransformer;
 
     @Before
     public void setUp() {
         protobufSpanMaskerToKafkaTransformer = new ProtobufSpanMaskerToKafkaTransformer(
-                mockKafkaStreamStarter, new SpanSerdeFactory(), mockSpanSecretMasker);
+                mockKafkaStreamStarter, mockSerdeFactory, mockSpanSecretMasker);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSpanSecretMasker, mockKStreamBuilder,
-                mockKStreamStringSpan, mockKStreamStringSpanJsonSerializer);
+        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSpanSecretMasker, mockKStreamBuilder, mockKStream,
+                mockSerdeFactory, mockFromStringSerde, mockToStringSerde, mockFromSpanSerde, mockToSpanSerde);
     }
 
     @Test
@@ -63,22 +71,26 @@ public class ProtobufSpanMaskerToKafkaTransformerTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testBuildStreamTopology() {
+        when(mockSerdeFactory.createStringSerde()).thenReturn(mockFromStringSerde, mockToStringSerde);
+        when(mockSerdeFactory.createSpanSerde(anyString())).thenReturn(mockFromSpanSerde, mockToSpanSerde);
         when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
-                .thenReturn(mockKStreamStringSpan);
-        when(mockKStreamStringSpan.mapValues(Matchers.<ValueMapper<Span, SpanJsonSerializer>>any()))
-                .thenReturn(mockKStreamStringSpanJsonSerializer);
+                .thenReturn(mockKStream);
+        when(mockKStream.mapValues(Matchers.<ValueMapper<Span, Span>>any()))
+                .thenReturn(mockKStream);
         final Span span = Span.getDefaultInstance();
         when(mockSpanSecretMasker.apply(any())).thenReturn(span);
 
         protobufSpanMaskerToKafkaTransformer.buildStreamTopology(mockKStreamBuilder);
 
-        verify(mockKStreamBuilder).stream(any(), Matchers.<Serde<Span>>any(), eq("proto-spans"));
+        verify(mockSerdeFactory, times(2)).createStringSerde();
+        verify(mockSerdeFactory, times(2)).createSpanSerde(APPLICATION);
+        verify(mockKStreamBuilder).stream(mockFromStringSerde, mockFromSpanSerde, "proto-spans");
         ArgumentCaptor<ValueMapper> argumentCaptor = ArgumentCaptor.forClass(ValueMapper.class);
-        verify(mockKStreamStringSpan).mapValues(argumentCaptor.capture());
+        verify(mockKStream).mapValues(argumentCaptor.capture());
         final ValueMapper<Span, Span> valueMapper = argumentCaptor.getValue();
         assertSame(span, valueMapper.apply(span));
         verify(mockSpanSecretMasker).apply(span);
-        verify(mockKStreamStringSpanJsonSerializer).to(any(),  any(), eq("proto-spans-scrubbed"));
+        verify(mockKStream).to(mockToStringSerde, mockToSpanSerde, "proto-spans-scrubbed");
     }
 
 }

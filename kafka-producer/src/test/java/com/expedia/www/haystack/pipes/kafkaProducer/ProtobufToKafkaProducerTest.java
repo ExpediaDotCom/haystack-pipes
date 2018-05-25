@@ -19,7 +19,7 @@ package com.expedia.www.haystack.pipes.kafkaProducer;
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
-import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
+import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.kstream.KStream;
@@ -43,12 +43,12 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProtobufToKafkaProducerTest {
-    private final static String FROM_TOPIC = RANDOM.nextLong() + "FROM_TOPIC";
+    private static final String FROM_TOPIC = RANDOM.nextLong() + "FROM_TOPIC";
 
     @Mock
     private KafkaStreamStarter mockKafkaStreamStarter;
     @Mock
-    private SpanSerdeFactory mockSpanSerdeFactory;
+    private SerdeFactory mockSerdeFactory;
     @Mock
     private ProduceIntoExternalKafkaAction mockProduceIntoExternalKafkaAction;
     @Mock
@@ -65,12 +65,12 @@ public class ProtobufToKafkaProducerTest {
     @Before
     public void setUp() {
         protobufToFirehoseProducer = new ProtobufToKafkaProducer(
-                mockKafkaStreamStarter, mockSpanSerdeFactory, mockProduceIntoExternalKafkaAction, mockKafkaConfigurationProvider);
+                mockKafkaStreamStarter, mockSerdeFactory, mockProduceIntoExternalKafkaAction, mockKafkaConfigurationProvider);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSpanSerdeFactory, mockProduceIntoExternalKafkaAction,
+        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSerdeFactory, mockProduceIntoExternalKafkaAction,
                 mockKafkaConfigurationProvider, mockKStreamBuilder, mockKStream, mockSpanSerde);
     }
 
@@ -84,14 +84,14 @@ public class ProtobufToKafkaProducerTest {
     @SuppressWarnings("Duplicates")
     @Test
     public void testBuildStreamTopology() {
-        when(mockSpanSerdeFactory.createSpanSerde(anyString())).thenReturn(mockSpanSerde);
+        when(mockSerdeFactory.createSpanSerde(anyString())).thenReturn(mockSpanSerde);
         when(mockKafkaConfigurationProvider.fromtopic()).thenReturn(FROM_TOPIC);
         when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
                 .thenReturn(mockKStream);
 
         protobufToFirehoseProducer.buildStreamTopology(mockKStreamBuilder);
 
-        verify(mockSpanSerdeFactory).createSpanSerde(APPLICATION);
+        verify(mockSerdeFactory).createSpanSerde(APPLICATION);
         verify(mockKafkaConfigurationProvider).fromtopic();
         verify(mockKStreamBuilder).stream(any(Serdes.StringSerde.class), eq(mockSpanSerde), eq(FROM_TOPIC));
         verify(mockKStream).foreach(mockProduceIntoExternalKafkaAction);

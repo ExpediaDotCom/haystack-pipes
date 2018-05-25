@@ -19,7 +19,7 @@ package com.expedia.www.haystack.pipes.firehoseWriter;
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
-import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
+import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.kstream.KStream;
@@ -48,7 +48,7 @@ public class ProtobufToFirehoseProducerTest {
     @Mock
     private KafkaStreamStarter mockKafkaStreamStarter;
     @Mock
-    private SpanSerdeFactory mockSpanSerdeFactory;
+    private SerdeFactory mockSerdeFactory;
     @Mock
     private FirehoseProcessorSupplier mockFirehoseProcessorSupplier;
     @Mock
@@ -64,13 +64,13 @@ public class ProtobufToFirehoseProducerTest {
 
     @Before
     public void setUp() {
-        protobufToFirehoseProducer = new ProtobufToFirehoseProducer(mockKafkaStreamStarter, mockSpanSerdeFactory,
+        protobufToFirehoseProducer = new ProtobufToFirehoseProducer(mockKafkaStreamStarter, mockSerdeFactory,
                 mockFirehoseProcessorSupplier, mockKafkaConfigurationProvider);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSpanSerdeFactory, mockFirehoseProcessorSupplier,
+        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSerdeFactory, mockFirehoseProcessorSupplier,
                 mockKafkaConfigurationProvider, mockKStreamBuilder, mockKStream, mockSpanSerde);
     }
 
@@ -84,14 +84,14 @@ public class ProtobufToFirehoseProducerTest {
     @SuppressWarnings("Duplicates")
     @Test
     public void testBuildStreamTopology() {
-        when(mockSpanSerdeFactory.createSpanSerde(anyString())).thenReturn(mockSpanSerde);
+        when(mockSerdeFactory.createSpanSerde(anyString())).thenReturn(mockSpanSerde);
         when(mockKafkaConfigurationProvider.fromtopic()).thenReturn(FROM_TOPIC);
         when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
                 .thenReturn(mockKStream);
 
         protobufToFirehoseProducer.buildStreamTopology(mockKStreamBuilder);
 
-        verify(mockSpanSerdeFactory).createSpanSerde(APPLICATION);
+        verify(mockSerdeFactory).createSpanSerde(APPLICATION);
         verify(mockKafkaConfigurationProvider).fromtopic();
         verify(mockKStreamBuilder).stream(any(Serdes.StringSerde.class), eq(mockSpanSerde), eq(FROM_TOPIC));
         verify(mockKStream).process(mockFirehoseProcessorSupplier);

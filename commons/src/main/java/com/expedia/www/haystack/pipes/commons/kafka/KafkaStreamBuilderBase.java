@@ -1,7 +1,7 @@
 package com.expedia.www.haystack.pipes.commons.kafka;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.pipes.commons.serialization.SpanSerdeFactory;
+import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.kstream.ForeachAction;
@@ -11,37 +11,37 @@ import org.apache.kafka.streams.processor.ProcessorSupplier;
 
 public abstract class KafkaStreamBuilderBase implements KafkaStreamBuilder, Main {
     private final KafkaStreamStarter kafkaStreamStarter;
-    private final SpanSerdeFactory spanSerdeFactory;
+    private final SerdeFactory serdeFactory;
     private final String application;
     private final KafkaConfigurationProvider kafkaConfigurationProvider;
     private final ForeachAction<String, Span> foreachAction;
     private final ProcessorSupplier<String, Span> processorSupplier;
 
     public KafkaStreamBuilderBase(KafkaStreamStarter kafkaStreamStarter,
-                                  SpanSerdeFactory spanSerdeFactory,
+                                  SerdeFactory serdeFactory,
                                   String application,
                                   KafkaConfigurationProvider kafkaConfigurationProvider,
                                   ForeachAction<String, Span> foreachAction) {
-        this(kafkaStreamStarter, spanSerdeFactory, application, kafkaConfigurationProvider, foreachAction, null);
+        this(kafkaStreamStarter, serdeFactory, application, kafkaConfigurationProvider, foreachAction, null);
 
     }
 
     public KafkaStreamBuilderBase(KafkaStreamStarter kafkaStreamStarter,
-                                  SpanSerdeFactory spanSerdeFactory,
+                                  SerdeFactory serdeFactory,
                                   String application,
                                   KafkaConfigurationProvider kafkaConfigurationProvider,
                                   ProcessorSupplier<String, Span> processorSupplier) {
-        this(kafkaStreamStarter, spanSerdeFactory, application, kafkaConfigurationProvider, null, processorSupplier);
+        this(kafkaStreamStarter, serdeFactory, application, kafkaConfigurationProvider, null, processorSupplier);
     }
 
     private KafkaStreamBuilderBase(KafkaStreamStarter kafkaStreamStarter,
-                                   SpanSerdeFactory spanSerdeFactory,
+                                   SerdeFactory serdeFactory,
                                    String application,
                                    KafkaConfigurationProvider kafkaConfigurationProvider,
                                    ForeachAction<String, Span> foreachAction,
                                    ProcessorSupplier<String, Span> processorSupplier) {
         this.kafkaStreamStarter = kafkaStreamStarter;
-        this.spanSerdeFactory = spanSerdeFactory;
+        this.serdeFactory = serdeFactory;
         this.application = application;
         this.kafkaConfigurationProvider = kafkaConfigurationProvider;
         this.foreachAction = foreachAction;
@@ -51,7 +51,7 @@ public abstract class KafkaStreamBuilderBase implements KafkaStreamBuilder, Main
     @Override
     public void buildStreamTopology(KStreamBuilder kStreamBuilder) {
         final Serde<String> stringSerde = Serdes.String();
-        final Serde<Span> spanSerde = spanSerdeFactory.createSpanSerde(application);
+        final Serde<Span> spanSerde = serdeFactory.createSpanSerde(application);
         final String fromTopic = kafkaConfigurationProvider.fromtopic();
         final KStream<String, Span> stream = kStreamBuilder.stream(stringSerde, spanSerde, fromTopic);
         if(foreachAction != null) {
