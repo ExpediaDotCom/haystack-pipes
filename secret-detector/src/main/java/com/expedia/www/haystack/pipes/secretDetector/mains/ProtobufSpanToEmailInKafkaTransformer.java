@@ -55,7 +55,7 @@ public class ProtobufSpanToEmailInKafkaTransformer implements KafkaStreamBuilder
 
     @Override
     public void buildStreamTopology(KStreamBuilder kStreamBuilder) {
-        final Serde<Span> spanSerde = serdeFactory.createSpanSerde(APPLICATION);
+        final Serde<Span> spanSerde = serdeFactory.createJsonProtoSpanSerde(APPLICATION);
         final Serde<String> stringSerde = Serdes.String();
         final KStream<String, Span> stream = kStreamBuilder.stream(
                 stringSerde, spanSerde, kafkaConfigurationProvider.fromtopic());

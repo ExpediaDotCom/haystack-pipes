@@ -5,10 +5,16 @@ import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 
 public class SerdeFactory {
-    public Serde<Span> createSpanSerde(String application) {
-        final SpanProtobufDeserializer protobufDeserializer = new SpanProtobufDeserializer(application);
+    public Serde<Span> createJsonProtoSpanSerde(String application) {
         final SpanJsonSerializer spanJsonSerializer = new SpanJsonSerializer(application);
+        final SpanProtobufDeserializer protobufDeserializer = new SpanProtobufDeserializer(application);
         return Serdes.serdeFrom(spanJsonSerializer, protobufDeserializer);
+    }
+
+    public Serde<Span> createProtoProtoSpanSerde(String application) {
+        final SpanProtobufSerializer spanProtobufSerializer = new SpanProtobufSerializer(application);
+        final SpanProtobufDeserializer protobufDeserializer = new SpanProtobufDeserializer(application);
+        return Serdes.serdeFrom(spanProtobufSerializer, protobufDeserializer);
     }
 
     public Serde<String> createStringSerde() {

@@ -72,7 +72,7 @@ public class ProtobufSpanMaskerToKafkaTransformerTest {
     @Test
     public void testBuildStreamTopology() {
         when(mockSerdeFactory.createStringSerde()).thenReturn(mockFromStringSerde, mockToStringSerde);
-        when(mockSerdeFactory.createSpanSerde(anyString())).thenReturn(mockFromSpanSerde, mockToSpanSerde);
+        when(mockSerdeFactory.createProtoProtoSpanSerde(anyString())).thenReturn(mockFromSpanSerde, mockToSpanSerde);
         when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
                 .thenReturn(mockKStream);
         when(mockKStream.mapValues(Matchers.<ValueMapper<Span, Span>>any()))
@@ -83,7 +83,7 @@ public class ProtobufSpanMaskerToKafkaTransformerTest {
         protobufSpanMaskerToKafkaTransformer.buildStreamTopology(mockKStreamBuilder);
 
         verify(mockSerdeFactory, times(2)).createStringSerde();
-        verify(mockSerdeFactory, times(2)).createSpanSerde(APPLICATION);
+        verify(mockSerdeFactory, times(2)).createProtoProtoSpanSerde(APPLICATION);
         verify(mockKStreamBuilder).stream(mockFromStringSerde, mockFromSpanSerde, "proto-spans");
         ArgumentCaptor<ValueMapper> argumentCaptor = ArgumentCaptor.forClass(ValueMapper.class);
         verify(mockKStream).mapValues(argumentCaptor.capture());

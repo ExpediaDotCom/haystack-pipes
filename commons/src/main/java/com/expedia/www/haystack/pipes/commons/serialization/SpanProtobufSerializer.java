@@ -19,26 +19,25 @@ package com.expedia.www.haystack.pipes.commons.serialization;
 import com.expedia.open.tracing.Span;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.monitor.Timer;
-import org.apache.kafka.common.serialization.Deserializer;
+import org.apache.kafka.common.serialization.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.DatatypeConverter;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class SpanProtobufDeserializer extends SerializerDeserializerBase implements Deserializer<Span> {
-    static final String ERROR_MSG = "Problem deserializing span from Protobuf [%s]";
-    static final String PROTOBUF_SERIALIZATION_TIMER_NAME = "PROTOBUF_DESERIALIZATION";
-    static Logger logger = LoggerFactory.getLogger(SpanProtobufDeserializer.class);
+public class SpanProtobufSerializer extends SerializerDeserializerBase implements Serializer<Span> {
+    static final String PROTOBUF_SERIALIZATION_TIMER_NAME = "PROTOBUF_SERIALIZATION";
+    static Logger logger = LoggerFactory.getLogger(SpanProtobufSerializer.class);
+
     static final Map<String, Timer> PROTOBUF_SERIALIZATION_TIMERS = new ConcurrentHashMap<>();
 
-    private final Timer protobufSerializationTimer;
+    private final Timer protobufSerialization;
 
     @SuppressWarnings("WeakerAccess")
-    public SpanProtobufDeserializer(String application) {
+    public SpanProtobufSerializer(String application) {
         super(application);
-        protobufSerializationTimer = getOrCreateTimer(PROTOBUF_SERIALIZATION_TIMERS, PROTOBUF_SERIALIZATION_TIMER_NAME);
+        protobufSerialization = getOrCreateTimer(PROTOBUF_SERIALIZATION_TIMERS, PROTOBUF_SERIALIZATION_TIMER_NAME);
     }
 
     @Override
@@ -47,25 +46,18 @@ public class SpanProtobufDeserializer extends SerializerDeserializerBase impleme
     }
 
     @Override
-    public Span deserialize(String key, byte[] bytes) {
+    public byte[] serialize(String key, Span span) {
         request.increment();
-        if (bytes == null) {
-            return null;
-        }
-        final Stopwatch stopwatch = protobufSerializationTimer.start();
-        try {
-            bytesIn.increment(bytes.length);
-            return Span.parseFrom(bytes);
-        } catch (Exception exception) {
-            logger.error(ERROR_MSG, DatatypeConverter.printHexBinary(bytes), exception);
-        } finally {
-            stopwatch.stop();
-        }
-        return null;
+        final Stopwatch stopwatch = protobufSerialization.start();
+        final byte[] bytes = span.toByteArray();
+        bytesIn.increment(bytes.length);
+        stopwatch.stop();
+        return bytes;
     }
 
     @Override
     public void close() {
         // Nothing to do
     }
+
 }
