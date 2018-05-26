@@ -54,11 +54,11 @@ public class ProtobufSpanMaskerToKafkaTransformer implements KafkaStreamBuilder,
     @Override
     public void buildStreamTopology(KStreamBuilder kStreamBuilder) {
         final KStream<String, Span> stream = kStreamBuilder.stream(
-                serdeFactory.createStringSerde(), serdeFactory.createSpanSerde(APPLICATION),
+                serdeFactory.createStringSerde(), serdeFactory.createSpanProtoProtoSerde(APPLICATION),
                 kafkaConfigurationProvider.fromtopic());
 
         stream.mapValues(spanSecretMasker).to(
-                serdeFactory.createStringSerde(), serdeFactory.createSpanSerde(APPLICATION),
+                serdeFactory.createStringSerde(), serdeFactory.createSpanProtoProtoSerde(APPLICATION),
                 kafkaConfigurationProvider.totopic());
     }
 

@@ -96,14 +96,14 @@ public class KafkaStreamBuilderBaseTest {
     }
 
     private void whensForBuildStreamTopology() {
-        when(mockSerdeFactory.createSpanSerde(anyString())).thenReturn(mockSerdeSpan);
+        when(mockSerdeFactory.createSpanJsonProtoSerde(anyString())).thenReturn(mockSerdeSpan);
         when(mockKafkaConfigurationProvider.fromtopic()).thenReturn(FROM_TOPIC);
         when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
                 .thenReturn(mockKStream);
     }
 
     private void verifiesForBuildStreamTopology() {
-        verify(mockSerdeFactory).createSpanSerde(APPLICATION);
+        verify(mockSerdeFactory).createSpanJsonProtoSerde(APPLICATION);
         verify(mockKafkaConfigurationProvider).fromtopic();
         verify(mockKStreamBuilder).stream(Matchers.<Serde<String>>any(), Matchers.<Serde<String>>any(), eq(FROM_TOPIC));
     }

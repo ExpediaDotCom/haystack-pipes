@@ -84,14 +84,14 @@ public class ProtobufToKafkaProducerTest {
     @SuppressWarnings("Duplicates")
     @Test
     public void testBuildStreamTopology() {
-        when(mockSerdeFactory.createSpanSerde(anyString())).thenReturn(mockSpanSerde);
+        when(mockSerdeFactory.createSpanJsonProtoSerde(anyString())).thenReturn(mockSpanSerde);
         when(mockKafkaConfigurationProvider.fromtopic()).thenReturn(FROM_TOPIC);
         when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
                 .thenReturn(mockKStream);
 
         protobufToFirehoseProducer.buildStreamTopology(mockKStreamBuilder);
 
-        verify(mockSerdeFactory).createSpanSerde(APPLICATION);
+        verify(mockSerdeFactory).createSpanJsonProtoSerde(APPLICATION);
         verify(mockKafkaConfigurationProvider).fromtopic();
         verify(mockKStreamBuilder).stream(any(Serdes.StringSerde.class), eq(mockSpanSerde), eq(FROM_TOPIC));
         verify(mockKStream).foreach(mockProduceIntoExternalKafkaAction);

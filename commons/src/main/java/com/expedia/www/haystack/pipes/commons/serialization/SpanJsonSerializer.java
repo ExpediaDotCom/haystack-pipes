@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SpanJsonSerializer extends SerializerDeserializerBase implements Serializer<Span> {
-    static final String ERROR_MSG = "Problem serializing span [%s]";
+    static final String ERROR_MSG = "Problem serializing span into JSON [%s]";
     static final String JSON_SERIALIZATION_TIMER_NAME = "JSON_SERIALIZATION";
     static Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
     static Logger logger = LoggerFactory.getLogger(SpanJsonSerializer.class);

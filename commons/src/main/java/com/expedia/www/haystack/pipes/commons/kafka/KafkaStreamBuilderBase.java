@@ -51,7 +51,7 @@ public abstract class KafkaStreamBuilderBase implements KafkaStreamBuilder, Main
     @Override
     public void buildStreamTopology(KStreamBuilder kStreamBuilder) {
         final Serde<String> stringSerde = Serdes.String();
-        final Serde<Span> spanSerde = serdeFactory.createSpanSerde(application);
+        final Serde<Span> spanSerde = serdeFactory.createSpanJsonProtoSerde(application);
         final String fromTopic = kafkaConfigurationProvider.fromtopic();
         final KStream<String, Span> stream = kStreamBuilder.stream(stringSerde, spanSerde, fromTopic);
         if(foreachAction != null) {

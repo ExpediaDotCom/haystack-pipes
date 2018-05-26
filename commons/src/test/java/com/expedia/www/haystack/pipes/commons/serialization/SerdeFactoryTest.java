@@ -36,12 +36,22 @@ public class SerdeFactoryTest {
     }
 
     @Test
-    public void testCreateSpanSerde() {
-        final Serde<Span> spanSerde = serdeFactory.createSpanSerde(APPLICATION);
+    public void testCreateSpanJsonProtoSerde() {
+        final Serde<Span> spanSerde = serdeFactory.createSpanJsonProtoSerde(APPLICATION);
 
         final SpanProtobufDeserializer deserializer = (SpanProtobufDeserializer) spanSerde.deserializer();
         assertEquals(APPLICATION, deserializer.application);
         final SpanJsonSerializer serializer = (SpanJsonSerializer) spanSerde.serializer();
+        assertEquals(APPLICATION, serializer.application);
+    }
+
+    @Test
+    public void testCreateSpanProtoProtoSerde() {
+        final Serde<Span> spanSerde = serdeFactory.createSpanProtoProtoSerde(APPLICATION);
+
+        final SpanProtobufDeserializer deserializer = (SpanProtobufDeserializer) spanSerde.deserializer();
+        assertEquals(APPLICATION, deserializer.application);
+        final SpanProtobufSerializer serializer = (SpanProtobufSerializer) spanSerde.serializer();
         assertEquals(APPLICATION, serializer.application);
     }
 
