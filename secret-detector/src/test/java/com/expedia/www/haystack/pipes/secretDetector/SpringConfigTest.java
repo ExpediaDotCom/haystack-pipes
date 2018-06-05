@@ -17,6 +17,7 @@
 package com.expedia.www.haystack.pipes.secretDetector;
 
 import com.expedia.www.haystack.commons.secretDetector.span.SpanDetector;
+import com.expedia.www.haystack.commons.secretDetector.span.SpanNameAndCountRecorder;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanS3ConfigFetcher;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
@@ -119,6 +120,20 @@ public class SpringConfigTest {
         final Logger logger = springConfig.detectorLogger();
 
         assertEquals(SpanDetector.class.getName(), logger.getName());
+    }
+
+    @Test
+    public void testSpanS3ConfigFetcherLogger() {
+        final Logger logger = springConfig.spanS3ConfigFetcherLogger();
+
+        assertEquals(SpanS3ConfigFetcher.class.getName(), logger.getName());
+    }
+
+    @Test
+    public void testSpanNameAndCountRecorderLogger() {
+        final Logger logger = springConfig.spanNameAndCountRecorderLogger();
+
+        assertEquals(SpanNameAndCountRecorder.class.getName(), logger.getName());
     }
 
     @Test
