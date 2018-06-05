@@ -20,6 +20,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanDetector;
+import com.expedia.www.haystack.commons.secretDetector.span.SpanNameAndCountRecorder;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanS3ConfigFetcher;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanSecretMasker;
 import com.expedia.www.haystack.metrics.MetricObjects;
@@ -50,6 +51,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.Clock;
 import java.util.concurrent.TimeUnit;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
@@ -125,8 +127,13 @@ public class SpringConfig {
     }
 
     @Bean
-    Logger s3ConfigFetcherLogger() {
+    Logger spanS3ConfigFetcherLogger() {
         return LoggerFactory.getLogger(SpanS3ConfigFetcher.class);
+    }
+
+    @Bean
+    Logger spanNameAndCountRecorderLogger() {
+        return LoggerFactory.getLogger(SpanNameAndCountRecorder.class);
     }
 
     @Bean
@@ -260,11 +267,17 @@ public class SpringConfig {
 
     @Bean
     @Autowired
-    SpanS3ConfigFetcher s3ConfigFetcher(Logger s3ConfigFetcherLogger,
+    SpanS3ConfigFetcher s3ConfigFetcher(Logger spanS3ConfigFetcherLogger,
                                         SpringWiredWhiteListConfigurationProvider whiteListConfig,
                                         AmazonS3 amazonS3,
                                         SpanS3ConfigFetcher.SpanFactory s3ConfigFetcherFactory) {
-        return new SpanS3ConfigFetcher(s3ConfigFetcherLogger, whiteListConfig, amazonS3, s3ConfigFetcherFactory);
+        return new SpanS3ConfigFetcher(spanS3ConfigFetcherLogger, whiteListConfig, amazonS3, s3ConfigFetcherFactory);
+    }
+
+    @Bean
+    @Autowired
+    SpanNameAndCountRecorder spanNameAndCountRecorder(Logger spanNameAndCountRecorderLogger) {
+        return new SpanNameAndCountRecorder(spanNameAndCountRecorderLogger, Clock.systemUTC());
     }
 
     /*

@@ -10,10 +10,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class SpringWiredS3ConfigFetcher extends SpanS3ConfigFetcher {
     @Autowired
-    SpringWiredS3ConfigFetcher(Logger s3ConfigFetcherLogger,
+    SpringWiredS3ConfigFetcher(Logger spanS3ConfigFetcherLogger,
                                WhiteListConfig whiteListConfig,
                                AmazonS3 amazonS3,
                                SpanS3ConfigFetcher.SpanFactory s3ConfigFetcherFactory) {
-        super(s3ConfigFetcherLogger, whiteListConfig, amazonS3, s3ConfigFetcherFactory);
+        super(spanS3ConfigFetcherLogger, whiteListConfig, amazonS3, s3ConfigFetcherFactory);
     }
 }

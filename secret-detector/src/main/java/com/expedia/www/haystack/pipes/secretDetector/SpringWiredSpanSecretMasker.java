@@ -1,5 +1,6 @@
 package com.expedia.www.haystack.pipes.secretDetector;
 
+import com.expedia.www.haystack.commons.secretDetector.span.SpanNameAndCountRecorder;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanS3ConfigFetcher;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanSecretMasker;
 import io.dataapps.chlorine.finder.FinderEngine;
@@ -13,7 +14,8 @@ public class SpringWiredSpanSecretMasker extends SpanSecretMasker {
     @Autowired
     public SpringWiredSpanSecretMasker(FinderEngine finderEngine,
                                        SpanSecretMasker.Factory spanSecretMaskerFactory,
-                                       SpanS3ConfigFetcher s3ConfigFetcher) {
-        super(finderEngine, spanSecretMaskerFactory, s3ConfigFetcher, APPLICATION);
+                                       SpanS3ConfigFetcher s3ConfigFetcher,
+                                       SpanNameAndCountRecorder spanNameAndCountRecorder) {
+        super(finderEngine, spanSecretMaskerFactory, s3ConfigFetcher, spanNameAndCountRecorder, APPLICATION);
     }
 }
