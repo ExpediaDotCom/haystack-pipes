@@ -11,7 +11,7 @@
         <host>${HAYSTACK_GRAPHITE_HOST}</host>
         <subsystem>pipes-secret-detector</subsystem>
     </appender>
-    <logger name="ccom.expedia.www.haystack.commons.secretDetector.span.SpanNameAndCountRecorder" additivity="false" level="INFO">
+    <logger name="com.expedia.www.haystack.commons.secretDetector.span.SpanNameAndCountRecorder" additivity="false" level="INFO">
         <appender-ref ref="STDOUT" /><!-- Display hourly INFO messages of the (aggregated) keys of secrets -->
     </logger>
     <logger name="com.expedia.www.haystack.pipes.secretDetector.Detector" additivity="false" level="INFO">
