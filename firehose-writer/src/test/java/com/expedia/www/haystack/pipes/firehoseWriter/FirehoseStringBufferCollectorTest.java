@@ -41,7 +41,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class FirehostStringBufferCollectorTest {
+public class FirehoseStringBufferCollectorTest {
     private static final String DATA = "Hello World!";
     private static final String DATA_PLUS_NEWLINE = DATA + '\n';
 
