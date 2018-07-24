@@ -1,17 +1,18 @@
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
+import com.amazonaws.services.kinesisfirehose.model.Record;
+import com.netflix.servo.util.VisibleForTesting;
+import org.apache.commons.lang3.Validate;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.commons.lang3.Validate;
-
-import com.amazonaws.services.kinesisfirehose.model.Record;
-import com.netflix.servo.util.VisibleForTesting;
-
 public class FirehoseStringBufferCollector implements FirehoseCollector {
+    @VisibleForTesting
+    static final int MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR = 4;
 
     private final Factory factory;
     private final int maxBatchInterval;
@@ -19,7 +20,7 @@ public class FirehoseStringBufferCollector implements FirehoseCollector {
     private final int maxBytesInRecord;
 
     private StringBuilder buffer;
-    private List<Record> batch;
+    private List<Record> recordsInBatch;
     private long batchLastCreatedAt;
     private int totalBatchSize;
 
@@ -28,13 +29,13 @@ public class FirehoseStringBufferCollector implements FirehoseCollector {
     }
 
     FirehoseStringBufferCollector(int maxBatchInterval) {
-        this(new Factory(), MAX_BYTES_IN_RECORD, 4, maxBatchInterval);
+        this(new Factory(), MAX_BYTES_IN_RECORD, MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR, maxBatchInterval);
     }
 
     FirehoseStringBufferCollector(Factory factory,
-                                          int maxBytesInRecord,
-                                          int maxRecordsInBatch,
-                                          int maxBatchInterval) {
+                                  int maxBytesInRecord,
+                                  int maxRecordsInBatch,
+                                  int maxBatchInterval) {
         Validate.notNull(factory);
         this.factory = factory;
         this.maxBatchInterval = maxBatchInterval;
@@ -56,7 +57,7 @@ public class FirehoseStringBufferCollector implements FirehoseCollector {
         return maxBytesInRecord;
     }
 
-    public int getTotalBatchSize() {
+    int getTotalBatchSize() {
         return totalBatchSize;
     }
 
@@ -69,7 +70,7 @@ public class FirehoseStringBufferCollector implements FirehoseCollector {
 
         if (shouldCreateNewRecordDueToRecordSize(data)) {
             final Optional<Record> record = createRecordFromBuffer();
-            record.ifPresent(batch::add);
+            record.ifPresent(recordsInBatch::add);
 
             final List<Record> returnBatch = createNewBatchIfFull();
 
@@ -84,8 +85,8 @@ public class FirehoseStringBufferCollector implements FirehoseCollector {
     @Override
     public List<Record> returnIncompleteBatch() {
         final Optional<Record> record = createRecordFromBuffer();
-        record.ifPresent(batch::add);
-        final List<Record> returnBatch = batch;
+        record.ifPresent(recordsInBatch::add);
+        final List<Record> returnBatch = recordsInBatch;
         initializeBatch();
         return returnBatch;
     }
@@ -129,8 +130,10 @@ public class FirehoseStringBufferCollector implements FirehoseCollector {
         //if the current batch is ready to be sent, initialize a new batch
         //otherwise we get an empty batch
         final List<Record> returnBatch;
-        if (batch.size() == maxRecordsInBatch || batchCreationTimedOut()) {
-            returnBatch = batch;
+        if (recordsInBatch.size() == maxRecordsInBatch || batchCreationTimedOut()) {
+            final Optional<Record> record = createRecordFromBuffer();
+            record.ifPresent(recordsInBatch::add);
+            returnBatch = recordsInBatch;
             initializeBatch();
         }
         else {
@@ -151,7 +154,7 @@ public class FirehoseStringBufferCollector implements FirehoseCollector {
     }
 
     private void initializeBatch() {
-        batch = new ArrayList<>(maxRecordsInBatch);
+        recordsInBatch = new ArrayList<>(maxRecordsInBatch);
         batchLastCreatedAt = factory.currentTimeMillis();
         totalBatchSize = 0;
     }
