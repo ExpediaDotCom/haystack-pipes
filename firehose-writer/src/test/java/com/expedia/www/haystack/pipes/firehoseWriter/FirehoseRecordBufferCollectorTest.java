@@ -76,11 +76,11 @@ public class FirehoseRecordBufferCollectorTest {
     }
 
     @Test
-    public void testShoudCallTheOverloadWhenCalledWithString() {
+    public void testShouldCallTheOverloadWhenCalledWithString() {
         final String data = "{\"hello\":\"world\"}";
         timesClockMillis = 2;
         firehoseCollector.addRecordAndReturnBatch(data);
-        assertEquals(1, firehoseCollector.returnIncompleteBatch().size());
+        assertEquals(1, firehoseCollector.createIncompleteBatch().size());
     }
 
     @Test
@@ -137,10 +137,10 @@ public class FirehoseRecordBufferCollectorTest {
         timesClockMillis = 3;
         testShouldCreateNewBatch(MAX_RECORDS_IN_BATCH / 2, false);
 
-        final List<Record> batch = firehoseCollector.returnIncompleteBatch();
+        final List<Record> batch = firehoseCollector.createIncompleteBatch();
 
         assertEquals(MAX_RECORDS_IN_BATCH / 2, batch.size());
-        assertEquals(0, firehoseCollector.returnIncompleteBatch().size());
+        assertEquals(0, firehoseCollector.createIncompleteBatch().size());
     }
 
     @Test

@@ -86,7 +86,7 @@ class Batch {
     }
 
     List<Record> getRecordListForShutdown() {
-        return firehoseCollector.returnIncompleteBatch();
+        return firehoseCollector.createIncompleteBatch();
     }
 
     List<Record> extractFailedRecords(
@@ -143,7 +143,7 @@ class Batch {
     void logFailures(int retryCount, Map<String, String> uniqueErrorCodesAndMessages) {
         if(!uniqueErrorCodesAndMessages.isEmpty()) {
             final String allErrorCodesAndMessages = StringUtils.join(uniqueErrorCodesAndMessages, ',');
-            logger.warn(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES, allErrorCodesAndMessages, retryCount));
+            logger.error(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES, allErrorCodesAndMessages, retryCount));
         }
     }
 }

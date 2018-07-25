@@ -196,7 +196,7 @@ public class FirehoseStringBufferCollectorTest {
         firehoseStringBufferCollector.addToRecordBuffer(DATA_PLUS_NEWLINE);
         firehoseStringBufferCollector.addToRecordBuffer(DATA_PLUS_NEWLINE);
         assertEquals(26, firehoseStringBufferCollector.getTotalBatchSize());
-        final List<Record> batch = firehoseStringBufferCollector.returnIncompleteBatch();
+        final List<Record> batch = firehoseStringBufferCollector.createIncompleteBatch();
         final Record actual = batch.get(0);
         assertEquals(DATA_PLUS_NEWLINE + DATA_PLUS_NEWLINE, new String(actual.getData().array()));
     }
@@ -209,7 +209,7 @@ public class FirehoseStringBufferCollectorTest {
         firehoseStringBufferCollector.addRecordAndReturnBatch(DATA_PLUS_NEWLINE);
         firehoseStringBufferCollector.addRecordAndReturnBatch(DATA_PLUS_NEWLINE);
         assertEquals(52, firehoseStringBufferCollector.getTotalBatchSize());
-        final List<Record> batch = firehoseStringBufferCollector.returnIncompleteBatch();
+        final List<Record> batch = firehoseStringBufferCollector.createIncompleteBatch();
         final String expected = DATA_PLUS_NEWLINE + DATA_PLUS_NEWLINE;
         assertEquals(expected, new String(batch.get(0).getData().array()));
         assertEquals(expected, new String(batch.get(1).getData().array()));

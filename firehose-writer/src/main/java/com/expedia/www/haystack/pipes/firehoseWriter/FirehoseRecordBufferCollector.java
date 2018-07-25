@@ -93,7 +93,8 @@ class FirehoseRecordBufferCollector implements FirehoseCollector {
         return addRecordAndReturnBatch(data.getBytes());
     }
 
-    public List<Record> returnIncompleteBatch() {
+    @Override
+    public List<Record> createIncompleteBatch() {
         final List<Record> records = this.records;
         initialize();
         return records;
