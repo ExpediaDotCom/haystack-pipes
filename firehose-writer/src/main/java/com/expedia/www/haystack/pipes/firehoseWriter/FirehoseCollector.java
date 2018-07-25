@@ -22,7 +22,7 @@ import com.amazonaws.services.kinesisfirehose.model.Record;
 
 /**
  * Interface for implementations that buffer data to be written
- * to firehose
+ * to Firehose
  */
 public interface FirehoseCollector {
     /**
@@ -50,11 +50,11 @@ public interface FirehoseCollector {
     long LAST_BATCH_TIME_DIFF_ALLOWED_MILLIS = 3000;
 
     /**
-     * this method should buffer the given data and return a collection
+     * This method should buffer the given data and return a collection
      * of records that are ready to be dispatched as one batch to firehose
      *
-     * this method should make sure the number of records do not exceed
-     * {@link #MAX_RECORDS_IN_BATCH} or the total size of the batch do not
+     * This method should make sure the number of records does not exceed
+     * {@link #MAX_RECORDS_IN_BATCH} and that the total size of the batch does not
      * exceed {@link #MAX_BYTES_IN_BATCH}
      * @param data data to be appended to the next batch
      * @return full batch that is ready to be dispatched
@@ -62,11 +62,10 @@ public interface FirehoseCollector {
     List<Record> addRecordAndReturnBatch(String data);
 
     /**
-     * This method return the remaining data if any that has been buffered as a collection of
-     * Records to be dispatched to firehose
+     * This method returns the remaining data that has been buffered but not yet sent to Firehose.
      * @return collection of records or an empty collection
      */
-    List<Record> returnIncompleteBatch();
+    List<Record> createIncompleteBatch();
 
     class Factory {
         long currentTimeMillis() {

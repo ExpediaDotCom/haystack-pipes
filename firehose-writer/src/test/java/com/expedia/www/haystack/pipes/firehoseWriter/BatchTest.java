@@ -136,11 +136,11 @@ public class BatchTest {
 
     @Test
     public void testGetRecordListForShutdown() {
-        when(mockFirehoseCollector.returnIncompleteBatch()).thenReturn(mockRecordList);
+        when(mockFirehoseCollector.createIncompleteBatch()).thenReturn(mockRecordList);
 
         assertSame(mockRecordList, batch.getRecordListForShutdown());
 
-        verify(mockFirehoseCollector).returnIncompleteBatch();
+        verify(mockFirehoseCollector).createIncompleteBatch();
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -175,7 +175,7 @@ public class BatchTest {
         verify(mockRecordList).get(3);
         verify(mockRecordList).get(4);
         final String uniqueErrors = "{A_once=A_message, B_twice=B_message},";
-        verify(mockLogger).warn(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES, uniqueErrors, RETRY_COUNT));
+        verify(mockLogger).error(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES, uniqueErrors, RETRY_COUNT));
     }
 
     @Test
@@ -190,6 +190,7 @@ public class BatchTest {
         verify(mockLogger).error(String.format(RESULT_NULL, SIZE, RETRY_COUNT));
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     public void testCountIfThrottled() {
         // Using these mocks makes the test more verbose but verifies that break; is called appropriately

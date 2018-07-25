@@ -83,7 +83,7 @@ public class FirehoseStringBufferCollector implements FirehoseCollector {
     }
 
     @Override
-    public List<Record> returnIncompleteBatch() {
+    public List<Record> createIncompleteBatch() {
         final Optional<Record> record = createRecordFromBuffer();
         record.ifPresent(recordsInBatch::add);
         final List<Record> returnBatch = recordsInBatch;
@@ -127,19 +127,18 @@ public class FirehoseStringBufferCollector implements FirehoseCollector {
 
     @VisibleForTesting
     List<Record> createNewBatchIfFull() {
-        //if the current batch is ready to be sent, initialize a new batch
-        //otherwise we get an empty batch
-        final List<Record> returnBatch;
-        if (recordsInBatch.size() == maxRecordsInBatch || batchCreationTimedOut()) {
-            final Optional<Record> record = createRecordFromBuffer();
-            record.ifPresent(recordsInBatch::add);
-            returnBatch = recordsInBatch;
+        // If the current batch is ready to be sent, initialize a new batch.
+        // If too much time has elapsed since the last batch was sent, send an incomplete batch.
+        // Otherwise we get an empty batch.
+        if (recordsInBatch.size() == maxRecordsInBatch) {
+            final List<Record> recordsInBatchBeforeInitialization = recordsInBatch;
             initializeBatch();
+            return recordsInBatchBeforeInitialization;
+        } else if(batchCreationTimedOut()) {
+            return createIncompleteBatch();
+        } else {
+            return Collections.emptyList();
         }
-        else {
-            returnBatch = Collections.emptyList();
-        }
-        return returnBatch;
     }
 
     @VisibleForTesting
