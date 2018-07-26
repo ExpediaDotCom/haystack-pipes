@@ -156,6 +156,7 @@ public class BatchTest {
         when(mockPutRecordBatchResponseEntry.getErrorCode())
                 .thenReturn("").thenReturn("A_once").thenReturn(null).thenReturn("B_twice");
         when(mockPutRecordBatchResponseEntry.getErrorMessage()).thenReturn("A_message").thenReturn("B_message");
+        when(mockPutRecordBatchResponseEntry.getRecordId()).thenReturn("A_RecordId").thenReturn("B_RecordId");
         when(mockRequest.getRecords()).thenReturn(mockRecordList);
         when(mockRecordList.get(anyInt())).thenReturn(mockRecord);
 
@@ -170,11 +171,12 @@ public class BatchTest {
         }
         verify(mockPutRecordBatchResponseEntry, times(totalCount)).getErrorCode();
         verify(mockPutRecordBatchResponseEntry, times(failureCount)).getErrorMessage();
+        verify(mockPutRecordBatchResponseEntry, times(failureCount)).getRecordId();
         verify(mockRequest, times(3)).getRecords();
         verify(mockRecordList).get(1);
         verify(mockRecordList).get(3);
         verify(mockRecordList).get(4);
-        final String uniqueErrors = "{A_once=A_message, B_twice=B_message},";
+        final String uniqueErrors = "{A_once=Error Message: [A_message] Record ID: [A_RecordId], B_twice=Error Message: [B_message] Record ID: [B_RecordId]},";
         verify(mockLogger).error(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES, uniqueErrors, RETRY_COUNT));
     }
 

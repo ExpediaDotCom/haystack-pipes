@@ -48,13 +48,15 @@ import static com.expedia.www.haystack.pipes.commons.CommonConstants.PROTOBUF_ER
 class Batch {
     @VisibleForTesting
     static final String ERROR_CODES_AND_MESSAGES_OF_FAILURES =
-            "Error codes and messages for failures=[%s]; retryCount=%d";
+            "Error codes and details of last failure=[%s]; retryCount=%d";
     @VisibleForTesting
     static final String RESULT_NULL = "PutRecordBatchResult is null; retrying %d records; retryCount=%d";
     @VisibleForTesting
     static final String THROTTLED_ERROR_CODE = "ServiceUnavailableException";
     @VisibleForTesting
     static final String THROTTLED_MESSAGE = "Slow down.";
+
+    private static final String MESSAGE_AND_RECORD_ID = "Error Message: [%s] Record ID: [%s]";
 
     private final TagFlattener tagFlattener = new TagFlattener();
     private final JsonFormat.Printer printer;
@@ -107,7 +109,10 @@ class Batch {
         return recordsNeedingRetry;
     }
 
-    private List<Record> extractFailedRecordsAndAggregateFailures(PutRecordBatchRequest request, List<PutRecordBatchResponseEntry> batchResponseEntries, Map<String, String> uniqueErrorCodesAndMessages, int failedPutCount) {
+    private List<Record> extractFailedRecordsAndAggregateFailures(PutRecordBatchRequest request,
+                                                                  List<PutRecordBatchResponseEntry> batchResponseEntries,
+                                                                  Map<String, String> uniqueErrorCodesAndMessages,
+                                                                  int failedPutCount) {
         List<Record> recordsNeedingRetry;
         recordsNeedingRetry = new ArrayList<>(failedPutCount);
         final int totalNumberOfResponses = batchResponseEntries.size();
@@ -115,7 +120,10 @@ class Batch {
             final PutRecordBatchResponseEntry putRecordBatchResponseEntry = batchResponseEntries.get(i);
             final String errorCode = putRecordBatchResponseEntry.getErrorCode();
             if (StringUtils.isNotEmpty(errorCode)) {
-                uniqueErrorCodesAndMessages.put(errorCode, putRecordBatchResponseEntry.getErrorMessage());
+                final String errorMessage = putRecordBatchResponseEntry.getErrorMessage();
+                final String recordId = putRecordBatchResponseEntry.getRecordId();
+                final String messageAndRecordId = String.format(MESSAGE_AND_RECORD_ID, errorMessage, recordId);
+                uniqueErrorCodesAndMessages.put(errorCode, messageAndRecordId);
                 final List<Record> records = request.getRecords();
                 recordsNeedingRetry.add(records.get(i));
             }
