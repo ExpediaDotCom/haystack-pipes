@@ -16,19 +16,6 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.function.Supplier;
-
-import org.apache.commons.lang3.StringUtils;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchRequest;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResponseEntry;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResult;
@@ -39,8 +26,18 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.util.VisibleForTesting;
-
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.function.Supplier;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.PROTOBUF_ERROR_MSG;
 
@@ -53,6 +50,11 @@ class Batch {
     static final String RESULT_NULL = "PutRecordBatchResult is null; retrying %d records; retryCount=%d";
     @VisibleForTesting
     static final String THROTTLED_ERROR_CODE = "ServiceUnavailableException";
+    @VisibleForTesting
+    static final String INTERNAL_FAILURE_ERROR_CODE = "InternalFailure";
+    @VisibleForTesting
+    static final String INTERNAL_FAILURE_MSG =
+            "Error Code [" + INTERNAL_FAILURE_ERROR_CODE + "] received; will retry all %d record(s)";
     @VisibleForTesting
     static final String THROTTLED_MESSAGE = "Slow down.";
 
@@ -91,48 +93,56 @@ class Batch {
         return firehoseCollector.createIncompleteBatch();
     }
 
-    List<Record> extractFailedRecords(
-            PutRecordBatchRequest request, PutRecordBatchResult result, int retryCount) {
-        final List<Record> recordsNeedingRetry;
+    List<Record> extractFailedRecords(PutRecordBatchRequest request,
+                                                               PutRecordBatchResult result,
+                                                               int retryCount) {
+        final List<Record> records;
         if (result != null) {
             final List<PutRecordBatchResponseEntry> batchResponseEntries = result.getRequestResponses();
             final Map<String, String> uniqueErrorCodesAndMessages = new TreeMap<>();
             final int failedPutCount = result.getFailedPutCount();
-            recordsNeedingRetry = extractFailedRecordsAndAggregateFailures(
+            records = extractFailedRecordsAndAggregateFailures(
                     request, batchResponseEntries, uniqueErrorCodesAndMessages, failedPutCount);
-            final Map<String, String> errorsThatAreNotThrottles = countIfThrottled(uniqueErrorCodesAndMessages);
+            final Map<String, String> errorsThatAreNotThrottles = countThrottled(uniqueErrorCodesAndMessages);
             logFailures(retryCount, errorsThatAreNotThrottles);
         } else {
-            recordsNeedingRetry = request.getRecords();
+            records = request.getRecords();
             logger.error(String.format(RESULT_NULL, request.getRecords().size(), retryCount));
         }
-        return recordsNeedingRetry;
+        return records;
     }
 
     private List<Record> extractFailedRecordsAndAggregateFailures(PutRecordBatchRequest request,
-                                                                  List<PutRecordBatchResponseEntry> batchResponseEntries,
-                                                                  Map<String, String> uniqueErrorCodesAndMessages,
-                                                                  int failedPutCount) {
-        List<Record> recordsNeedingRetry;
-        recordsNeedingRetry = new ArrayList<>(failedPutCount);
+                                                                                           List<PutRecordBatchResponseEntry> batchResponseEntries,
+                                                                                           Map<String, String> uniqueErrorCodesAndMessages,
+                                                                                           int failedPutCount) {
+        final List<Record> recordsNeedingRetry = new ArrayList<>(failedPutCount);
         final int totalNumberOfResponses = batchResponseEntries.size();
         for (int i = 0; i < totalNumberOfResponses; i++) {
             final PutRecordBatchResponseEntry putRecordBatchResponseEntry = batchResponseEntries.get(i);
             final String errorCode = putRecordBatchResponseEntry.getErrorCode();
             if (StringUtils.isNotEmpty(errorCode)) {
-                final String errorMessage = putRecordBatchResponseEntry.getErrorMessage();
-                final String recordId = putRecordBatchResponseEntry.getRecordId();
-                final String messageAndRecordId = String.format(MESSAGE_AND_RECORD_ID, errorMessage, recordId);
+                final String messageAndRecordId = String.format(MESSAGE_AND_RECORD_ID,
+                        putRecordBatchResponseEntry.getErrorMessage(), putRecordBatchResponseEntry.getRecordId());
                 uniqueErrorCodesAndMessages.put(errorCode, messageAndRecordId);
-                final List<Record> records = request.getRecords();
-                recordsNeedingRetry.add(records.get(i));
+                if(errorCode.equals(INTERNAL_FAILURE_ERROR_CODE)) {
+                    // Retry everything, as we have observed that AWS doesn't typically return a list of records
+                    // needing retry when reporting error code "InternalFailure"
+                    recordsNeedingRetry.clear();
+                    recordsNeedingRetry.addAll(request.getRecords());
+                    logger.error(String.format(INTERNAL_FAILURE_MSG, request.getRecords().size()));
+                    break;
+                } else {
+                    final List<Record> records = request.getRecords();
+                    recordsNeedingRetry.add(records.get(i));
+                }
             }
         }
         return recordsNeedingRetry;
     }
 
     @VisibleForTesting
-    Map<String, String> countIfThrottled(Map<String, String> uniqueErrorCodesAndMessages) {
+    Map<String, String> countThrottled(Map<String, String> uniqueErrorCodesAndMessages) {
         final Iterator<Map.Entry<String, String>> iterator = uniqueErrorCodesAndMessages.entrySet().iterator();
         while (iterator.hasNext()) {
             final Map.Entry<String, String> mapEntry = iterator.next();
@@ -151,7 +161,7 @@ class Batch {
     void logFailures(int retryCount, Map<String, String> uniqueErrorCodesAndMessages) {
         if(!uniqueErrorCodesAndMessages.isEmpty()) {
             final String allErrorCodesAndMessages = StringUtils.join(uniqueErrorCodesAndMessages, ',');
-            logger.error(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES, allErrorCodesAndMessages, retryCount));
+            logger.warn(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES, allErrorCodesAndMessages, retryCount));
         }
     }
 }

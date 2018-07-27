@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
@@ -44,7 +43,6 @@ import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.PU
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.STARTUP_MESSAGE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyListOf;
@@ -267,13 +265,13 @@ public class FirehoseProcessorTest {
     }
 
     private void commonVerifiesForTestApplyNotEmpty(
-            int wantedNumberOfInvocations, int failedPutCountTimes) throws InterruptedException {
-        verify(mockFactory, times(wantedNumberOfInvocations)).createPutRecordBatchRequest(STREAM_NAME, mockRecordList);
-        verify(mockFirehoseCountersAndTimer, times(wantedNumberOfInvocations)).startTimer();
+            int createPutRecordBatchRequestTimes, int failedPutCountTimes) throws InterruptedException {
+        verify(mockFactory, times(createPutRecordBatchRequestTimes)).createPutRecordBatchRequest(STREAM_NAME, mockRecordList);
+        verify(mockFirehoseCountersAndTimer, times(createPutRecordBatchRequestTimes)).startTimer();
         verify(mockFactory).createSleeper();
         verify(mockSleeper).sleep(0);
-        verify(mockAmazonKinesisFirehose, times(wantedNumberOfInvocations)).putRecordBatch(mockRequest);
-        verify(mockStopwatch, times(wantedNumberOfInvocations)).stop();
+        verify(mockAmazonKinesisFirehose, times(createPutRecordBatchRequestTimes)).putRecordBatch(mockRequest);
+        verify(mockStopwatch, times(createPutRecordBatchRequestTimes)).stop();
         verify(mockFirehoseConfigurationProvider).initialretrysleep();
         verify(mockFirehoseConfigurationProvider).maxretrysleep();
         verify(mockResult, times(failedPutCountTimes)).getFailedPutCount();
