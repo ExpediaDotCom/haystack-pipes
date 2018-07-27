@@ -46,6 +46,8 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.NO_TAGS_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Batch.ERROR_CODES_AND_MESSAGES_OF_FAILURES;
+import static com.expedia.www.haystack.pipes.firehoseWriter.Batch.INTERNAL_FAILURE_ERROR_CODE;
+import static com.expedia.www.haystack.pipes.firehoseWriter.Batch.INTERNAL_FAILURE_MSG;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Batch.RESULT_NULL;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Batch.THROTTLED_ERROR_CODE;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Batch.THROTTLED_MESSAGE;
@@ -145,7 +147,7 @@ public class BatchTest {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
-    public void testExtractFailedRecordsNonNullResult() {
+    public void testExtractFailedRecordsNonNullResultNotInternalFailure() {
         final int failureCount = 3;
         final int successCount = 2;
         final int totalCount = failureCount + successCount;
@@ -177,7 +179,36 @@ public class BatchTest {
         verify(mockRecordList).get(3);
         verify(mockRecordList).get(4);
         final String uniqueErrors = "{A_once=Error Message: [A_message] Record ID: [A_RecordId], B_twice=Error Message: [B_message] Record ID: [B_RecordId]},";
-        verify(mockLogger).error(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES, uniqueErrors, RETRY_COUNT));
+        verify(mockLogger).warn(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES, uniqueErrors, RETRY_COUNT));
+    }
+
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test
+    public void testExtractFailedRecordsNonNullResultInternalFailure() {
+        when(mockResult.getRequestResponses()).thenReturn(mockPutRecordBatchResponseEntryList);
+        when(mockResult.getFailedPutCount()).thenReturn(1, 0);
+        when(mockPutRecordBatchResponseEntryList.size()).thenReturn(1);
+        when(mockPutRecordBatchResponseEntryList.get(anyInt())).thenReturn(mockPutRecordBatchResponseEntry);
+        when(mockPutRecordBatchResponseEntry.getErrorCode()).thenReturn(INTERNAL_FAILURE_ERROR_CODE);
+        when(mockPutRecordBatchResponseEntry.getErrorMessage()).thenReturn("Internal Server Error");
+        when(mockPutRecordBatchResponseEntry.getRecordId()).thenReturn("RecordId");
+        when(mockRequest.getRecords()).thenReturn(Collections.singletonList(mockRecord));
+
+        batch.extractFailedRecords(mockRequest, mockResult, RETRY_COUNT);
+
+        verify(mockResult).getRequestResponses();
+        verify(mockResult).getFailedPutCount();
+        verify(mockPutRecordBatchResponseEntryList).size();
+        //noinspection ResultOfMethodCallIgnored
+        verify(mockPutRecordBatchResponseEntryList).get(0);
+        verify(mockPutRecordBatchResponseEntry).getErrorCode();
+        verify(mockPutRecordBatchResponseEntry).getErrorMessage();
+        verify(mockPutRecordBatchResponseEntry).getRecordId();
+        verify(mockRequest, times(2)).getRecords();
+        verify(mockLogger).error(String.format(INTERNAL_FAILURE_MSG, 1));
+        verify(mockLogger).warn(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES,
+                "{InternalFailure=Error Message: [Internal Server Error] Record ID: [RecordId]},", RETRY_COUNT));
     }
 
     @Test
@@ -203,7 +234,7 @@ public class BatchTest {
         when(mockMapEntry.getKey()).thenReturn(THROTTLED_ERROR_CODE, null, THROTTLED_ERROR_CODE);
         when(mockMapEntry.getValue()).thenReturn(null, THROTTLED_MESSAGE, THROTTLED_MESSAGE);
 
-        batch.countIfThrottled(mockMap);
+        batch.countThrottled(mockMap);
 
         verify(mockCounter).increment();
         verify(mockMap).entrySet();
