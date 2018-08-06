@@ -115,8 +115,7 @@ class Batch {
     private List<Record> extractFailedRecordsAndAggregateFailures(PutRecordBatchRequest request,
                                                                   List<PutRecordBatchResponseEntry> batchResponseEntries,
                                                                   Map<String, String> uniqueErrorCodesAndMessages,
-                                                                  int failedPutCount,
-                                                                  int retryCount) {
+                                                                  int failedPutCount, int retryCount) {
         final List<Record> recordsNeedingRetry = new ArrayList<>(failedPutCount);
         final int totalNumberOfResponses = batchResponseEntries.size();
         for (int i = 0; i < totalNumberOfResponses; i++) {
