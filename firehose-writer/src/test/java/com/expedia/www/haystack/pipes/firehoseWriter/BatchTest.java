@@ -206,7 +206,7 @@ public class BatchTest {
         verify(mockPutRecordBatchResponseEntry).getErrorMessage();
         verify(mockPutRecordBatchResponseEntry).getRecordId();
         verify(mockRequest, times(2)).getRecords();
-        verify(mockLogger).error(String.format(INTERNAL_FAILURE_MSG, 1));
+        verify(mockLogger).error(String.format(INTERNAL_FAILURE_MSG, 1, RETRY_COUNT));
         verify(mockLogger).warn(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES,
                 "{InternalFailure=Error Message: [Internal Server Error] Record ID: [RecordId]},", RETRY_COUNT));
     }
