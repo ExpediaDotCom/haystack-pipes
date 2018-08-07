@@ -36,7 +36,6 @@ import org.slf4j.Logger;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
-import static com.expedia.www.haystack.pipes.firehoseWriter.SpringConfig.BUCKETS_FOR_PUT_BATCH_REQUEST_TIMER;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -44,7 +43,6 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.anyVararg;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -135,13 +133,13 @@ public class SpringConfigTest {
 
     @Test
     public void testPutBatchRequestTimer() {
-        when(mockMetricObjects.createAndRegisterBucketTimer(anyString(), anyString(), anyString(), any(TimeUnit.class),
-                anyVararg())).thenReturn(mockTimer);
+        when(mockMetricObjects.createAndRegisterBasicTimer(anyString(), anyString(), anyString(),
+                anyString(), any(TimeUnit.class))).thenReturn(mockTimer);
 
         assertNotNull(springConfig.putBatchRequestTimer());
 
-        verify(mockMetricObjects).createAndRegisterBucketTimer(SUBSYSTEM, APPLICATION, "PUT_BATCH_REQUEST",
-                MILLISECONDS, BUCKETS_FOR_PUT_BATCH_REQUEST_TIMER);
+        verify(mockMetricObjects).createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, FirehoseProcessor.class.getName(),
+                "PUT_BATCH_REQUEST", MILLISECONDS);
     }
 
     @Test
