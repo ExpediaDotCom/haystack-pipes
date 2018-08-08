@@ -47,14 +47,14 @@ class Batch {
     static final String ERROR_CODES_AND_MESSAGES_OF_FAILURES =
             "Error codes and details of last failure=[%s]; retryCount=%d";
     @VisibleForTesting
-    static final String RESULT_NULL = "PutRecordBatchResult is null; retrying %d records; requestId=%d";
+    static final String RESULT_NULL = "PutRecordBatchResult is null; retrying %d records; retryCount=%d";
     @VisibleForTesting
     static final String THROTTLED_ERROR_CODE = "ServiceUnavailableException";
     @VisibleForTesting
     static final String INTERNAL_FAILURE_ERROR_CODE = "InternalFailure";
     @VisibleForTesting
     static final String INTERNAL_FAILURE_MSG = "Error Code [" + INTERNAL_FAILURE_ERROR_CODE +
-            "] received; will retry all [%d] record(s); retryCount=[%d]; headers=[%s]";
+            "] received; will retry all [%d] record(s); retryCount=[%d]; requestId=[%s]";
     @VisibleForTesting
     static final String THROTTLED_MESSAGE = "Slow down.";
 
