@@ -53,8 +53,8 @@ class Batch {
     @VisibleForTesting
     static final String INTERNAL_FAILURE_ERROR_CODE = "InternalFailure";
     @VisibleForTesting
-    static final String INTERNAL_FAILURE_MSG =
-            "Error Code [" + INTERNAL_FAILURE_ERROR_CODE + "] received; will retry all [%d] record(s); retryCount=[%d]";
+    static final String INTERNAL_FAILURE_MSG = "Error Code [" + INTERNAL_FAILURE_ERROR_CODE +
+            "] received; will retry all [%d] record(s); retryCount=[%d]; headers=[%s]";
     @VisibleForTesting
     static final String THROTTLED_MESSAGE = "Slow down.";
 
@@ -130,7 +130,7 @@ class Batch {
                     // needing retry when reporting error code "InternalFailure"
                     recordsNeedingRetry.clear();
                     recordsNeedingRetry.addAll(request.getRecords());
-                    logger.error(String.format(INTERNAL_FAILURE_MSG, request.getRecords().size(), retryCount));
+                    logger.error(String.format(INTERNAL_FAILURE_MSG, request.getRecords().size(), retryCount, request.getCustomRequestHeaders()));
                     break;
                 } else {
                     final List<Record> records = request.getRecords();
