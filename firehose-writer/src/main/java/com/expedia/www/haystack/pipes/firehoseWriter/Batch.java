@@ -47,7 +47,7 @@ class Batch {
     static final String ERROR_CODES_AND_MESSAGES_OF_FAILURES =
             "Error codes and details of last failure=[%s]; retryCount=%d";
     @VisibleForTesting
-    static final String RESULT_NULL = "PutRecordBatchResult is null; retrying %d records; retryCount=%d";
+    static final String RESULT_NULL = "PutRecordBatchResult is null; retrying %d records; requestId=%d";
     @VisibleForTesting
     static final String THROTTLED_ERROR_CODE = "ServiceUnavailableException";
     @VisibleForTesting
@@ -98,11 +98,10 @@ class Batch {
                                       int retryCount) {
         final List<Record> records;
         if (result != null) {
-            final List<PutRecordBatchResponseEntry> batchResponseEntries = result.getRequestResponses();
             final Map<String, String> uniqueErrorCodesAndMessages = new TreeMap<>();
             final int failedPutCount = result.getFailedPutCount();
             records = extractFailedRecordsAndAggregateFailures(
-                    request, batchResponseEntries, uniqueErrorCodesAndMessages, failedPutCount, retryCount);
+                    request, result, uniqueErrorCodesAndMessages, failedPutCount, retryCount);
             final Map<String, String> errorsThatAreNotThrottles = countThrottled(uniqueErrorCodesAndMessages);
             logFailures(retryCount, errorsThatAreNotThrottles);
         } else {
@@ -113,10 +112,11 @@ class Batch {
     }
 
     private List<Record> extractFailedRecordsAndAggregateFailures(PutRecordBatchRequest request,
-                                                                  List<PutRecordBatchResponseEntry> batchResponseEntries,
+                                                                  PutRecordBatchResult result,
                                                                   Map<String, String> uniqueErrorCodesAndMessages,
                                                                   int failedPutCount, int retryCount) {
         final List<Record> recordsNeedingRetry = new ArrayList<>(failedPutCount);
+        final List<PutRecordBatchResponseEntry> batchResponseEntries = result.getRequestResponses();
         final int totalNumberOfResponses = batchResponseEntries.size();
         for (int i = 0; i < totalNumberOfResponses; i++) {
             final PutRecordBatchResponseEntry putRecordBatchResponseEntry = batchResponseEntries.get(i);
@@ -130,7 +130,7 @@ class Batch {
                     // needing retry when reporting error code "InternalFailure"
                     recordsNeedingRetry.clear();
                     recordsNeedingRetry.addAll(request.getRecords());
-                    logger.error(String.format(INTERNAL_FAILURE_MSG, request.getRecords().size(), retryCount, request.getCustomRequestHeaders()));
+                    logger.error(String.format(INTERNAL_FAILURE_MSG, request.getRecords().size(), retryCount, result.getSdkResponseMetadata().getRequestId()));
                     break;
                 } else {
                     final List<Record> records = request.getRecords();

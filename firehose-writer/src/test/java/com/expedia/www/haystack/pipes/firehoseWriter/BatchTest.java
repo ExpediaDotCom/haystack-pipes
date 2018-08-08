@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.amazonaws.ResponseMetadata;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchRequest;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResponseEntry;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResult;
@@ -65,9 +66,7 @@ import static org.mockito.Mockito.when;
 public class BatchTest {
     private static final int RETRY_COUNT = RANDOM.nextInt(Byte.MAX_VALUE);
     private static final int SIZE = 1 + RANDOM.nextInt(Byte.MAX_VALUE);
-    private static final String KEY = RANDOM.nextLong() + "KEY";
-    private static final String VALUE = RANDOM.nextLong() + "VALUE";
-    private static final Map<String,String> CUSTOM_REQUEST_HEADERS = Collections.singletonMap(KEY, VALUE);
+    private static final String REQUEST_ID = RANDOM.nextLong() + "REQUEST_ID";
 
     @Mock
     private JsonFormat.Printer mockPrinter;
@@ -97,6 +96,8 @@ public class BatchTest {
     private Map.Entry<String, String> mockMapEntry;
     @Mock
     private Counter mockCounter;
+    @Mock
+    private ResponseMetadata mockResponseMetadata;
 
     private Batch batch;
 
@@ -110,7 +111,8 @@ public class BatchTest {
     public void tearDown() {
         verifyNoMoreInteractions(mockPrinter, mockFirehoseCollector, mockLogger, mockCounter);
         verifyNoMoreInteractions(mockRequest, mockResult, mockRecord, mockPutRecordBatchResponseEntryList,
-                mockPutRecordBatchResponseEntry, mockRecordList, mockMap, mockIterator, mockEntrySet, mockMapEntry);
+                mockPutRecordBatchResponseEntry, mockRecordList, mockMap, mockIterator, mockEntrySet, mockMapEntry,
+                mockResponseMetadata);
     }
 
     @Test
@@ -191,18 +193,20 @@ public class BatchTest {
     public void testExtractFailedRecordsNonNullResultInternalFailure() {
         when(mockResult.getRequestResponses()).thenReturn(mockPutRecordBatchResponseEntryList);
         when(mockResult.getFailedPutCount()).thenReturn(1, 0);
+        when(mockResult.getSdkResponseMetadata()).thenReturn(mockResponseMetadata);
         when(mockPutRecordBatchResponseEntryList.size()).thenReturn(1);
         when(mockPutRecordBatchResponseEntryList.get(anyInt())).thenReturn(mockPutRecordBatchResponseEntry);
         when(mockPutRecordBatchResponseEntry.getErrorCode()).thenReturn(INTERNAL_FAILURE_ERROR_CODE);
         when(mockPutRecordBatchResponseEntry.getErrorMessage()).thenReturn("Internal Server Error");
         when(mockPutRecordBatchResponseEntry.getRecordId()).thenReturn("RecordId");
         when(mockRequest.getRecords()).thenReturn(Collections.singletonList(mockRecord));
-        when(mockRequest.getCustomRequestHeaders()).thenReturn(CUSTOM_REQUEST_HEADERS);
+        when(mockResponseMetadata.getRequestId()).thenReturn(REQUEST_ID);
 
         batch.extractFailedRecords(mockRequest, mockResult, RETRY_COUNT);
 
         verify(mockResult).getRequestResponses();
         verify(mockResult).getFailedPutCount();
+        verify(mockResult).getSdkResponseMetadata();
         verify(mockPutRecordBatchResponseEntryList).size();
         //noinspection ResultOfMethodCallIgnored
         verify(mockPutRecordBatchResponseEntryList).get(0);
@@ -210,10 +214,10 @@ public class BatchTest {
         verify(mockPutRecordBatchResponseEntry).getErrorMessage();
         verify(mockPutRecordBatchResponseEntry).getRecordId();
         verify(mockRequest, times(2)).getRecords();
-        verify(mockRequest).getCustomRequestHeaders();
         verify(mockLogger).warn(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES,
                 "{InternalFailure=Error Message: [Internal Server Error] Record ID: [RecordId]},", RETRY_COUNT));
-        verify(mockLogger).error(String.format(INTERNAL_FAILURE_MSG, 1, RETRY_COUNT, CUSTOM_REQUEST_HEADERS));
+        verify(mockLogger).error(String.format(INTERNAL_FAILURE_MSG, 1, RETRY_COUNT, REQUEST_ID));
+        verify(mockResponseMetadata).getRequestId();
 
     }
 
