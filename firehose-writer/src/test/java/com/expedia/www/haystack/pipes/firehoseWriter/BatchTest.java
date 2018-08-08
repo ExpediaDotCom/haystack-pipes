@@ -65,6 +65,9 @@ import static org.mockito.Mockito.when;
 public class BatchTest {
     private static final int RETRY_COUNT = RANDOM.nextInt(Byte.MAX_VALUE);
     private static final int SIZE = 1 + RANDOM.nextInt(Byte.MAX_VALUE);
+    private static final String KEY = RANDOM.nextLong() + "KEY";
+    private static final String VALUE = RANDOM.nextLong() + "VALUE";
+    private static final Map<String,String> CUSTOM_REQUEST_HEADERS = Collections.singletonMap(KEY, VALUE);
 
     @Mock
     private JsonFormat.Printer mockPrinter;
@@ -194,6 +197,7 @@ public class BatchTest {
         when(mockPutRecordBatchResponseEntry.getErrorMessage()).thenReturn("Internal Server Error");
         when(mockPutRecordBatchResponseEntry.getRecordId()).thenReturn("RecordId");
         when(mockRequest.getRecords()).thenReturn(Collections.singletonList(mockRecord));
+        when(mockRequest.getCustomRequestHeaders()).thenReturn(CUSTOM_REQUEST_HEADERS);
 
         batch.extractFailedRecords(mockRequest, mockResult, RETRY_COUNT);
 
@@ -206,9 +210,11 @@ public class BatchTest {
         verify(mockPutRecordBatchResponseEntry).getErrorMessage();
         verify(mockPutRecordBatchResponseEntry).getRecordId();
         verify(mockRequest, times(2)).getRecords();
-        verify(mockLogger).error(String.format(INTERNAL_FAILURE_MSG, 1, RETRY_COUNT));
+        verify(mockRequest).getCustomRequestHeaders();
         verify(mockLogger).warn(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES,
                 "{InternalFailure=Error Message: [Internal Server Error] Record ID: [RecordId]},", RETRY_COUNT));
+        verify(mockLogger).error(String.format(INTERNAL_FAILURE_MSG, 1, RETRY_COUNT, CUSTOM_REQUEST_HEADERS));
+
     }
 
     @Test
