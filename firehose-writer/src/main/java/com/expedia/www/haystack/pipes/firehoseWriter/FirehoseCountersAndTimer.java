@@ -24,6 +24,8 @@ import com.netflix.servo.monitor.Timer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.Clock;
+
 @Component
 class FirehoseCountersAndTimer extends CountersAndTimer {
     private static final int SUCCESS_COUNTER_INDEX = 0;
@@ -31,12 +33,14 @@ class FirehoseCountersAndTimer extends CountersAndTimer {
     private static final int EXCEPTION_COUNTER_INDEX = 2;
 
     @Autowired
-    FirehoseCountersAndTimer(Timer putBatchRequestTimer,
+    FirehoseCountersAndTimer(Clock clock,
+                             Timer putBatchRequestTimer,
+                             Timer spanArrivalTimer,
                              Counter spanCounter,
                              Counter successCounter,
                              Counter failureCounter,
                              Counter exceptionCounter) {
-        super(putBatchRequestTimer, spanCounter, successCounter, failureCounter, exceptionCounter);
+        super(clock, putBatchRequestTimer, spanArrivalTimer, spanCounter, successCounter, failureCounter, exceptionCounter);
     }
 
     int countSuccessesAndFailures(PutRecordBatchRequest request, PutRecordBatchResult result) {
@@ -51,4 +55,5 @@ class FirehoseCountersAndTimer extends CountersAndTimer {
     void incrementExceptionCounter() {
         incrementCounter(EXCEPTION_COUNTER_INDEX);
     }
+
 }

@@ -34,6 +34,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
+import static com.expedia.www.haystack.pipes.commons.CommonConstants.SPAN_ARRIVAL_TIMER_NAME;
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -140,6 +141,17 @@ public class SpringConfigTest {
 
         verify(mockMetricObjects).createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, FirehoseProcessor.class.getName(),
                 "PUT_BATCH_REQUEST", MILLISECONDS);
+    }
+
+    @Test
+    public void testSpanArrivalTimer() {
+        when(mockMetricObjects.createAndRegisterBasicTimer(anyString(), anyString(), anyString(),
+                anyString(), any(TimeUnit.class))).thenReturn(mockTimer);
+
+        assertNotNull(springConfig.spanArrivalTimer());
+
+        verify(mockMetricObjects).createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, FirehoseProcessor.class.getName(),
+                SPAN_ARRIVAL_TIMER_NAME, MILLISECONDS);
     }
 
     @Test

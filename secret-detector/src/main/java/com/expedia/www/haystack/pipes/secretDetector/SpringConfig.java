@@ -54,6 +54,7 @@ import org.springframework.context.annotation.Configuration;
 import java.time.Clock;
 import java.util.concurrent.TimeUnit;
 
+import static com.expedia.www.haystack.pipes.commons.CommonConstants.SPAN_ARRIVAL_TIMER_NAME;
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATION;
 
@@ -178,6 +179,12 @@ public class SpringConfig {
     }
 
     @Bean
+    Timer spanArrivalTimer() {
+        return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
+                DetectorAction.class.getSimpleName(), SPAN_ARRIVAL_TIMER_NAME, TimeUnit.MILLISECONDS);
+    }
+
+    @Bean
     SerdeFactory serdeFactory() {
         return new SerdeFactory();
     }
@@ -188,10 +195,17 @@ public class SpringConfig {
     }
 
     @Bean
+    Clock clock() {
+        return Clock.systemUTC();
+    }
+
+    @Bean
     @Autowired
-    CountersAndTimer countersAndTimer(Counter detectorActionRequestCounter,
-                                      Timer detectorDetectTimer) {
-        return new CountersAndTimer(detectorDetectTimer, detectorActionRequestCounter);
+    CountersAndTimer countersAndTimer(Clock clock,
+                                      Counter detectorActionRequestCounter,
+                                      Timer detectorDetectTimer,
+                                      Timer spanArrivalTimer) {
+        return new CountersAndTimer(clock, detectorDetectTimer, spanArrivalTimer, detectorActionRequestCounter);
     }
 
     @Bean

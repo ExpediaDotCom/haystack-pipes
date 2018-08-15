@@ -18,9 +18,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.Clock;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import static com.expedia.www.haystack.pipes.commons.CommonConstants.SPAN_ARRIVAL_TIMER_NAME;
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.httpPoster.Constants.APPLICATION;
 
@@ -63,6 +65,12 @@ public class SpringConfig {
     Timer httpPostTimer() {
         return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
                 HTTP_POST_ACTION_CLASS_SIMPLE_NAME, "HTTP_POST", TimeUnit.MICROSECONDS);
+    }
+
+    @Bean
+    Timer spanArrivalTimer() {
+        return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
+                HTTP_POST_ACTION_CLASS_SIMPLE_NAME, SPAN_ARRIVAL_TIMER_NAME, TimeUnit.MILLISECONDS);
     }
 
     @Bean
@@ -131,12 +139,20 @@ public class SpringConfig {
     }
 
     @Bean
+    Clock clock() {
+        return Clock.systemUTC();
+    }
+
+    @Bean
     @Autowired
-    CountersAndTimer countersAndTimer(Counter requestCounter,
+    CountersAndTimer countersAndTimer(Clock clock,
+                                      Counter requestCounter,
                                       Counter filteredOutCounter,
                                       Counter filteredInCounter,
-                                      Timer httpPostTimer) {
-        return new CountersAndTimer(httpPostTimer, requestCounter, filteredOutCounter, filteredInCounter);
+                                      Timer httpPostTimer,
+                                      Timer spanArrivalTimer) {
+        return new CountersAndTimer(
+                clock, httpPostTimer, spanArrivalTimer, requestCounter, filteredOutCounter, filteredInCounter);
     }
 
     /*

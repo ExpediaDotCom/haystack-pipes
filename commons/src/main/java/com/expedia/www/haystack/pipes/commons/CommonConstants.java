@@ -19,4 +19,5 @@ package com.expedia.www.haystack.pipes.commons;
 public interface CommonConstants {
     String SUBSYSTEM = "pipes";
     String PROTOBUF_ERROR_MSG = "Exception printing Span [%s]; received message [%s]";
+    String SPAN_ARRIVAL_TIMER_NAME = "SPAN_ARRIVAL_MS";
 }

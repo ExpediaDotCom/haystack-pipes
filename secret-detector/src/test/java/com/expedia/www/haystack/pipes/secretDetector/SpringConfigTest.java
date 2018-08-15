@@ -38,12 +38,15 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
+import java.time.Clock;
 import java.util.concurrent.TimeUnit;
 
+import static com.expedia.www.haystack.pipes.commons.CommonConstants.SPAN_ARRIVAL_TIMER_NAME;
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.commons.health.HealthController.HealthStatus.HEALTHY;
 import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATION;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
@@ -79,6 +82,10 @@ public class SpringConfigTest {
     private SpanDetector.Factory mockSpanDetectorFactory;
     @Mock
     private SpanS3ConfigFetcher mockSpanS3ConfigFetcher;
+    @Mock
+    private Clock mockClock;
+    @Mock
+    private Timer mockSpanArrivalTimer;
 
     private SpringConfig springConfig;
 
@@ -89,9 +96,20 @@ public class SpringConfigTest {
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockMetricObjects, mockCounter, mockTimer, mockHealthController,
-                mockHealthStatusListener, mockCountersAndTimer, mockSpanDetector, mockLogger, mockFinderEngine,
-                mockActionsConfigurationProvider, mockSpanDetectorFactory);
+        verifyNoMoreInteractions(mockMetricObjects);
+        verifyNoMoreInteractions(mockCounter);
+        verifyNoMoreInteractions(mockTimer);
+        verifyNoMoreInteractions(mockHealthController);
+        verifyNoMoreInteractions(mockHealthStatusListener);
+        verifyNoMoreInteractions(mockCountersAndTimer);
+        verifyNoMoreInteractions(mockSpanDetector);
+        verifyNoMoreInteractions(mockLogger);
+        verifyNoMoreInteractions(mockFinderEngine);
+        verifyNoMoreInteractions(mockActionsConfigurationProvider);
+        verifyNoMoreInteractions(mockSpanDetectorFactory);
+        verifyNoMoreInteractions(mockSpanS3ConfigFetcher);
+        verifyNoMoreInteractions(mockClock);
+        verifyNoMoreInteractions(mockSpanArrivalTimer);
     }
 
     @Test
@@ -180,9 +198,22 @@ public class SpringConfigTest {
                 DetectorAction.class.getSimpleName(), "DETECTOR_DETECT", MICROSECONDS);
     }
 
+
+    @Test
+    public void testSpanArrivalTimer() {
+        when(mockMetricObjects.createAndRegisterBasicTimer(
+                anyString(), anyString(), anyString(), anyString(), any(TimeUnit.class)))
+                .thenReturn(mockTimer);
+
+        assertNotNull(springConfig.spanArrivalTimer());
+
+        verify(mockMetricObjects).createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
+                DetectorAction.class.getSimpleName(), SPAN_ARRIVAL_TIMER_NAME, MILLISECONDS);
+    }
+
     @Test
     public void testCountersAndTimer() {
-        assertNotNull(springConfig.countersAndTimer(mockCounter, mockTimer));
+        assertNotNull(springConfig.countersAndTimer(mockClock, mockCounter, mockTimer, mockSpanArrivalTimer));
     }
 
     @Test

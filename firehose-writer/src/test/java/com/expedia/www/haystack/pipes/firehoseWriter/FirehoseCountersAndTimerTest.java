@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.time.Clock;
 import java.util.List;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
@@ -57,19 +58,31 @@ public class FirehoseCountersAndTimerTest {
     private PutRecordBatchResult mockResult;
     @Mock
     private List<Record> mockRecordList;
+    @Mock
+    private Clock mockClock;
+    @Mock
+    private Timer mockSpanArrivalTimer;
 
     private FirehoseCountersAndTimer firehoseCountersAndTimer;
 
     @Before
     public void setUp() {
-        firehoseCountersAndTimer = new FirehoseCountersAndTimer(
-                mockTimer, mockSpanCounter, mockSuccessCounter, mockFailureCounter, mockExceptionCounter);
+        firehoseCountersAndTimer = new FirehoseCountersAndTimer(mockClock, mockTimer, mockSpanArrivalTimer,
+                mockSpanCounter, mockSuccessCounter, mockFailureCounter, mockExceptionCounter);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockSpanCounter, mockSuccessCounter, mockFailureCounter, mockExceptionCounter,
-                mockRequest, mockResult, mockRecordList);
+        verifyNoMoreInteractions(mockTimer);
+        verifyNoMoreInteractions(mockSpanCounter);
+        verifyNoMoreInteractions(mockSuccessCounter);
+        verifyNoMoreInteractions(mockFailureCounter);
+        verifyNoMoreInteractions(mockExceptionCounter);
+        verifyNoMoreInteractions(mockRequest);
+        verifyNoMoreInteractions(mockResult);
+        verifyNoMoreInteractions(mockRecordList);
+        verifyNoMoreInteractions(mockClock);
+        verifyNoMoreInteractions(mockSpanArrivalTimer);
     }
 
     @Test

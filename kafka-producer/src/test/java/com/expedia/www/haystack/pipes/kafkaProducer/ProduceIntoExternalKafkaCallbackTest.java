@@ -30,6 +30,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
+import java.time.Clock;
+
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.COUNTERS_AND_TIMER;
 import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.OBJECT_POOL;
@@ -46,16 +48,16 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProduceIntoExternalKafkaCallbackTest {
-    private final static String TOPIC = RANDOM.nextLong() + "TOPIC";
-    private final static int PARTITION = RANDOM.nextInt();
-    private final static TopicPartition TOPIC_PARTITION = new TopicPartition(TOPIC, PARTITION);
-    private final static long BASE_OFFSET = -1;
-    private final static long RELATIVE_OFFSET = RANDOM.nextLong();
-    private final static long TIMESTAMP = System.currentTimeMillis();
-    private final static long CHECKSUM = RANDOM.nextLong();
-    private final static int SERIALIZED_KEY_SIZE = RANDOM.nextInt();
-    private final static int SERIALIZED_VALUE_SIZE = RANDOM.nextInt();
-    private final static String MESSAGE = RANDOM.nextLong() + "MESSAGE";
+    private static final String TOPIC = RANDOM.nextLong() + "TOPIC";
+    private static final int PARTITION = RANDOM.nextInt();
+    private static final TopicPartition TOPIC_PARTITION = new TopicPartition(TOPIC, PARTITION);
+    private static final long BASE_OFFSET = -1;
+    private static final long RELATIVE_OFFSET = RANDOM.nextLong();
+    private static final long TIMESTAMP = System.currentTimeMillis();
+    private static final long CHECKSUM = RANDOM.nextLong();
+    private static final int SERIALIZED_KEY_SIZE = RANDOM.nextInt();
+    private static final int SERIALIZED_VALUE_SIZE = RANDOM.nextInt();
+    private static final String MESSAGE = RANDOM.nextLong() + "MESSAGE";
 
     @Mock
     private Logger mockLogger;
@@ -76,14 +78,22 @@ public class ProduceIntoExternalKafkaCallbackTest {
     @Mock
     private Timer mockTimer;
 
+    @Mock
+    private Clock mockClock;
+
+    @Mock
+    private Timer mockSpanArrivalTimer;
+
     private CountersAndTimer countersAndTimer;
     private RecordMetadata recordMetadata;
     private ProduceIntoExternalKafkaCallback produceIntoExternalKafkaCallback;
 
     @Before
     public void setUp() {
-        countersAndTimer = new CountersAndTimer(mockTimer, mockRequestCounter, mockPostsInFlightCounter);
+        countersAndTimer = new CountersAndTimer(
+                mockClock, mockTimer, mockSpanArrivalTimer, mockRequestCounter, mockPostsInFlightCounter);
         injectMockAndSaveRealObjects();
+        //noinspection deprecation
         recordMetadata = new RecordMetadata(TOPIC_PARTITION, BASE_OFFSET, RELATIVE_OFFSET, TIMESTAMP, CHECKSUM,
                 SERIALIZED_KEY_SIZE, SERIALIZED_VALUE_SIZE);
         produceIntoExternalKafkaCallback = new ProduceIntoExternalKafkaCallback(mockLogger);
@@ -104,7 +114,7 @@ public class ProduceIntoExternalKafkaCallbackTest {
         restoreRealObjects();
         COUNTERS_AND_TIMER.set(null);
         verifyNoMoreInteractions(mockLogger, mockException, mockObjectPool, mockRequestCounter,
-                mockPostsInFlightCounter, mockTimer);
+                mockPostsInFlightCounter, mockTimer, mockClock, mockSpanArrivalTimer);
     }
 
     private void restoreRealObjects() {
