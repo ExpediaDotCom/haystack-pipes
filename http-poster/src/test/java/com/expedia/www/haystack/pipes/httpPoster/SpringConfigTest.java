@@ -13,9 +13,11 @@ import org.slf4j.Logger;
 
 import java.util.concurrent.TimeUnit;
 
+import static com.expedia.www.haystack.pipes.commons.CommonConstants.SPAN_ARRIVAL_TIMER_NAME;
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.httpPoster.Constants.APPLICATION;
 import static com.expedia.www.haystack.pipes.httpPoster.SpringConfig.HTTP_POST_ACTION_CLASS_SIMPLE_NAME;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.verify;
@@ -62,6 +64,14 @@ public class SpringConfigTest {
 
         verify(mockMetricObjects).createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
                 HTTP_POST_ACTION_CLASS_SIMPLE_NAME, "HTTP_POST", TimeUnit.MICROSECONDS);
+    }
+
+    @Test
+    public void testSpanArrivalTimer() {
+        springConfig.spanArrivalTimer();
+
+        verify(mockMetricObjects).createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
+                HTTP_POST_ACTION_CLASS_SIMPLE_NAME, SPAN_ARRIVAL_TIMER_NAME, MILLISECONDS);
     }
 
     @Test

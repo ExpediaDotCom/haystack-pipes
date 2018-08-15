@@ -16,8 +16,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.Clock;
 import java.util.concurrent.TimeUnit;
 
+import static com.expedia.www.haystack.pipes.commons.CommonConstants.SPAN_ARRIVAL_TIMER_NAME;
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
 
@@ -83,6 +85,12 @@ public class SpringConfig {
                 ProduceIntoExternalKafkaAction.class.getSimpleName(), "KAFKA_PRODUCER_POST", TimeUnit.MICROSECONDS);
     }
 
+    @Bean
+    Timer spanArrivalTimer() {
+        return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
+                ProduceIntoExternalKafkaAction.class.getSimpleName(), SPAN_ARRIVAL_TIMER_NAME, TimeUnit.MILLISECONDS);
+    }
+
     // Beans without unit tests ////////////////////////////////////////////////////////////////////////////////////////
     @Bean
     SerdeFactory serdeFactory() {
@@ -116,12 +124,19 @@ public class SpringConfig {
     }
 
     @Bean
+    Clock clock() {
+        return Clock.systemUTC();
+    }
+
+    @Bean
     @Autowired
-    CountersAndTimer countersAndTimer(Counter produceIntoExternalKafkaActionRequestCounter,
+    CountersAndTimer countersAndTimer(Clock clock,
+                                      Counter produceIntoExternalKafkaActionRequestCounter,
                                       Counter postsInFlightCounter,
-                                      Timer kafkaProducerPost) {
-        return new CountersAndTimer(
-                kafkaProducerPost, produceIntoExternalKafkaActionRequestCounter, postsInFlightCounter);
+                                      Timer kafkaProducerPost,
+                                      Timer spanArrivalTimer) {
+        return new CountersAndTimer(clock, kafkaProducerPost, spanArrivalTimer,
+                produceIntoExternalKafkaActionRequestCounter, postsInFlightCounter);
     }
 
     @Bean

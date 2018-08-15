@@ -16,6 +16,7 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
+import java.time.Clock;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
@@ -38,11 +39,11 @@ import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.Printer;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
-import com.netflix.servo.util.VisibleForTesting;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.expedia.www.haystack.pipes.commons.CommonConstants.SPAN_ARRIVAL_TIMER_NAME;
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
 
@@ -100,6 +101,12 @@ class SpringConfig {
     Timer putBatchRequestTimer() {
         return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, FirehoseProcessor.class.getName(),
                 "PUT_BATCH_REQUEST", TimeUnit.MILLISECONDS);
+    }
+
+    @Bean
+    Timer spanArrivalTimer() {
+        return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, FirehoseProcessor.class.getName(),
+                SPAN_ARRIVAL_TIMER_NAME, TimeUnit.MILLISECONDS);
     }
 
     @Bean
@@ -200,14 +207,21 @@ class SpringConfig {
     }
 
     @Bean
+    Clock clock()  {
+        return Clock.systemUTC();
+    }
+
+    @Bean
     @Autowired
-    FirehoseCountersAndTimer counters(Timer putBatchRequestTimer,
+    FirehoseCountersAndTimer counters(Clock clock,
+                                      Timer putBatchRequestTimer,
+                                      Timer spanArrivalTimer,
                                       Counter spanCounter,
                                       Counter successCounter,
                                       Counter failureCounter,
                                       Counter exceptionCounter) {
-        return new FirehoseCountersAndTimer(
-                putBatchRequestTimer, spanCounter, successCounter, failureCounter, exceptionCounter);
+        return new FirehoseCountersAndTimer(clock, putBatchRequestTimer, spanArrivalTimer, spanCounter, successCounter,
+                failureCounter, exceptionCounter);
     }
 
     @Bean

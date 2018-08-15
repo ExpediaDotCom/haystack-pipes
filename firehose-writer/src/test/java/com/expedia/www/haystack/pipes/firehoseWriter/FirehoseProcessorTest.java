@@ -38,6 +38,7 @@ import java.util.List;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.SPAN_ARRIVAL_TIME_MS;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.PUT_RECORD_BATCH_ERROR_MSG;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.PUT_RECORD_BATCH_WARN_MSG;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.STARTUP_MESSAGE;
@@ -128,6 +129,7 @@ public class FirehoseProcessorTest {
         firehoseProcessor.process(KEY, FULLY_POPULATED_SPAN);
 
         commonVerifiesForTestApply(1);
+        verify(mockFirehoseCountersAndTimer).recordSpanArrivalDelta(SPAN_ARRIVAL_TIME_MS);
     }
 
     @Test
@@ -140,6 +142,7 @@ public class FirehoseProcessorTest {
         commonVerifiesForTestApply(1);
         commonVerifiesForTestApplyNotEmpty(1, 1);
         verify(mockFirehoseCountersAndTimer).countSuccessesAndFailures(mockRequest, mockResult);
+        verify(mockFirehoseCountersAndTimer).recordSpanArrivalDelta(SPAN_ARRIVAL_TIME_MS);
     }
 
     @Test
@@ -171,6 +174,7 @@ public class FirehoseProcessorTest {
         verify(mockLogger).error(String.format(PUT_RECORD_BATCH_WARN_MSG, 0), testException);
         verify(mockFirehoseCountersAndTimer).countSuccessesAndFailures(mockRequest, null);
         verify(mockFirehoseCountersAndTimer).countSuccessesAndFailures(mockRequest, mockResult);
+        verify(mockFirehoseCountersAndTimer).recordSpanArrivalDelta(SPAN_ARRIVAL_TIME_MS);
         verify(mockFirehoseCountersAndTimer).incrementExceptionCounter();
     }
 
@@ -195,6 +199,7 @@ public class FirehoseProcessorTest {
         verify(mockFirehoseCountersAndTimer, times(retryCount - 1)).countSuccessesAndFailures(mockRequest, null);
         verify(mockFirehoseCountersAndTimer).countSuccessesAndFailures(mockRequest, mockResult);
         verify(mockFirehoseCountersAndTimer, times(retryCount - 1)).incrementExceptionCounter();
+        verify(mockFirehoseCountersAndTimer).recordSpanArrivalDelta(SPAN_ARRIVAL_TIME_MS);
     }
 
     @Test
@@ -219,6 +224,7 @@ public class FirehoseProcessorTest {
         verify(mockSleeper).sleep(8 * INITIAL_RETRY_SLEEP);
         verify(mockSleeper, times(2)).sleep(MAX_RETRY_SLEEP);
         verify(mockFirehoseCountersAndTimer, times(7)).countSuccessesAndFailures(mockRequest, mockResult);
+        verify(mockFirehoseCountersAndTimer).recordSpanArrivalDelta(SPAN_ARRIVAL_TIME_MS);
         verify(mockBatch).extractFailedRecords(mockRequest, mockResult, 0);
         verify(mockBatch).extractFailedRecords(mockRequest, mockResult, 1);
         verify(mockBatch).extractFailedRecords(mockRequest, mockResult, 2);
@@ -244,6 +250,7 @@ public class FirehoseProcessorTest {
         verify(mockSleeper).sleep(INITIAL_RETRY_SLEEP);
         verify(mockFirehoseCountersAndTimer).countSuccessesAndFailures(mockRequest, null);
         verify(mockFirehoseCountersAndTimer).countSuccessesAndFailures(mockRequest, mockResult);
+        verify(mockFirehoseCountersAndTimer).recordSpanArrivalDelta(SPAN_ARRIVAL_TIME_MS);
         verify(mockBatch).extractFailedRecords(mockRequest, null, 0);
     }
 
