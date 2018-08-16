@@ -91,12 +91,25 @@ public class CountersAndTimerTest {
 
     @Test
     public void testRecordSpanArrivalDelta() {
-        when(mockClock.millis()).thenReturn(NOW);
-
-        countersAndTimer.recordSpanArrivalDelta(NOW - DELTA);
-
-        verify(mockClock).millis();
-        verify(mockSpanArrivalTimer).record(DELTA, TimeUnit.MILLISECONDS);
+        testRecordSpanArrivalDelta(NOW - DELTA, DELTA);
     }
 
+    @Test
+    public void testRecordSpanArrivalDelta1() {
+        testRecordSpanArrivalDelta(1L, NOW - 1L);
+    }
+
+    private void testRecordSpanArrivalDelta(long spanArrivalTimeMillis, long duration) {
+        when(mockClock.millis()).thenReturn(NOW);
+
+        countersAndTimer.recordSpanArrivalDelta(spanArrivalTimeMillis);
+
+        verify(mockClock).millis();
+        verify(mockSpanArrivalTimer).record(duration, TimeUnit.MILLISECONDS);
+    }
+
+    @Test
+    public void testRecordSpanArrivalDeltaValue0() {
+        countersAndTimer.recordSpanArrivalDelta(0L);
+    }
 }
