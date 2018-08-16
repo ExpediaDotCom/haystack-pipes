@@ -43,9 +43,11 @@ public class CountersAndTimer {
     }
 
     public void recordSpanArrivalDelta(long spanArrivalTimeMillis) {
-        final long now = clock.millis();
-        final long delta = now - spanArrivalTimeMillis;
-        spanArrivalTimer.record(delta, TimeUnit.MILLISECONDS);
+        if(spanArrivalTimeMillis > 0L) { // only emit this metric if the span is providing a sensible value
+            final long now = clock.millis();
+            final long delta = now - spanArrivalTimeMillis;
+            spanArrivalTimer.record(delta, TimeUnit.MILLISECONDS);
+        }
     }
 
 }
