@@ -55,8 +55,7 @@ public class DetectorAction implements ForeachAction<String, Span> {
     @Override
     public void apply(String key, Span span) {
         countersAndTimer.incrementRequestCounter();
-        final long spanArrivalTimeMillis = (span.getStartTime() + span.getDuration()) / 1000L;
-        countersAndTimer.recordSpanArrivalDelta(spanArrivalTimeMillis);
+        countersAndTimer.recordSpanArrivalDelta(span);
         final Stopwatch stopwatch = countersAndTimer.startTimer();
         try {
             final Map<String, List<String>> mapOfTypeToKeysOfSecrets = spanDetector.findSecrets(span);

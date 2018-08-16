@@ -38,7 +38,6 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.OPERATION_NAME;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.SERVICE_NAME;
-import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.SPAN_ARRIVAL_TIME_MS;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.SPAN_ID;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.TRACE_ID;
 import static com.expedia.www.haystack.pipes.secretDetector.DetectorAction.CONFIDENTIAL_DATA_MSG;
@@ -114,6 +113,6 @@ public class DetectorActionTest {
         verify(mockCountersAndTimer).startTimer();
         verify(mockSpanDetector).findSecrets(FULLY_POPULATED_SPAN);
         verify(mockTimer).stop();
-        verify(mockCountersAndTimer).recordSpanArrivalDelta(SPAN_ARRIVAL_TIME_MS);
+        verify(mockCountersAndTimer).recordSpanArrivalDelta(FULLY_POPULATED_SPAN);
     }
 }
