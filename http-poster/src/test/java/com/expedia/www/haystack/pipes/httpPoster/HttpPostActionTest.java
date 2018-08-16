@@ -31,6 +31,7 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_FLATTENED_TAGS;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.NO_TAGS_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
+import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.SPAN_ARRIVAL_TIME_MS;
 import static com.expedia.www.haystack.pipes.httpPoster.HttpPostAction.FILTERED_IN_COUNTER_INDEX;
 import static com.expedia.www.haystack.pipes.httpPoster.HttpPostAction.FILTERED_OUT_COUNTER_INDEX;
 import static com.expedia.www.haystack.pipes.httpPoster.HttpPostAction.ONE_HUNDRED_PERCENT;
@@ -48,7 +49,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HttpPostActionTest {
-    private final static String KEY = RANDOM.nextLong() + "KEY";
+    private static final String KEY = RANDOM.nextLong() + "KEY";
     private static final String HTTP_LOCALHOST = "http://localhost:1080";
     private static final IOException IO_EXCEPTION = new IOException(EXCEPTION_MESSAGE);
     private static final String IO_EXCEPTION_MESSAGE = String.format(POSTING_ERROR_MSG, EXCEPTION_MESSAGE);
@@ -127,6 +128,7 @@ public class HttpPostActionTest {
         verify(mockRandom).nextInt(ONE_HUNDRED_PERCENT);
         verify(mockCountersAndTimer).incrementRequestCounter();
         verify(mockCountersAndTimer).incrementCounter(FILTERED_IN_COUNTER_INDEX);
+        verify(mockCountersAndTimer).recordSpanArrivalDelta(SPAN_ARRIVAL_TIME_MS);
         verify(mockContentCollector).addAndReturnBatch(JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
     }
 
@@ -141,6 +143,7 @@ public class HttpPostActionTest {
         verify(mockRandom).nextInt(ONE_HUNDRED_PERCENT);
         verify(mockCountersAndTimer).incrementRequestCounter();
         verify(mockCountersAndTimer).incrementCounter(FILTERED_OUT_COUNTER_INDEX);
+        verify(mockCountersAndTimer).recordSpanArrivalDelta(SPAN_ARRIVAL_TIME_MS);
     }
 
     @Test
@@ -203,6 +206,7 @@ public class HttpPostActionTest {
         httpPostExternalAction.apply(KEY, FULLY_POPULATED_SPAN);
 
         verify(mockCountersAndTimer, times(2)).incrementRequestCounter();
+        verify(mockCountersAndTimer, times(2)).recordSpanArrivalDelta(SPAN_ARRIVAL_TIME_MS);
         verify(mockContentCollector, times(2)).addAndReturnBatch(
                 JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
         verify(mockRandom, times(2)).nextInt(ONE_HUNDRED_PERCENT);
