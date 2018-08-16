@@ -73,8 +73,7 @@ public class FirehoseProcessor implements Processor<String, Span> {
     @Override
     public void process(String key, Span span) {
         firehoseCountersAndTimer.incrementRequestCounter();
-        final long spanArrivalTimeMillis = (span.getStartTime() + span.getDuration()) / 1000L;
-        firehoseCountersAndTimer.recordSpanArrivalDelta(spanArrivalTimeMillis);
+        firehoseCountersAndTimer.recordSpanArrivalDelta(span);
         final List<Record> records = batch.getRecordList(span);
         sendRecordsToS3(records);
     }

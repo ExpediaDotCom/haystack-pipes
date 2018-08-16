@@ -1,5 +1,6 @@
 package com.expedia.www.haystack.pipes.commons;
 
+import com.expedia.open.tracing.SpanOrBuilder;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.monitor.Timer;
@@ -42,7 +43,8 @@ public class CountersAndTimer {
         return timer.start();
     }
 
-    public void recordSpanArrivalDelta(long spanArrivalTimeMillis) {
+    public void recordSpanArrivalDelta(SpanOrBuilder spanOrBuilder) {
+        final long spanArrivalTimeMillis = (spanOrBuilder.getStartTime() + spanOrBuilder.getDuration()) / 1000L;
         if(spanArrivalTimeMillis > 0L) { // only emit this metric if the span is providing a sensible value
             final long now = clock.millis();
             final long delta = now - spanArrivalTimeMillis;

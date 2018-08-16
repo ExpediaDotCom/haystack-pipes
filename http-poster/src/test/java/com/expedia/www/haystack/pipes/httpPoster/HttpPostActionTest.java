@@ -31,7 +31,6 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_FLATTENED_TAGS;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.NO_TAGS_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
-import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.SPAN_ARRIVAL_TIME_MS;
 import static com.expedia.www.haystack.pipes.httpPoster.HttpPostAction.FILTERED_IN_COUNTER_INDEX;
 import static com.expedia.www.haystack.pipes.httpPoster.HttpPostAction.FILTERED_OUT_COUNTER_INDEX;
 import static com.expedia.www.haystack.pipes.httpPoster.HttpPostAction.ONE_HUNDRED_PERCENT;
@@ -128,7 +127,7 @@ public class HttpPostActionTest {
         verify(mockRandom).nextInt(ONE_HUNDRED_PERCENT);
         verify(mockCountersAndTimer).incrementRequestCounter();
         verify(mockCountersAndTimer).incrementCounter(FILTERED_IN_COUNTER_INDEX);
-        verify(mockCountersAndTimer).recordSpanArrivalDelta(SPAN_ARRIVAL_TIME_MS);
+        verify(mockCountersAndTimer).recordSpanArrivalDelta(FULLY_POPULATED_SPAN);
         verify(mockContentCollector).addAndReturnBatch(JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
     }
 
@@ -143,7 +142,7 @@ public class HttpPostActionTest {
         verify(mockRandom).nextInt(ONE_HUNDRED_PERCENT);
         verify(mockCountersAndTimer).incrementRequestCounter();
         verify(mockCountersAndTimer).incrementCounter(FILTERED_OUT_COUNTER_INDEX);
-        verify(mockCountersAndTimer).recordSpanArrivalDelta(SPAN_ARRIVAL_TIME_MS);
+        verify(mockCountersAndTimer).recordSpanArrivalDelta(FULLY_POPULATED_SPAN);
     }
 
     @Test
@@ -206,7 +205,8 @@ public class HttpPostActionTest {
         httpPostExternalAction.apply(KEY, FULLY_POPULATED_SPAN);
 
         verify(mockCountersAndTimer, times(2)).incrementRequestCounter();
-        verify(mockCountersAndTimer, times(2)).recordSpanArrivalDelta(SPAN_ARRIVAL_TIME_MS);
+        verify(mockCountersAndTimer, times(2)).recordSpanArrivalDelta(
+                FULLY_POPULATED_SPAN);
         verify(mockContentCollector, times(2)).addAndReturnBatch(
                 JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
         verify(mockRandom, times(2)).nextInt(ONE_HUNDRED_PERCENT);

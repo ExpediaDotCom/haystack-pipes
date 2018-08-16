@@ -1,5 +1,6 @@
 package com.expedia.www.haystack.pipes.commons;
 
+import com.expedia.open.tracing.SpanOrBuilder;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.monitor.Timer;
@@ -22,8 +23,8 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class CountersAndTimerTest {
     private static final int VALUE = RANDOM.nextInt();
-    private static final long DELTA = RANDOM.nextInt(Integer.MAX_VALUE);
-    private static final long NOW = System.currentTimeMillis();
+    private static final long DELTA_MILLIS = RANDOM.nextInt(Integer.MAX_VALUE);
+    private static final long NOW_MILLIS = System.currentTimeMillis();
 
     @Mock
     private Counter mockRequestCounter;
@@ -43,6 +44,9 @@ public class CountersAndTimerTest {
     @Mock
     private Timer mockSpanArrivalTimer;
 
+    @Mock
+    private SpanOrBuilder mockSpanOrBuilder;
+
     private CountersAndTimer countersAndTimer;
 
     @Before
@@ -54,7 +58,7 @@ public class CountersAndTimerTest {
     @After
     public void tearDown() {
         verifyNoMoreInteractions(mockRequestCounter, mockSecondCounter, mockTimer);
-        verifyNoMoreInteractions(mockStopwatch);
+        verifyNoMoreInteractions(mockStopwatch, mockClock, mockSpanArrivalTimer, mockSpanOrBuilder);
     }
 
     @Test
@@ -91,25 +95,34 @@ public class CountersAndTimerTest {
 
     @Test
     public void testRecordSpanArrivalDelta() {
-        testRecordSpanArrivalDelta(NOW - DELTA, DELTA);
+        testRecordSpanArrivalDelta((NOW_MILLIS - DELTA_MILLIS) * 1000L, DELTA_MILLIS * 1000L);
+        verifiesForRecordSpanArrivalDeltaRecordsMetric(0L);
     }
 
     @Test
-    public void testRecordSpanArrivalDelta1() {
-        testRecordSpanArrivalDelta(1L, NOW - 1L);
+    public void testRecordSpanArrivalDeltaSpanArrivalTimeMillis1() {
+        testRecordSpanArrivalDelta(0L, 1000L);
+        verifiesForRecordSpanArrivalDeltaRecordsMetric(NOW_MILLIS - 1L);
     }
 
-    private void testRecordSpanArrivalDelta(long spanArrivalTimeMillis, long duration) {
-        when(mockClock.millis()).thenReturn(NOW);
+    @Test
+    public void testRecordSpanArrivalDeltaSpanArrivalTimeMillis0() {
+        testRecordSpanArrivalDelta(0L, 0L);
+    }
 
-        countersAndTimer.recordSpanArrivalDelta(spanArrivalTimeMillis);
+    private void testRecordSpanArrivalDelta(long startTimeMicros, long spanDurationMicros) {
+        when(mockClock.millis()).thenReturn(NOW_MILLIS);
+        when(mockSpanOrBuilder.getStartTime()).thenReturn(startTimeMicros);
+        when(mockSpanOrBuilder.getDuration()).thenReturn(spanDurationMicros);
 
+        countersAndTimer.recordSpanArrivalDelta(mockSpanOrBuilder);
+
+        verify(mockSpanOrBuilder).getStartTime();
+        verify(mockSpanOrBuilder).getDuration();
+    }
+
+    private void verifiesForRecordSpanArrivalDeltaRecordsMetric(long duration) {
         verify(mockClock).millis();
         verify(mockSpanArrivalTimer).record(duration, TimeUnit.MILLISECONDS);
-    }
-
-    @Test
-    public void testRecordSpanArrivalDeltaValue0() {
-        countersAndTimer.recordSpanArrivalDelta(0L);
     }
 }
