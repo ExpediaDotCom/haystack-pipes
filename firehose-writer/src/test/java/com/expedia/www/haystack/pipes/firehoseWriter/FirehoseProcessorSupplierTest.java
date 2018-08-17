@@ -1,6 +1,6 @@
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
-import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehose;
+import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseAsync;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +30,7 @@ public class FirehoseProcessorSupplierTest {
     @Mock
     private Batch mockBatch;
     @Mock
-    private AmazonKinesisFirehose mockAmazonKinesisFirehose;
+    private AmazonKinesisFirehoseAsync mockAmazonKinesisFirehoseAsync;
     @Mock
     private FirehoseProcessor.Factory mockFirehoseProcessorFactory;
     @Mock
@@ -40,14 +40,15 @@ public class FirehoseProcessorSupplierTest {
 
     @Before
     public void setUp() {
-        firehoseProcessorSupplier = new FirehoseProcessorSupplier(mockFirehoseProcessorLogger, mockFirehoseCountersAndTimer,
-                () -> mockBatch, mockAmazonKinesisFirehose, mockFirehoseProcessorFactory, mockFirehoseConfigurationProvider);
+        firehoseProcessorSupplier = new FirehoseProcessorSupplier(mockFirehoseProcessorLogger,
+                mockFirehoseCountersAndTimer, () -> mockBatch, mockAmazonKinesisFirehoseAsync,
+                mockFirehoseProcessorFactory, mockFirehoseConfigurationProvider);
     }
 
     @After
     public void tearDown() {
         verifyNoMoreInteractions(mockFirehoseProcessorLogger, mockFirehoseCountersAndTimer, mockTimer, mockBatch,
-                mockAmazonKinesisFirehose, mockFirehoseProcessorFactory, mockFirehoseConfigurationProvider);
+                mockAmazonKinesisFirehoseAsync, mockFirehoseProcessorFactory, mockFirehoseConfigurationProvider);
     }
 
     @Test
