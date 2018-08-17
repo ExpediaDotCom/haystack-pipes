@@ -27,8 +27,8 @@ import org.springframework.context.annotation.Configuration;
 
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
-import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehose;
-import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseClientBuilder;
+import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseAsync;
+import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseAsyncClientBuilder;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
@@ -171,9 +171,9 @@ class SpringConfig {
     // Beans without unit tests ////////////////////////////////////////////////////////////////////////////////////////
     @Bean
     @Autowired
-    AmazonKinesisFirehose amazonKinesisFirehose(EndpointConfiguration endpointConfiguration,
+    AmazonKinesisFirehoseAsync amazonKinesisFirehose(EndpointConfiguration endpointConfiguration,
                                                 ClientConfiguration clientConfiguration) {
-        return AmazonKinesisFirehoseClientBuilder
+        return AmazonKinesisFirehoseAsyncClientBuilder
                 .standard()
                 .withEndpointConfiguration(endpointConfiguration)
                 .withClientConfiguration(clientConfiguration)
@@ -238,7 +238,7 @@ class SpringConfig {
     FirehoseProcessorSupplier firehoseProcessorSupplier(Logger firehoseProcessorLogger,
                                                         FirehoseCountersAndTimer firehoseCountersAndTimer,
                                                         Supplier<Batch> batch,
-                                                        AmazonKinesisFirehose amazonKinesisFirehose,
+                                                        AmazonKinesisFirehoseAsync amazonKinesisFirehose,
                                                         FirehoseProcessor.Factory firehoseProcessorFactory,
                                                         FirehoseConfigurationProvider firehoseConfigurationProvider) {
         return new FirehoseProcessorSupplier(firehoseProcessorLogger, firehoseCountersAndTimer, batch,
