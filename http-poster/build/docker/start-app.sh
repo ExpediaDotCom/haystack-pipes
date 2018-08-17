@@ -6,6 +6,8 @@
 set -e
 JAVA_OPTS="${JAVA_OPTS} \
 -javaagent:${APP_HOME}/${JMXTRANS_AGENT}.jar=${APP_HOME}/jmxtrans-agent.xml \
+-XX:+UseG1GC \
+-Xloggc:/var/log/gc.log \
 -XX:+PrintGCDetails \
 -XX:+PrintGCDateStamps \
 -XX:+UseGCLogFileRotation \
