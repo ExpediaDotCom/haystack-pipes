@@ -2,7 +2,7 @@ haystack:
   kafka:
     brokers: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
     port: 9092 # default Kafka port, rarely overridden, but can be overridden by env variable
-    fromtopic: "proto-spans"
+    fromtopic: "proto-spans-scrubbed"
     totopic: "" # not used but must be specified as empty for shared YAML parsing to work
     threadcount: 1
     sessiontimeout: 15000
