@@ -20,6 +20,7 @@ import com.expedia.open.tracing.Span;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 
+import java.util.Base64;
 import java.util.Random;
 
 /**
@@ -34,6 +35,7 @@ public interface TestConstantsAndCommonCode {
     String STRING_FIELD_VALUE = "logFieldValue";
     String BYTES_FIELD_KEY = "logBytesKey";
     String BASE_64_ENCODED_STRING = "AAEC/f7/";
+    String BASE_64_DECODED_STRING = new String(Base64.getDecoder().decode(BASE_64_ENCODED_STRING));
     String LOGS = "[{\"timestamp\":\"234567890\",\"fields\":" + "[{\"key\":\"" + STRING_FIELD_KEY +
             "\",\"vStr\":\"" + STRING_FIELD_VALUE + "\"},{\"key\":\"longField\",\"vLong\":\"4567890\"}]},"
             + "{\"timestamp\":\"234567891\",\"fields\":" +
@@ -64,7 +66,6 @@ public interface TestConstantsAndCommonCode {
     String OPERATION_NAME = "operation-name";
     long SPAN_START_TIME_MICROS = 123456789;
     long SPAN_DURATION_MICROS = 234;
-    long SPAN_ARRIVAL_TIME_MS = (SPAN_START_TIME_MICROS + SPAN_DURATION_MICROS) / 1000L;
     String JSON_SPAN_STRING = "{\"traceId\":\"" + TRACE_ID + "\"," +
             "\"spanId\":\"" + SPAN_ID + "\"," +
             "\"parentSpanId\":\"unique-parent-span-id\"," +
