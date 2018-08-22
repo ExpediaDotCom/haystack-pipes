@@ -16,15 +16,6 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
-import java.time.Clock;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseAsync;
@@ -39,9 +30,20 @@ import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.Printer;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
-
+import com.netflix.servo.util.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+import java.time.Clock;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SPAN_ARRIVAL_TIMER_NAME;
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
@@ -55,6 +57,15 @@ import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATIO
 @Configuration
 @ComponentScan(basePackageClasses = SpringConfig.class)
 class SpringConfig {
+    //TODO Make these values settable via configuration
+    //TODO Expose queue statistics as metrics
+    @VisibleForTesting
+    static final int CORE_POOL_SIZE = 4;
+    @VisibleForTesting
+    static final int MAX_POOL_SIZE = 8;
+    @VisibleForTesting
+    static final int QUEUE_CAPACITY = 16;
+
     private final MetricObjects metricObjects;
 
     /**
@@ -138,6 +149,11 @@ class SpringConfig {
     }
 
     @Bean
+    Logger firehoseConsumerLogger() {
+        return LoggerFactory.getLogger(FirehoseConsumer.class);
+    }
+
+    @Bean
     Logger batchLogger() {
         return LoggerFactory.getLogger(Batch.class);
     }
@@ -166,6 +182,32 @@ class SpringConfig {
         final ClientConfiguration clientConfiguration = new ClientConfiguration();
         clientConfiguration.setUseGzip(true);
         return clientConfiguration;
+    }
+
+    @Bean
+    TaskExecutor threadPoolTaskExecutor() {
+        final ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setBeanName(FirehoseConsumer.class.getSimpleName());
+        threadPoolTaskExecutor.setCorePoolSize(CORE_POOL_SIZE);
+        threadPoolTaskExecutor.setMaxPoolSize(MAX_POOL_SIZE);
+        threadPoolTaskExecutor.setThreadNamePrefix(APPLICATION);
+        threadPoolTaskExecutor.initialize();
+
+        return threadPoolTaskExecutor;
+    }
+
+    @Bean
+    @Autowired
+    FirehoseConsumer firehoseConsumer(S3Sender s3Sender,
+                                      Logger firehoseConsumerLogger,
+                                      FirehoseCountersAndTimer firehoseCountersAndTimer,
+                                      ArrayBlockingQueue<BlockingQueueEntry> arrayBlockingQueue) {
+        return new FirehoseConsumer(s3Sender, firehoseConsumerLogger, firehoseCountersAndTimer, arrayBlockingQueue);
+    }
+
+    @Bean
+    ArrayBlockingQueue<BlockingQueueEntry> arrayBlockingQueue() {
+        return new ArrayBlockingQueue<>(QUEUE_CAPACITY);
     }
 
     // Beans without unit tests ////////////////////////////////////////////////////////////////////////////////////////
@@ -202,8 +244,13 @@ class SpringConfig {
     }
 
     @Bean
-    FirehoseProcessor.Factory firehoseProcessorFactory() {
-        return new FirehoseProcessor.Factory();
+    FirehoseProcessor.Sleeper sleeper() {
+        return new Factory.SleeperImpl();
+    }
+
+    @Bean
+    Factory firehoseProcessorFactory() {
+        return new Factory();
     }
 
     @Bean
@@ -226,11 +273,24 @@ class SpringConfig {
 
     @Bean
     @Autowired
-    Supplier<Batch> batch(Printer printer,
-                          Supplier<FirehoseCollector> firehoseCollector,
-                          Logger batchLogger,
-                          Counter throttledCounter) {
+    Supplier<Batch> batchSupplier(Printer printer,
+                                  Supplier<FirehoseCollector> firehoseCollector,
+                                  Logger batchLogger,
+                                  Counter throttledCounter) {
         return () -> new Batch(printer, firehoseCollector, batchLogger, throttledCounter);
+    }
+
+    @Bean
+    @Autowired
+    S3Sender s3Sender(Supplier<Batch> batch,
+                      FirehoseProcessor.Sleeper sleeper,
+                      Factory firehoseProcessorFactory,
+                      FirehoseConfigurationProvider firehoseConfigurationProvider,
+                      FirehoseCountersAndTimer firehoseCountersAndTimer,
+                      AmazonKinesisFirehoseAsync amazonKinesisFirehoseAsync,
+                      ArrayBlockingQueue<BlockingQueueEntry> arrayBlockingQueue) {
+        return new S3Sender(batch, sleeper, firehoseProcessorFactory, firehoseConfigurationProvider,
+                firehoseCountersAndTimer, amazonKinesisFirehoseAsync, arrayBlockingQueue);
     }
 
     @Bean
@@ -238,11 +298,11 @@ class SpringConfig {
     FirehoseProcessorSupplier firehoseProcessorSupplier(Logger firehoseProcessorLogger,
                                                         FirehoseCountersAndTimer firehoseCountersAndTimer,
                                                         Supplier<Batch> batch,
-                                                        AmazonKinesisFirehoseAsync amazonKinesisFirehose,
-                                                        FirehoseProcessor.Factory firehoseProcessorFactory,
-                                                        FirehoseConfigurationProvider firehoseConfigurationProvider) {
+                                                        Factory firehoseProcessorFactory,
+                                                        FirehoseConfigurationProvider firehoseConfigurationProvider,
+                                                        S3Sender s3Sender) {
         return new FirehoseProcessorSupplier(firehoseProcessorLogger, firehoseCountersAndTimer, batch,
-                amazonKinesisFirehose, firehoseProcessorFactory, firehoseConfigurationProvider);
+                firehoseProcessorFactory, firehoseConfigurationProvider, s3Sender);
     }
 
     @Bean
