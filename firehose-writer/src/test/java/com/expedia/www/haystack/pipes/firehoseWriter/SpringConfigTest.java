@@ -16,7 +16,6 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import com.amazonaws.ClientConfiguration;
@@ -34,14 +33,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SPAN_ARRIVAL_TIMER_NAME;
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
-import static com.expedia.www.haystack.pipes.firehoseWriter.SpringConfig.CORE_POOL_SIZE;
-import static com.expedia.www.haystack.pipes.firehoseWriter.SpringConfig.MAX_POOL_SIZE;
-import static com.expedia.www.haystack.pipes.firehoseWriter.SpringConfig.QUEUE_CAPACITY;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -68,14 +63,6 @@ public class SpringConfigTest {
     private Counter mockCounter;
     @Mock
     private HealthController mockHealthController;
-    @Mock
-    private S3Sender mockS3Sender;
-    @Mock
-    private Logger mockLogger;
-    @Mock
-    private FirehoseCountersAndTimer mockFirehoseCountersAndTimer;
-    @Mock
-    private ArrayBlockingQueue<BlockingQueueEntry> mockArrayBlockingQueue;
 
     private SpringConfig springConfig;
 
@@ -86,15 +73,8 @@ public class SpringConfigTest {
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockMetricObjects);
-        verifyNoMoreInteractions(mockFirehoseConfigurationProvider);
-        verifyNoMoreInteractions(mockTimer);
-        verifyNoMoreInteractions(mockCounter);
-        verifyNoMoreInteractions(mockHealthController);
-        verifyNoMoreInteractions(mockS3Sender);
-        verifyNoMoreInteractions(mockLogger);
-        verifyNoMoreInteractions(mockFirehoseCountersAndTimer);
-        verifyNoMoreInteractions(mockArrayBlockingQueue);
+        verifyNoMoreInteractions(mockMetricObjects, mockFirehoseConfigurationProvider, mockTimer, mockCounter,
+                mockHealthController);
     }
 
     @Test
@@ -208,42 +188,6 @@ public class SpringConfigTest {
         final Logger logger = springConfig.batchLogger();
 
         assertEquals(Batch.class.getName(), logger.getName());
-    }
-
-    @Test
-    public void testFirehoseConsumerLogger() {
-        final Logger logger = springConfig.firehoseConsumerLogger();
-
-        assertEquals(FirehoseConsumer.class.getName(), logger.getName());
-    }
-
-    @Test
-    public void testThreadPoolTaskExecutor() {
-        final ThreadPoolTaskExecutor taskExecutor = (ThreadPoolTaskExecutor) springConfig.threadPoolTaskExecutor();
-
-        // No way to verify that taskExecutor.setBeanName() was called
-        assertEquals(CORE_POOL_SIZE, taskExecutor.getCorePoolSize());
-        assertEquals(MAX_POOL_SIZE, taskExecutor.getMaxPoolSize());
-        assertEquals(APPLICATION, taskExecutor.getThreadNamePrefix());
-        assertNotNull(taskExecutor.getThreadPoolExecutor()); // proves that taskExecutor.initialize() was called
-    }
-
-    @Test
-    public void testFirehoseConsumer() {
-        final FirehoseConsumer firehoseConsumer = springConfig.firehoseConsumer(
-                mockS3Sender, mockLogger, mockFirehoseCountersAndTimer, mockArrayBlockingQueue);
-
-        assertSame(mockS3Sender, firehoseConsumer.s3Sender);
-        assertSame(mockLogger, firehoseConsumer.logger);
-        assertSame(mockFirehoseCountersAndTimer, firehoseConsumer.firehoseCountersAndTimer);
-        assertSame(mockArrayBlockingQueue, firehoseConsumer.arrayBlockingQueue);
-    }
-
-    @Test
-    public void testArrayBlockingQueue() {
-        final ArrayBlockingQueue<BlockingQueueEntry> arrayBlockingQueue = springConfig.arrayBlockingQueue();
-
-        assertEquals(QUEUE_CAPACITY, arrayBlockingQueue.remainingCapacity());
     }
 
     @Test

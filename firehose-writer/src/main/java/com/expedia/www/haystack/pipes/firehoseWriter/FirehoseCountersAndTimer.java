@@ -43,13 +43,13 @@ class FirehoseCountersAndTimer extends CountersAndTimer {
         super(clock, putBatchRequestTimer, spanArrivalTimer, spanCounter, successCounter, failureCounter, exceptionCounter);
     }
 
-    void countSuccessesAndFailures(PutRecordBatchRequest putRecordBatchRequest,
-                                   PutRecordBatchResult putRecordBatchResult) {
-        final int recordCount = putRecordBatchRequest.getRecords().size();
-        final int failureCount = putRecordBatchResult == null ? recordCount : putRecordBatchResult.getFailedPutCount();
+    int countSuccessesAndFailures(PutRecordBatchRequest request, PutRecordBatchResult result) {
+        final int recordCount = request.getRecords().size();
+        final int failureCount = result == null ? recordCount : result.getFailedPutCount();
         final int successCount = recordCount - failureCount;
         incrementCounter(SUCCESS_COUNTER_INDEX, successCount);
         incrementCounter(FAILURE_COUNTER_INDEX, failureCount);
+        return failureCount;
     }
 
     void incrementExceptionCounter() {
