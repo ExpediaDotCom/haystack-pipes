@@ -16,7 +16,7 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
-import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseAsync;
+import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehose;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchRequest;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResult;
 import com.amazonaws.services.kinesisfirehose.model.Record;
@@ -44,7 +44,7 @@ public class FirehoseProcessor implements Processor<String, Span> {
     private final Logger logger;
     private final FirehoseCountersAndTimer firehoseCountersAndTimer;
     private final Batch batch;
-    private final AmazonKinesisFirehoseAsync amazonKinesisFirehoseAsync;
+    private final AmazonKinesisFirehose amazonKinesisFirehose;
     private final Factory factory;
     private final FirehoseConfigurationProvider firehoseConfigurationProvider;
 
@@ -52,13 +52,13 @@ public class FirehoseProcessor implements Processor<String, Span> {
     FirehoseProcessor(Logger firehoseProcessorLogger,
                       FirehoseCountersAndTimer firehoseCountersAndTimer,
                       Supplier<Batch> batch,
-                      AmazonKinesisFirehoseAsync amazonKinesisFirehoseAsync,
+                      AmazonKinesisFirehose amazonKinesisFirehose,
                       Factory firehoseProcessorFactory,
                       FirehoseConfigurationProvider firehoseConfigurationProvider) {
         this.logger = firehoseProcessorLogger;
         this.firehoseCountersAndTimer = firehoseCountersAndTimer;
         this.batch = batch.get();
-        this.amazonKinesisFirehoseAsync = amazonKinesisFirehoseAsync;
+        this.amazonKinesisFirehose = amazonKinesisFirehose;
         this.factory = firehoseProcessorFactory;
         this.firehoseConfigurationProvider = firehoseConfigurationProvider;
 
@@ -132,7 +132,7 @@ public class FirehoseProcessor implements Processor<String, Span> {
                 PutRecordBatchResult result = null;
                 try {
                     sleeper.sleep(sleepMillis);
-                    result = amazonKinesisFirehoseAsync.putRecordBatch(request);
+                    result = amazonKinesisFirehose.putRecordBatch(request);
                 } catch (Exception exception) {
                     firehoseCountersAndTimer.incrementExceptionCounter();
                     logger.error(String.format(PUT_RECORD_BATCH_WARN_MSG, retryCount++), exception);
