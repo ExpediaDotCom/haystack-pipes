@@ -30,4 +30,6 @@ public interface FirehoseConfig {
     boolean usestringbuffering();
 
     int maxbatchinterval();
+
+    int maxParallelismPerShard();
 }

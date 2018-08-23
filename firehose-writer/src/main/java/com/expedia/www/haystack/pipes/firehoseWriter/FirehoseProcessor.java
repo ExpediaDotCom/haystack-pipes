@@ -16,6 +16,7 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
+import com.amazonaws.handlers.AsyncHandler;
 import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseAsync;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchRequest;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResult;
@@ -30,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.function.Supplier;
 
 @Component
@@ -47,6 +49,7 @@ public class FirehoseProcessor implements Processor<String, Span> {
     private final AmazonKinesisFirehoseAsync amazonKinesisFirehoseAsync;
     private final Factory factory;
     private final FirehoseConfigurationProvider firehoseConfigurationProvider;
+    private final Semaphore parallelism;
 
     @Autowired
     FirehoseProcessor(Logger firehoseProcessorLogger,
@@ -61,13 +64,12 @@ public class FirehoseProcessor implements Processor<String, Span> {
         this.amazonKinesisFirehoseAsync = amazonKinesisFirehoseAsync;
         this.factory = firehoseProcessorFactory;
         this.firehoseConfigurationProvider = firehoseConfigurationProvider;
-
         this.logger.info(String.format(STARTUP_MESSAGE, firehoseConfigurationProvider.streamname()));
+        this.parallelism = new Semaphore(firehoseConfigurationProvider.maxParallelismPerShard());
     }
 
     @Override
     public void init(ProcessorContext context) {
-        /* do nothing */
     }
 
     @Override
@@ -75,13 +77,28 @@ public class FirehoseProcessor implements Processor<String, Span> {
         firehoseCountersAndTimer.incrementRequestCounter();
         firehoseCountersAndTimer.recordSpanArrivalDelta(span);
         final List<Record> records = batch.getRecordList(span);
-        sendRecordsToS3(records);
+        processRecords(records);
+    }
+
+    private void processRecords(List<Record> records) {
+        try {
+            if (!records.isEmpty()) {
+                parallelism.acquire();
+                final int maxRetrySleep = firehoseConfigurationProvider.maxretrysleep();
+                final RetryCalculator retryCalculator = new RetryCalculator(
+                        firehoseConfigurationProvider.initialretrysleep(), maxRetrySleep);
+                final Sleeper sleeper = factory.createSleeper();
+                sendRecordsToS3(records, retryCalculator, sleeper, 0);
+            }
+        } catch (Exception ex) {
+            /* dont do anything */
+        }
     }
 
     @Override
     public void close() {
         final List<Record> records = batch.getRecordListForShutdown();
-        sendRecordsToS3(records);
+        processRecords(records);
     }
 
     private class RetryCalculator {
@@ -114,42 +131,52 @@ public class FirehoseProcessor implements Processor<String, Span> {
         }
     }
 
-    private void sendRecordsToS3(List<Record> records) {
-        int retryCount = 0;
-        int failureCount;
-        if (!records.isEmpty()) {
-            final String streamName = firehoseConfigurationProvider.streamname();
-            final int maxRetrySleep = firehoseConfigurationProvider.maxretrysleep();
-            final RetryCalculator retryCalculator = new RetryCalculator(
-                    firehoseConfigurationProvider.initialretrysleep(), maxRetrySleep);
-            final Sleeper sleeper = factory.createSleeper();
+    private void sendRecordsToS3(final List<Record> records,
+                                 final RetryCalculator retryCalculator,
+                                 final Sleeper sleeper,
+                                 final int retryCount) {
+        final String streamName = firehoseConfigurationProvider.streamname();
+        final PutRecordBatchRequest request = factory.createPutRecordBatchRequest(streamName, records);
+        final Stopwatch stopwatch = firehoseCountersAndTimer.startTimer();
+        final int sleepMillis = retryCalculator.calculateSleepMillis();
 
-            boolean allRecordsPutSuccessfully = false;
-            do {
-                final PutRecordBatchRequest request = factory.createPutRecordBatchRequest(streamName, records);
-                final Stopwatch stopwatch = firehoseCountersAndTimer.startTimer();
-                final int sleepMillis = retryCalculator.calculateSleepMillis();
-                PutRecordBatchResult result = null;
-                try {
-                    sleeper.sleep(sleepMillis);
-                    result = amazonKinesisFirehoseAsync.putRecordBatch(request);
-                } catch (Exception exception) {
-                    firehoseCountersAndTimer.incrementExceptionCounter();
-                    logger.error(String.format(PUT_RECORD_BATCH_WARN_MSG, retryCount++), exception);
-                    continue;
-                } finally {
-                    stopwatch.stop();
-                    failureCount = firehoseCountersAndTimer.countSuccessesAndFailures(request, result);
-                }
-                if (result == null || areThereRecordsThatFirehoseHasNotProcessed(result.getFailedPutCount())) {
-                    records = batch.extractFailedRecords(request, result, retryCount++);
+        if (sleepMillis > 0) {
+            try {
+                sleeper.sleep(sleepMillis);
+            } catch (InterruptedException ex) { /* dont do anything */ }
+        }
+
+        amazonKinesisFirehoseAsync.putRecordBatchAsync(request, new AsyncHandler<PutRecordBatchRequest, PutRecordBatchResult>() {
+            @Override
+            public void onError(Exception e) {
+                onFirehoseCallback(stopwatch, request, null, sleepMillis, retryCount);
+                sendRecordsToS3(records, retryCalculator, sleeper, retryCount + 1);
+            }
+
+            @Override
+            public void onSuccess(final PutRecordBatchRequest request, final PutRecordBatchResult result) {
+                onFirehoseCallback(stopwatch, request, result, sleepMillis, retryCount);
+                if (areThereRecordsThatFirehoseHasNotProcessed(result.getFailedPutCount())) {
+                    final List<Record> failedRecords = batch.extractFailedRecords(request, result, retryCount);
+                    sendRecordsToS3(failedRecords, retryCalculator, sleeper, retryCount + 1);
                 } else {
-                    allRecordsPutSuccessfully = true;
+                    parallelism.release();
                 }
-                if (shouldLogErrorMessage(failureCount, maxRetrySleep, sleepMillis)) {
-                    logger.error(String.format(PUT_RECORD_BATCH_ERROR_MSG, failureCount, retryCount));
-                }
-            } while (!allRecordsPutSuccessfully);
+            }
+        });
+    }
+
+    private void onFirehoseCallback(final Stopwatch stopwatch,
+                                    final PutRecordBatchRequest request,
+                                    final PutRecordBatchResult result,
+                                    final int sleepMillis,
+                                    final int retryCount) {
+        stopwatch.stop();
+        int failureCount = firehoseCountersAndTimer.countSuccessesAndFailures(request, result);
+
+        final int maxRetrySleep = firehoseConfigurationProvider.maxretrysleep();
+        if (shouldLogErrorMessage(failureCount, maxRetrySleep, sleepMillis)) {
+            logger.error(String.format(PUT_RECORD_BATCH_ERROR_MSG, failureCount, retryCount));
         }
     }
 
