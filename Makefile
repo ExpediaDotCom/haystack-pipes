@@ -24,7 +24,7 @@ secret-detector:
 	mvn package -DfinalName=haystack-pipes-secret-detector -pl secret-detector -am
 
 # build all and release
-release: all
+release: clean json-transformer kafka-producer http-poster firehose-writer secret-detector
 	cd json-transformer && $(MAKE) release
 	cd kafka-producer && $(MAKE) release
 	cd http-poster && $(MAKE) release
