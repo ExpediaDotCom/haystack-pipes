@@ -9,19 +9,19 @@ build: clean
 	mvn package
 
 json-transformer:
-	mvn package -pl json-transformer -am
+	mvn package -DfinalName=haystack-pipes-json-transformer -pl json-transformer -am
 
 kafka-producer:
-	mvn package -pl kafka-producer -am
+	mvn package -DfinalName=haystack-pipes-kafka-produce -pl kafka-producer -am
 
 http-poster:
-	mvn package -pl http-poster -am
+	mvn package -DfinalName=haystack-pipes-http-poster -pl http-poster -am
 
 firehose-writer:
-	mvn package -pl firehose-writer -am
+	mvn package -DfinalName=haystack-pipes-firehose-writer -pl firehose-writer -am
 
 secret-detector:
-	mvn package -pl secret-detector -am
+	mvn package -DfinalName=haystack-pipes-secret-detector -pl secret-detector -am
 
 # build all and release
 release: all
