@@ -42,23 +42,19 @@ public class FirehoseIsActiveController extends SpringBootServletInitializer {
     private final ProtobufToFirehoseProducer protobufToFirehoseProducer;
     private final Factory firehoseIsActiveControllerFactory;
     private final Logger logger;
-    private final AsynchronousFirehoseConsumer asynchronousFirehoseConsumer;
 
     @Autowired
     FirehoseIsActiveController(ProtobufToFirehoseProducer protobufToFirehoseProducer,
                                Factory firehoseIsActiveControllerFactory,
-                               Logger firehoseIsActiveControllerLogger,
-                               AsynchronousFirehoseConsumer asynchronousFirehoseConsumer) {
+                               Logger firehoseIsActiveControllerLogger) {
         this.protobufToFirehoseProducer = protobufToFirehoseProducer;
         this.firehoseIsActiveControllerFactory = firehoseIsActiveControllerFactory;
         this.logger = firehoseIsActiveControllerLogger;
-        this.asynchronousFirehoseConsumer = asynchronousFirehoseConsumer;
         INSTANCE.compareAndSet(null, this);
     }
 
     public static void main(String[] args) {
         new AnnotationConfigApplicationContext(SpringConfig.class);
-        INSTANCE.get().asynchronousFirehoseConsumer.executeAsynchronously();
         INSTANCE.get().logger.info(STARTUP_MSG);
         INSTANCE.get().protobufToFirehoseProducer.main();
         INSTANCE.get().firehoseIsActiveControllerFactory.createSpringApplication().run(args);

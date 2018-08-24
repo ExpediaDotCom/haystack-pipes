@@ -47,8 +47,6 @@ public class FirehoseIsActiveControllerTest {
     private SpringApplication mockSpringApplication;
     @Mock
     private Logger mockLogger;
-    @Mock
-    private AsynchronousFirehoseConsumer mockAsynchronousFirehoseConsumer;
 
     private Factory factory;
 
@@ -59,16 +57,12 @@ public class FirehoseIsActiveControllerTest {
     }
 
     private void storeFirehoseIsActiveControllerWithMocksInStaticInstance() {
-        new FirehoseIsActiveController(mockProtobufToFirehoseProducer, mockFactory, mockLogger, mockAsynchronousFirehoseConsumer);
+        new FirehoseIsActiveController(mockProtobufToFirehoseProducer, mockFactory, mockLogger);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockProtobufToFirehoseProducer);
-        verifyNoMoreInteractions(mockFactory);
-        verifyNoMoreInteractions(mockSpringApplication);
-        verifyNoMoreInteractions(mockLogger);
-        verifyNoMoreInteractions(mockAsynchronousFirehoseConsumer);
+        verifyNoMoreInteractions(mockProtobufToFirehoseProducer, mockFactory, mockSpringApplication, mockLogger);
         clearFirehoseIsActiveControllerInStaticInstance();
     }
 
@@ -83,7 +77,6 @@ public class FirehoseIsActiveControllerTest {
         FirehoseIsActiveController.main(ARGS);
 
         verify(mockLogger).info(STARTUP_MSG);
-        verify(mockAsynchronousFirehoseConsumer).executeAsynchronously();
         verify(mockProtobufToFirehoseProducer).main();
         verify(mockFactory).createSpringApplication();
         verify(mockSpringApplication).run(ARGS);
