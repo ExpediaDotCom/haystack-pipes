@@ -30,3 +30,4 @@ release: all
 	cd http-poster && $(MAKE) release
 	cd firehose-writer && $(MAKE) release
 	cd secret-detector && $(MAKE) release
+	./.travis/deploy.sh

@@ -16,6 +16,10 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
+    <properties>
+        <finalName>${project.artifactId}-${project.version}</finalName>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.expedia.www</groupId>
@@ -71,12 +75,8 @@
     </dependencies>
 
     <build>
-        <finalName>haystack-pipes-kafka-producer</finalName>
+        <finalName>${finalName}</finalName>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
