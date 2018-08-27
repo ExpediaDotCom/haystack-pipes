@@ -64,8 +64,8 @@ public class FirehoseConfigurationProvider implements FirehoseConfig {
     }
 
     @Override
-    public int maxParallelismPerShard() {
-        return 5;
+    public int maxparallelismpershard() {
+        return firehoseConfig.maxparallelismpershard();
     }
 
     private void reload() {

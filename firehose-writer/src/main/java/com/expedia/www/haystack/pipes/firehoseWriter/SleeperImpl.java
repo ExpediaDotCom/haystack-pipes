@@ -16,20 +16,9 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
-public interface FirehoseConfig {
-    String url();
-
-    String streamname();
-
-    String signingregion();
-
-    int initialretrysleep();
-
-    int maxretrysleep();
-
-    boolean usestringbuffering();
-
-    int maxbatchinterval();
-
-    int maxparallelismpershard();
+public class SleeperImpl implements Sleeper {
+    @Override
+    public void sleep(long millis) throws InterruptedException {
+        Thread.sleep(millis);
+    }
 }

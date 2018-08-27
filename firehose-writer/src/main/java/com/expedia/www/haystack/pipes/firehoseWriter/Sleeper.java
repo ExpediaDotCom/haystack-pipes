@@ -16,20 +16,10 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
-public interface FirehoseConfig {
-    String url();
-
-    String streamname();
-
-    String signingregion();
-
-    int initialretrysleep();
-
-    int maxretrysleep();
-
-    boolean usestringbuffering();
-
-    int maxbatchinterval();
-
-    int maxparallelismpershard();
+/**
+ * This interface exists so that unit tests can verify the appropriate amount of sleeping during retries,
+ * and so that those unit tests run as fast as possible (i.e. without really sleeping).
+ */
+interface Sleeper {
+    void sleep(long millis) throws InterruptedException;
 }
