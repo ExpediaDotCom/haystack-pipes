@@ -63,6 +63,11 @@ public class FirehoseConfigurationProvider implements FirehoseConfig {
         return firehoseConfig.maxbatchinterval();
     }
 
+    @Override
+    public int maxparallelismpershard() {
+        return firehoseConfig.maxparallelismpershard();
+    }
+
     private void reload() {
         final Configuration configuration = new Configuration();
         final ConfigurationProvider configurationProvider = configuration.createMergeConfigurationProvider();

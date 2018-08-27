@@ -163,10 +163,17 @@ public class SpringConfigTest {
     }
 
     @Test
-    public void testFirehoseActionLogger() {
+    public void testFirehoseProcessorLogger() {
         final Logger logger = springConfig.firehoseProcessorLogger();
 
         assertEquals(FirehoseProcessor.class.getName(), logger.getName());
+    }
+
+    @Test
+    public void testS3SenderLogger() {
+        final Logger logger = springConfig.s3SenderLogger();
+
+        assertEquals(S3Sender.class.getName(), logger.getName());
     }
 
     @Test
@@ -188,6 +195,13 @@ public class SpringConfigTest {
         final Logger logger = springConfig.batchLogger();
 
         assertEquals(Batch.class.getName(), logger.getName());
+    }
+
+    @Test
+    public void testFailedRecordExtractorLogger() {
+        final Logger logger = springConfig.failedRecordExtractorLogger();
+
+        assertEquals(FailedRecordExtractor.class.getName(), logger.getName());
     }
 
     @Test
@@ -226,7 +240,7 @@ public class SpringConfigTest {
     }
 
     // All of the other beans in SpringConfig use default constructors, or use arguments provided by other Spring beans
-    // in SpringConfig, so tests on the methods that create those beans have little value. The firehoseProcessor() Bean
-    // method should be tested but is difficult to test because of how deeply the AWS SDK code hides the instance
-    // variables.
+    // in SpringConfig, so tests on the methods that create those beans have little value. The
+    // amazonKinesisFirehoseAsync() @bean method should be tested but is difficult to test well because of how deeply
+    // the AWS SDK code hides its instance variables.
 }

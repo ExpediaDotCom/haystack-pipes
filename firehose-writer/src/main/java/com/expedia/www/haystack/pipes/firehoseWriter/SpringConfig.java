@@ -27,8 +27,8 @@ import org.springframework.context.annotation.Configuration;
 
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
-import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehose;
-import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseClientBuilder;
+import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseAsync;
+import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseAsyncClientBuilder;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
@@ -128,6 +128,11 @@ class SpringConfig {
     }
 
     @Bean
+    Logger s3SenderLogger() {
+        return LoggerFactory.getLogger(S3Sender.class);
+    }
+
+    @Bean
     Logger protobufToFirehoseProducerLogger() {
         return LoggerFactory.getLogger(ProtobufToFirehoseProducer.class);
     }
@@ -140,6 +145,18 @@ class SpringConfig {
     @Bean
     Logger batchLogger() {
         return LoggerFactory.getLogger(Batch.class);
+    }
+
+    @Bean
+    Logger failedRecordExtractorLogger() {
+        return LoggerFactory.getLogger(FailedRecordExtractor.class);
+    }
+
+    @Bean
+    @Autowired
+    FailedRecordExtractor failedRecordExtractor(Logger failedRecordExtractorLogger,
+                                                Counter throttledCounter) {
+        return new FailedRecordExtractor(failedRecordExtractorLogger, throttledCounter);
     }
 
     @Bean
@@ -171,9 +188,9 @@ class SpringConfig {
     // Beans without unit tests ////////////////////////////////////////////////////////////////////////////////////////
     @Bean
     @Autowired
-    AmazonKinesisFirehose amazonKinesisFirehose(EndpointConfiguration endpointConfiguration,
-                                                ClientConfiguration clientConfiguration) {
-        return AmazonKinesisFirehoseClientBuilder
+    AmazonKinesisFirehoseAsync amazonKinesisFirehoseAsync(EndpointConfiguration endpointConfiguration,
+                                                          ClientConfiguration clientConfiguration) {
+        return AmazonKinesisFirehoseAsyncClientBuilder
                 .standard()
                 .withEndpointConfiguration(endpointConfiguration)
                 .withClientConfiguration(clientConfiguration)
@@ -207,6 +224,11 @@ class SpringConfig {
     }
 
     @Bean
+    S3Sender.Factory s3SenderFactory() {
+        return new S3Sender.Factory();
+    }
+
+    @Bean
     Clock clock()  {
         return Clock.systemUTC();
     }
@@ -228,9 +250,8 @@ class SpringConfig {
     @Autowired
     Supplier<Batch> batch(Printer printer,
                           Supplier<FirehoseCollector> firehoseCollector,
-                          Logger batchLogger,
-                          Counter throttledCounter) {
-        return () -> new Batch(printer, firehoseCollector, batchLogger, throttledCounter);
+                          Logger batchLogger) {
+        return () -> new Batch(printer, firehoseCollector, batchLogger);
     }
 
     @Bean
@@ -238,11 +259,11 @@ class SpringConfig {
     FirehoseProcessorSupplier firehoseProcessorSupplier(Logger firehoseProcessorLogger,
                                                         FirehoseCountersAndTimer firehoseCountersAndTimer,
                                                         Supplier<Batch> batch,
-                                                        AmazonKinesisFirehose amazonKinesisFirehose,
                                                         FirehoseProcessor.Factory firehoseProcessorFactory,
-                                                        FirehoseConfigurationProvider firehoseConfigurationProvider) {
+                                                        FirehoseConfigurationProvider firehoseConfigurationProvider,
+                                                        S3Sender s3Sender) {
         return new FirehoseProcessorSupplier(firehoseProcessorLogger, firehoseCountersAndTimer, batch,
-                amazonKinesisFirehose, firehoseProcessorFactory, firehoseConfigurationProvider);
+                firehoseProcessorFactory, firehoseConfigurationProvider, s3Sender);
     }
 
     @Bean

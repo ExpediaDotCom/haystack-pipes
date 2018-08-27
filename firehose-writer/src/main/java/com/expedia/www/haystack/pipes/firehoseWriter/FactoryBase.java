@@ -16,20 +16,14 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
-public interface FirehoseConfig {
-    String url();
+public class FactoryBase {
+    private final Sleeper sleeper = new SleeperImpl();
 
-    String streamname();
+    Sleeper createSleeper() {
+        return sleeper;
+    }
 
-    String signingregion();
-
-    int initialretrysleep();
-
-    int maxretrysleep();
-
-    boolean usestringbuffering();
-
-    int maxbatchinterval();
-
-    int maxparallelismpershard();
+    Thread currentThread() {
+        return Thread.currentThread();
+    }
 }
