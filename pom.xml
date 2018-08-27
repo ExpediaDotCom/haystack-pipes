@@ -10,6 +10,51 @@
     <packaging>pom</packaging>
     <name>Haystack Pipes</name>
 
+    <scm>
+        <connection>scm:git:git://github.com/ExpediaDotCom/haystack-pipes.git</connection>
+        <developerConnection>scm:git:ssh://github.com/ExpediaDotCom/haystack-pipes.git</developerConnection>
+        <url>http://github.com/ExpediaDotCom/haystack-pipes</url>
+    </scm>
+
+    <description>Packages to send ("pipe") Haystack data to external sinks (like AWS Firehose or another Kafka queue)</description>
+    <url>https://github.com/ExpediaDotCom/haystack-pipes/tree/master</url>
+
+    <licenses>
+        <!--
+           /*
+            *
+            *  Copyright 2018 Expedia Group.
+            *
+            *     Licensed under the Apache License, Version 2.0 (the "License");
+            *     you may not use this file except in compliance with the License.
+            *     You may obtain a copy of the License at
+            *
+            *         http://www.apache.org/licenses/LICENSE-2.0
+            *
+            *     Unless required by applicable law or agreed to in writing, software
+            *     distributed under the License is distributed on an "AS IS" BASIS,
+            *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+            *     See the License for the specific language governing permissions and
+            *     limitations under the License.
+            *
+            */
+          -->
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>haystack</id>
+            <name>Haystack Team</name>
+            <email>haystack@expedia.com</email>
+            <url>https://github.com/ExpediaDotCom/haystack</url>
+        </developer>
+    </developers>
+
     <properties>
         <encoding>UTF-8</encoding>
         <!-- Versions -->
@@ -38,7 +83,6 @@
         <logback.version>1.2.3</logback.version>
         <log4j.version>2.10.0</log4j.version>
         <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
-        <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
         <mockito.version>1.9.5</mockito.version>
         <mockserver-netty.version>5.3.0</mockserver-netty.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -49,6 +93,8 @@
         <spring-boot-plugins.version>1.5.9.RELEASE</spring-boot-plugins.version>
         <spring-context.version>4.3.13.RELEASE</spring-context.version>
         <zookeeper.version>3.4.9</zookeeper.version>
+        <skipGpg>true</skipGpg>
+        <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
     </properties>
 
     <modules>
@@ -323,11 +369,6 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>${maven-jar-plugin.version}</version>
-                </plugin>
-                <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>${jacoco-maven-plugin.version}</version>
@@ -402,5 +443,73 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                    <skip>${skipGpg}</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+            <plugin>
+                <!-- Build a JavaDoc JAR -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.4</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>${maven-source-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
 </project>
