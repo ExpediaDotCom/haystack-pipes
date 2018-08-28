@@ -1,3 +1,5 @@
+.PHONY: all clean release json-transformer kafka-producer http-poster firehose-writer secret-detector
+
 PWD := $(shell pwd)
 
 all: clean build
