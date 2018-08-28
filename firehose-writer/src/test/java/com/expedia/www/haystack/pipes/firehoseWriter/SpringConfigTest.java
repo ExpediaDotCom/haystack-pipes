@@ -16,8 +16,6 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
-import java.util.concurrent.TimeUnit;
-
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.expedia.www.haystack.metrics.MetricObjects;
@@ -25,7 +23,6 @@ import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,9 +31,18 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
+import java.util.concurrent.TimeUnit;
+
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SPAN_ARRIVAL_TIMER_NAME;
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
+import static com.expedia.www.haystack.pipes.firehoseWriter.SpringConfig.EXCEPTION_COUNTER_NAME;
+import static com.expedia.www.haystack.pipes.firehoseWriter.SpringConfig.FAILURE_COUNTER_NAME;
+import static com.expedia.www.haystack.pipes.firehoseWriter.SpringConfig.PUT_BATCH_REQUEST_TIMER_NAME;
+import static com.expedia.www.haystack.pipes.firehoseWriter.SpringConfig.SOCKET_TIMEOUT_COUNTER_NAME;
+import static com.expedia.www.haystack.pipes.firehoseWriter.SpringConfig.SPAN_COUNTER_NAME;
+import static com.expedia.www.haystack.pipes.firehoseWriter.SpringConfig.SUCCESS_COUNTER_NAME;
+import static com.expedia.www.haystack.pipes.firehoseWriter.SpringConfig.THROTTLED_COUNTER_NAME;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -85,7 +91,7 @@ public class SpringConfigTest {
         assertNotNull(springConfig.spanCounter());
 
         verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                FirehoseProcessor.class.getName(), "REQUEST");
+                FirehoseProcessor.class.getName(), SPAN_COUNTER_NAME);
     }
 
     @Test
@@ -96,7 +102,7 @@ public class SpringConfigTest {
         assertNotNull(springConfig.successCounter());
 
         verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                FirehoseProcessor.class.getName(), "SUCCESS");
+                FirehoseProcessor.class.getName(), SUCCESS_COUNTER_NAME);
     }
 
     @Test
@@ -107,7 +113,7 @@ public class SpringConfigTest {
         assertNotNull(springConfig.failureCounter());
 
         verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                FirehoseProcessor.class.getName(), "FAILURE");
+                FirehoseProcessor.class.getName(), FAILURE_COUNTER_NAME);
     }
 
     @Test
@@ -118,7 +124,18 @@ public class SpringConfigTest {
         assertNotNull(springConfig.exceptionCounter());
 
         verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                FirehoseProcessor.class.getName(), "EXCEPTION");
+                FirehoseProcessor.class.getName(), EXCEPTION_COUNTER_NAME);
+    }
+
+    @Test
+    public void testSocketTimeoutCounter() {
+        when(mockMetricObjects.createAndRegisterResettingCounter(anyString(), anyString(), anyString(), anyString()))
+                .thenReturn(mockCounter);
+
+        assertNotNull(springConfig.socketTimeoutCounter());
+
+        verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
+                FirehoseProcessor.class.getName(), SOCKET_TIMEOUT_COUNTER_NAME);
     }
 
     @Test
@@ -129,7 +146,7 @@ public class SpringConfigTest {
         assertNotNull(springConfig.throttledCounter());
 
         verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                Batch.class.getName(), "THROTTLED");
+                Batch.class.getName(), THROTTLED_COUNTER_NAME);
     }
 
     @Test
@@ -140,7 +157,7 @@ public class SpringConfigTest {
         assertNotNull(springConfig.putBatchRequestTimer());
 
         verify(mockMetricObjects).createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, FirehoseProcessor.class.getName(),
-                "PUT_BATCH_REQUEST", MILLISECONDS);
+                PUT_BATCH_REQUEST_TIMER_NAME, MILLISECONDS);
     }
 
     @Test

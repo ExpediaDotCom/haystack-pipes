@@ -20,6 +20,7 @@ import java.time.Clock;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import com.netflix.servo.util.VisibleForTesting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -55,6 +56,14 @@ import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATIO
 @Configuration
 @ComponentScan(basePackageClasses = SpringConfig.class)
 class SpringConfig {
+    @VisibleForTesting static final String SPAN_COUNTER_NAME = "REQUEST";
+    @VisibleForTesting static final String SUCCESS_COUNTER_NAME = "SUCCESS";
+    @VisibleForTesting static final String FAILURE_COUNTER_NAME = "FAILURE";
+    @VisibleForTesting static final String EXCEPTION_COUNTER_NAME = "EXCEPTION";
+    @VisibleForTesting static final String THROTTLED_COUNTER_NAME = "THROTTLED";
+    @VisibleForTesting static final String SOCKET_TIMEOUT_COUNTER_NAME = "SOCKET_TIMEOUT";
+    @VisibleForTesting static final String PUT_BATCH_REQUEST_TIMER_NAME = "PUT_BATCH_REQUEST";
+
     private final MetricObjects metricObjects;
 
     /**
@@ -70,43 +79,43 @@ class SpringConfig {
     @Bean
     Counter spanCounter() {
         return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                FirehoseProcessor.class.getName(), "REQUEST");
+                FirehoseProcessor.class.getName(), SPAN_COUNTER_NAME);
     }
 
     @Bean
     Counter successCounter() {
         return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                FirehoseProcessor.class.getName(), "SUCCESS");
+                FirehoseProcessor.class.getName(), SUCCESS_COUNTER_NAME);
     }
 
     @Bean
     Counter failureCounter() {
         return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                FirehoseProcessor.class.getName(), "FAILURE");
+                FirehoseProcessor.class.getName(), FAILURE_COUNTER_NAME);
     }
 
     @Bean
     Counter exceptionCounter() {
         return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                FirehoseProcessor.class.getName(), "EXCEPTION");
+                FirehoseProcessor.class.getName(), EXCEPTION_COUNTER_NAME);
     }
 
     @Bean
     Counter throttledCounter() {
         return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                Batch.class.getName(), "THROTTLED");
+                Batch.class.getName(), THROTTLED_COUNTER_NAME);
     }
 
     @Bean
     Counter socketTimeoutCounter() {
         return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                Batch.class.getName(), "SOCKET_TIMEOUT");
+                Batch.class.getName(), SOCKET_TIMEOUT_COUNTER_NAME);
     }
 
     @Bean
     Timer putBatchRequestTimer() {
         return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, FirehoseProcessor.class.getName(),
-                "PUT_BATCH_REQUEST", TimeUnit.MILLISECONDS);
+                PUT_BATCH_REQUEST_TIMER_NAME, TimeUnit.MILLISECONDS);
     }
 
     @Bean
@@ -248,7 +257,6 @@ class SpringConfig {
                                       Counter successCounter,
                                       Counter failureCounter,
                                       Counter exceptionCounter,
-                                      Counter throttledCounter,
                                       Counter socketTimeoutCounter) {
         return new FirehoseCountersAndTimer(clock,
                 putBatchRequestTimer, spanArrivalTimer,
