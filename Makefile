@@ -14,7 +14,7 @@ json-transformer:
 	mvn package -DfinalName=haystack-pipes-json-transformer -pl json-transformer -am
 
 kafka-producer:
-	mvn package -DfinalName=haystack-pipes-kafka-produce -pl kafka-producer -am
+	mvn package -DfinalName=haystack-pipes-kafka-producer -pl kafka-producer -am
 
 http-poster:
 	mvn package -DfinalName=haystack-pipes-http-poster -pl http-poster -am
