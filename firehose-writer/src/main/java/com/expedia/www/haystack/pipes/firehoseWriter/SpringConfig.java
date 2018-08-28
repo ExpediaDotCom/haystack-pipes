@@ -98,6 +98,12 @@ class SpringConfig {
     }
 
     @Bean
+    Counter socketTimeoutCounter() {
+        return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
+                Batch.class.getName(), "SOCKET_TIMEOUT");
+    }
+
+    @Bean
     Timer putBatchRequestTimer() {
         return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, FirehoseProcessor.class.getName(),
                 "PUT_BATCH_REQUEST", TimeUnit.MILLISECONDS);
@@ -241,9 +247,12 @@ class SpringConfig {
                                       Counter spanCounter,
                                       Counter successCounter,
                                       Counter failureCounter,
-                                      Counter exceptionCounter) {
-        return new FirehoseCountersAndTimer(clock, putBatchRequestTimer, spanArrivalTimer, spanCounter, successCounter,
-                failureCounter, exceptionCounter);
+                                      Counter exceptionCounter,
+                                      Counter throttledCounter,
+                                      Counter socketTimeoutCounter) {
+        return new FirehoseCountersAndTimer(clock,
+                putBatchRequestTimer, spanArrivalTimer,
+                spanCounter, successCounter, failureCounter, exceptionCounter, socketTimeoutCounter);
     }
 
     @Bean

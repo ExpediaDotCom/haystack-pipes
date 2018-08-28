@@ -16,17 +16,18 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
+import com.amazonaws.SdkClientException;
 import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseAsync;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchRequest;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResult;
 import com.amazonaws.services.kinesisfirehose.model.Record;
-import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.util.VisibleForTesting;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
@@ -35,13 +36,12 @@ import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.PU
 @Component
 public class S3Sender {
     @VisibleForTesting
-    static final String UNEXPECTED_EXCEPTION_MSG = "Unexpected exception received from AWS Firehose";
+    static final String UNEXPECTED_EXCEPTION_MSG = "Unexpected exception received from AWS Firehose, will retry all records";
     private final FirehoseConfigurationProvider firehoseConfigurationProvider;
     private final Factory factory;
     private final FirehoseCountersAndTimer firehoseCountersAndTimer;
     private final AmazonKinesisFirehoseAsync amazonKinesisFirehoseAsync;
     private final Logger logger;
-    private final Counter throttledCounter;
     private final FailedRecordExtractor failedRecordExtractor;
 
     @Autowired
@@ -50,14 +50,12 @@ public class S3Sender {
                     FirehoseCountersAndTimer firehoseCountersAndTimer,
                     AmazonKinesisFirehoseAsync amazonKinesisFirehoseAsync,
                     Logger s3SenderLogger,
-                    Counter throttledCounter,
                     FailedRecordExtractor failedRecordExtractor) {
         this.firehoseConfigurationProvider = firehoseConfigurationProvider;
         this.factory = factory;
         this.firehoseCountersAndTimer = firehoseCountersAndTimer;
         this.amazonKinesisFirehoseAsync = amazonKinesisFirehoseAsync;
         this.logger = s3SenderLogger;
-        this.throttledCounter = throttledCounter;
         this.failedRecordExtractor = failedRecordExtractor;
     }
 
@@ -83,7 +81,7 @@ public class S3Sender {
         } finally {
             amazonKinesisFirehoseAsync.putRecordBatchAsync(request,
                     factory.createFirehoseAsyncHandler(this, stopwatch, request, sleepMillis, retryCount,
-                            records, retryCalculator, sleeper, parallelism, throttledCounter,
+                            records, retryCalculator, sleeper, parallelism, firehoseCountersAndTimer,
                             failedRecordExtractor));
         }
         if(isInterrupted) {
@@ -96,10 +94,15 @@ public class S3Sender {
                             final PutRecordBatchResult result,
                             final int sleepMillis,
                             final int retryCount,
-                            Exception exception) {
+                            Exception exception,
+                            FirehoseCountersAndTimer firehoseCountersAndTimer) {
         stopwatch.stop();
         if(exception != null) {
-            logger.error(UNEXPECTED_EXCEPTION_MSG, exception);
+            if (exception instanceof SdkClientException && exception.getCause() instanceof SocketTimeoutException) {
+                firehoseCountersAndTimer.incrementSocketTimeoutCounter();
+            } else {
+                logger.error(UNEXPECTED_EXCEPTION_MSG, exception);
+            }
         }
         int failureCount = firehoseCountersAndTimer.countSuccessesAndFailures(request, result);
 
@@ -133,10 +136,10 @@ public class S3Sender {
                                                         RetryCalculator retryCalculator,
                                                         Sleeper sleeper,
                                                         Semaphore parallelism,
-                                                        Counter throttledCounter,
+                                                        FirehoseCountersAndTimer firehoseCountersAndTimer,
                                                         FailedRecordExtractor failedRecordExtractor) {
             return new FirehoseAsyncHandler(s3Sender, stopwatch, request, sleepMillis, retryCount, records,
-                    retryCalculator, sleeper, parallelism, throttledCounter, failedRecordExtractor);
+                    retryCalculator, sleeper, parallelism, firehoseCountersAndTimer, failedRecordExtractor);
         }
 
         PutRecordBatchRequest createPutRecordBatchRequest(String streamName, List<Record> records) {
