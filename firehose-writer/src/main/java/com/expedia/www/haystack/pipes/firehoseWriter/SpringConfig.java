@@ -109,19 +109,19 @@ class SpringConfig {
     @Bean
     Counter socketTimeoutCounter() {
         return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                Batch.class.getName(), SOCKET_TIMEOUT_COUNTER_NAME);
+                S3Sender.class.getName(), SOCKET_TIMEOUT_COUNTER_NAME);
     }
 
     @Bean
     Timer putBatchRequestTimer() {
-        return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, FirehoseProcessor.class.getName(),
-                PUT_BATCH_REQUEST_TIMER_NAME, TimeUnit.MILLISECONDS);
+        return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
+                FirehoseProcessor.class.getName(), PUT_BATCH_REQUEST_TIMER_NAME, TimeUnit.MILLISECONDS);
     }
 
     @Bean
     Timer spanArrivalTimer() {
-        return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION, FirehoseProcessor.class.getName(),
-                SPAN_ARRIVAL_TIMER_NAME, TimeUnit.MILLISECONDS);
+        return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
+                FirehoseProcessor.class.getName(), SPAN_ARRIVAL_TIMER_NAME, TimeUnit.MILLISECONDS);
     }
 
     @Bean

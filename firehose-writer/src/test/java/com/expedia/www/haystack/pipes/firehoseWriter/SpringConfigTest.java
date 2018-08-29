@@ -135,7 +135,7 @@ public class SpringConfigTest {
         assertNotNull(springConfig.socketTimeoutCounter());
 
         verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                FirehoseProcessor.class.getName(), SOCKET_TIMEOUT_COUNTER_NAME);
+                S3Sender.class.getName(), SOCKET_TIMEOUT_COUNTER_NAME);
     }
 
     @Test
