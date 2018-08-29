@@ -53,6 +53,8 @@ public class FirehoseCountersAndTimerTest {
     @Mock
     private Counter mockExceptionCounter;
     @Mock
+    private Counter mockSocketTimeoutCounter;
+    @Mock
     private PutRecordBatchRequest mockRequest;
     @Mock
     private PutRecordBatchResult mockResult;
@@ -68,9 +70,11 @@ public class FirehoseCountersAndTimerTest {
     @Before
     public void setUp() {
         firehoseCountersAndTimer = new FirehoseCountersAndTimer(mockClock, mockTimer, mockSpanArrivalTimer,
-                mockSpanCounter, mockSuccessCounter, mockFailureCounter, mockExceptionCounter);
+                mockSpanCounter, mockSuccessCounter, mockFailureCounter, mockExceptionCounter,
+                mockSocketTimeoutCounter);
     }
 
+    @SuppressWarnings("Duplicates")
     @After
     public void tearDown() {
         verifyNoMoreInteractions(mockTimer);
@@ -78,6 +82,7 @@ public class FirehoseCountersAndTimerTest {
         verifyNoMoreInteractions(mockSuccessCounter);
         verifyNoMoreInteractions(mockFailureCounter);
         verifyNoMoreInteractions(mockExceptionCounter);
+        verifyNoMoreInteractions(mockSocketTimeoutCounter);
         verifyNoMoreInteractions(mockRequest);
         verifyNoMoreInteractions(mockResult);
         verifyNoMoreInteractions(mockRecordList);
@@ -129,5 +134,12 @@ public class FirehoseCountersAndTimerTest {
         firehoseCountersAndTimer.incrementExceptionCounter();
 
         verify(mockExceptionCounter).increment();
+    }
+
+    @Test
+    public void testCounterIncrementSocketTimeoutCounter() {
+        firehoseCountersAndTimer.incrementSocketTimeoutCounter();
+
+        verify(mockSocketTimeoutCounter).increment();
     }
 }

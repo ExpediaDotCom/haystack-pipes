@@ -31,6 +31,7 @@ class FirehoseCountersAndTimer extends CountersAndTimer {
     private static final int SUCCESS_COUNTER_INDEX = 0;
     private static final int FAILURE_COUNTER_INDEX = 1;
     private static final int EXCEPTION_COUNTER_INDEX = 2;
+    private static final int SOCKET_TIMEOUT_COUNTER_INDEX = 3;
 
     @Autowired
     FirehoseCountersAndTimer(Clock clock,
@@ -39,8 +40,11 @@ class FirehoseCountersAndTimer extends CountersAndTimer {
                              Counter spanCounter,
                              Counter successCounter,
                              Counter failureCounter,
-                             Counter exceptionCounter) {
-        super(clock, putBatchRequestTimer, spanArrivalTimer, spanCounter, successCounter, failureCounter, exceptionCounter);
+                             Counter exceptionCounter,
+                             Counter socketTimeoutCounter) {
+        super(clock,
+                putBatchRequestTimer, spanArrivalTimer,
+                spanCounter, successCounter, failureCounter, exceptionCounter, socketTimeoutCounter);
     }
 
     int countSuccessesAndFailures(PutRecordBatchRequest request, PutRecordBatchResult result) {
@@ -54,6 +58,10 @@ class FirehoseCountersAndTimer extends CountersAndTimer {
 
     void incrementExceptionCounter() {
         incrementCounter(EXCEPTION_COUNTER_INDEX);
+    }
+
+    void incrementSocketTimeoutCounter() {
+        incrementCounter(SOCKET_TIMEOUT_COUNTER_INDEX);
     }
 
 }

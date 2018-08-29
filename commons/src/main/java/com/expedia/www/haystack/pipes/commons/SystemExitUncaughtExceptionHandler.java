@@ -26,17 +26,17 @@ import org.apache.commons.lang3.Validate;
 
 public class SystemExitUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
     @VisibleForTesting
-    final static String ERROR_MSG = "Thread [%s] is down because of an uncaught exception; "
+    static final String ERROR_MSG = "Thread [%s] is down because of an uncaught exception; "
             + "shutting down JVM so that Kubernetes can restart it";
     @VisibleForTesting
     static final String KAFKA_STREAMS_IS_NULL = "kafkaStreams is null";
     @VisibleForTesting
-    final static int SYSTEM_EXIT_STATUS = -1;
+    static final int SYSTEM_EXIT_STATUS = -1;
 
     @VisibleForTesting
-    final static String LOGBACK_METHOD_NAME = "stop";
+    static final String LOGBACK_METHOD_NAME = "stop";
     @VisibleForTesting
-    final static String LOG4J_METHOD_NAME = "close";
+    static final String LOG4J_METHOD_NAME = "close";
 
     @VisibleForTesting
     static Logger logger = LoggerFactory.getLogger(SystemExitUncaughtExceptionHandler.class);

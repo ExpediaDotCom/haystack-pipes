@@ -16,12 +16,12 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
+import com.amazonaws.SdkClientException;
 import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseAsync;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchRequest;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResult;
 import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.expedia.www.haystack.pipes.firehoseWriter.S3Sender.Factory;
-import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Stopwatch;
 import org.junit.After;
 import org.junit.Before;
@@ -31,6 +31,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
+import java.net.SocketTimeoutException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Semaphore;
@@ -62,9 +63,9 @@ public class S3SenderTest {
     @Mock
     private AmazonKinesisFirehoseAsync mockAmazonKinesisFirehoseAsync;
     @Mock
-    private Counter mockCounter;
-    @Mock
     private Exception mockException;
+    @Mock
+    private Factory mockFactory;
     @Mock
     private FailedRecordExtractor mockFailedRecordExtractor;
     @Mock
@@ -84,8 +85,6 @@ public class S3SenderTest {
     @Mock
     private RetryCalculator mockRetryCalculator;
     @Mock
-    private Factory mockFactory;
-    @Mock
     private Semaphore mockSemaphore;
     @Mock
     private Sleeper mockSleeper;
@@ -101,7 +100,7 @@ public class S3SenderTest {
     @Before
     public void setUp() {
         s3Sender = new S3Sender(mockFirehoseConfigurationProvider, mockFactory, mockFirehoseCountersAndTimer,
-                mockAmazonKinesisFirehoseAsync, mockLogger, mockCounter, mockFailedRecordExtractor);
+                mockAmazonKinesisFirehoseAsync, mockLogger, mockFailedRecordExtractor);
         factory = new Factory();
         recordList = Collections.singletonList(mockRecord);
     }
@@ -109,10 +108,9 @@ public class S3SenderTest {
     @After
     public void tearDown() {
         verifyNoMoreInteractions(mockAmazonKinesisFirehoseAsync);
-        verifyNoMoreInteractions(mockCounter);
         verifyNoMoreInteractions(mockException);
-        verifyNoMoreInteractions(mockFailedRecordExtractor);
         verifyNoMoreInteractions(mockFactory);
+        verifyNoMoreInteractions(mockFailedRecordExtractor);
         verifyNoMoreInteractions(mockFirehoseAsyncHandler);
         verifyNoMoreInteractions(mockFirehoseConfigurationProvider);
         verifyNoMoreInteractions(mockFirehoseCountersAndTimer);
@@ -165,7 +163,7 @@ public class S3SenderTest {
         verify(mockFactory).createSleeper();
         verify(mockSleeper).sleep(SLEEP_MILLIS);
         verify(mockFactory).createFirehoseAsyncHandler(s3Sender, mockStopwatch, mockPutRecordBatchRequest, SLEEP_MILLIS,
-                RETRY_COUNT, recordList, mockRetryCalculator, mockSleeper, mockSemaphore, mockCounter,
+                RETRY_COUNT, recordList, mockRetryCalculator, mockSleeper, mockSemaphore, mockFirehoseCountersAndTimer,
                 mockFailedRecordExtractor);
         verify(mockAmazonKinesisFirehoseAsync).putRecordBatchAsync(mockPutRecordBatchRequest, mockFirehoseAsyncHandler);
     }
@@ -180,12 +178,22 @@ public class S3SenderTest {
         testOnFirehoseCallback(1, MAX_RETRY_SLEEP, mockException);
     }
 
+    @Test
+    public void testOnFirehoseCallbackWithLoggingSdkClientException() {
+        testOnFirehoseCallback(1, MAX_RETRY_SLEEP, new SdkClientException("Test"));
+    }
+
+    @Test
+    public void testOnFirehoseCallbackWithCountingSdkClientException() {
+        testOnFirehoseCallback(1, MAX_RETRY_SLEEP, new SdkClientException(new SocketTimeoutException()));
+    }
+
     private void testOnFirehoseCallback(int failureCount, int maxRetrySleep, Exception exception) {
         when(mockFirehoseCountersAndTimer.countSuccessesAndFailures(any(), any())).thenReturn(failureCount);
         when(mockFirehoseConfigurationProvider.maxretrysleep()).thenReturn(MAX_RETRY_SLEEP);
 
         s3Sender.onFirehoseCallback(mockStopwatch, mockPutRecordBatchRequest, mockPutRecordBatchResult, maxRetrySleep,
-                RETRY_COUNT, exception);
+                RETRY_COUNT, exception, mockFirehoseCountersAndTimer);
 
         verify(mockStopwatch).stop();
         verify(mockFirehoseCountersAndTimer)
@@ -194,14 +202,18 @@ public class S3SenderTest {
 
         verify(mockLogger, times(failureCount)).error(
                 String.format(PUT_RECORD_BATCH_ERROR_MSG, failureCount, RETRY_COUNT));
-        verify(mockLogger, times(failureCount)).error(UNEXPECTED_EXCEPTION_MSG, mockException);
+        if(exception instanceof SdkClientException && exception.getCause() instanceof SocketTimeoutException) {
+            verify(mockFirehoseCountersAndTimer).incrementSocketTimeoutCounter();
+        } else {
+            verify(mockLogger, times(failureCount)).error(UNEXPECTED_EXCEPTION_MSG, exception);
+        }
     }
 
     @Test
     public void testFactoryCreateFirehoseAsyncHandler() {
         final FirehoseAsyncHandler firehoseAsyncHandler = factory.createFirehoseAsyncHandler(s3Sender, mockStopwatch,
                 mockPutRecordBatchRequest, SLEEP_MILLIS, RETRY_COUNT, recordList, mockRetryCalculator, mockSleeper,
-                mockSemaphore, mockCounter, mockFailedRecordExtractor);
+                mockSemaphore, mockFirehoseCountersAndTimer, mockFailedRecordExtractor);
 
         assertSame(s3Sender, firehoseAsyncHandler.s3Sender);
         assertSame(mockStopwatch, firehoseAsyncHandler.stopwatch);
@@ -212,7 +224,7 @@ public class S3SenderTest {
         assertSame(mockRetryCalculator, firehoseAsyncHandler.retryCalculator);
         assertSame(mockSleeper, firehoseAsyncHandler.sleeper);
         assertSame(mockSemaphore, firehoseAsyncHandler.parallelismSemaphore);
-        assertSame(mockCounter, firehoseAsyncHandler.throttledCounter);
+        assertSame(mockFirehoseCountersAndTimer, firehoseAsyncHandler.firehoseCountersAndTimer);
         assertSame(mockFailedRecordExtractor, firehoseAsyncHandler.failedRecordExtractor);
     }
 

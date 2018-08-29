@@ -19,7 +19,6 @@ package com.expedia.www.haystack.pipes.firehoseWriter;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchRequest;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResult;
 import com.amazonaws.services.kinesisfirehose.model.Record;
-import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Stopwatch;
 import org.junit.After;
 import org.junit.Before;
@@ -45,11 +44,11 @@ public class FirehoseAsyncHandlerTest {
     private static final int SLEEP_MILLIS = RANDOM.nextInt(Byte.MAX_VALUE);
 
     @Mock
-    private Counter mockCounter;
-    @Mock
     private Exception mockException;
     @Mock
     private FailedRecordExtractor mockFailedRecordExtractor;
+    @Mock
+    private FirehoseCountersAndTimer mockFirehoseCountersAndTimer;
     @Mock
     private List<Record> mockRecordList;
     @Mock
@@ -83,7 +82,7 @@ public class FirehoseAsyncHandlerTest {
                 mockRetryCalculator,
                 mockSleeper,
                 mockSemaphore,
-                mockCounter,
+                mockFirehoseCountersAndTimer,
                 mockFailedRecordExtractor);
         recordList = Collections.singletonList(mockRecord);
     }
@@ -91,12 +90,12 @@ public class FirehoseAsyncHandlerTest {
     @SuppressWarnings("Duplicates")
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockCounter);
         verifyNoMoreInteractions(mockException);
         verifyNoMoreInteractions(mockFailedRecordExtractor);
+        verifyNoMoreInteractions(mockFirehoseCountersAndTimer);
+        verifyNoMoreInteractions(mockRecordList);
         verifyNoMoreInteractions(mockPutRecordBatchRequest);
         verifyNoMoreInteractions(mockPutRecordBatchResult);
-        verifyNoMoreInteractions(mockRecordList);
         verifyNoMoreInteractions(mockRecord);
         verifyNoMoreInteractions(mockRetryCalculator);
         verifyNoMoreInteractions(mockS3Sender);
@@ -109,8 +108,8 @@ public class FirehoseAsyncHandlerTest {
     public void testOnError() {
         firehoseAsyncHandler.onError(mockException);
 
-        verify(mockS3Sender).onFirehoseCallback(
-                mockStopwatch, mockPutRecordBatchRequest, null, SLEEP_MILLIS, RETRY_COUNT, mockException);
+        verify(mockS3Sender).onFirehoseCallback(mockStopwatch, mockPutRecordBatchRequest, null, SLEEP_MILLIS,
+                RETRY_COUNT, mockException, mockFirehoseCountersAndTimer);
         verify(mockS3Sender).sendRecordsToS3(
                 mockRecordList, mockRetryCalculator, mockSleeper, RETRY_COUNT + 1, mockSemaphore);
     }
@@ -141,7 +140,7 @@ public class FirehoseAsyncHandlerTest {
         firehoseAsyncHandler.onSuccess(mockPutRecordBatchRequest, mockPutRecordBatchResult);
 
         verify(mockS3Sender).onFirehoseCallback(mockStopwatch, mockPutRecordBatchRequest, mockPutRecordBatchResult,
-                SLEEP_MILLIS, RETRY_COUNT, null);
+                SLEEP_MILLIS, RETRY_COUNT, null, mockFirehoseCountersAndTimer);
         verify(mockPutRecordBatchResult).getFailedPutCount();
         verify(mockS3Sender).areThereRecordsThatFirehoseHasNotProcessed(failureCount);
     }
