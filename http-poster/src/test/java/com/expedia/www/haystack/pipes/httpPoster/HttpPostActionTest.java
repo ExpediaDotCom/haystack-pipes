@@ -1,7 +1,23 @@
+/*
+ * Copyright 2018 Expedia, Inc.
+ *
+ *       Licensed under the Apache License, Version 2.0 (the "License");
+ *       you may not use this file except in compliance with the License.
+ *       You may obtain a copy of the License at
+ *
+ *           http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *       Unless required by applicable law or agreed to in writing, software
+ *       distributed under the License is distributed on an "AS IS" BASIS,
+ *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *       See the License for the specific language governing permissions and
+ *       limitations under the License.
+ *
+ */
 package com.expedia.www.haystack.pipes.httpPoster;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
+import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
 import com.expedia.www.haystack.pipes.httpPoster.HttpPostAction.Factory;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
@@ -70,7 +86,7 @@ public class HttpPostActionTest {
     @Mock
     private ContentCollector mockContentCollector;
     @Mock
-    private CountersAndTimer mockCountersAndTimer;
+    private TimersAndCounters mockTimersAndCounters;
     @Mock
     private Logger mockLogger;
     @Mock
@@ -98,7 +114,7 @@ public class HttpPostActionTest {
         when(mockHttpPostConfigurationProvider.url()).thenReturn(HTTP_LOCALHOST);
         when(mockHttpPostConfigurationProvider.pollpercent()).thenReturn(Integer.toString(ONE_HUNDRED_PERCENT));
         final Printer realPrinter = JsonFormat.printer().omittingInsignificantWhitespace();
-        httpPostExternalAction = new HttpPostAction(realPrinter, mockContentCollector, mockCountersAndTimer,
+        httpPostExternalAction = new HttpPostAction(realPrinter, mockContentCollector, mockTimersAndCounters,
                 mockLogger, mockHttpPostConfigurationProvider, mockFactory, mockRandom);
         factory = new Factory();
         mockServer = ClientAndServer.startClientAndServer(1080);
@@ -111,7 +127,7 @@ public class HttpPostActionTest {
         verify(mockHttpPostConfigurationProvider, times(wantedNumberOfInvocationsPollPercent)).pollpercent();
         String msg = String.format(STARTUP_MESSAGE, HTTP_LOCALHOST, ONE_HUNDRED_PERCENT);
         verify(mockLogger, times(wantedNumberOfInvocationsInfo)).info(msg);
-        verifyNoMoreInteractions(mockPrinter, mockContentCollector, mockCountersAndTimer,
+        verifyNoMoreInteractions(mockPrinter, mockContentCollector, mockTimersAndCounters,
                 mockLogger, mockHttpPostConfigurationProvider, mockFactory, mockRandom);
         verifyNoMoreInteractions(mockStopwatch, mockHttpURLConnection, mockOutputStream);
     }
@@ -125,9 +141,9 @@ public class HttpPostActionTest {
         httpPostExternalAction.apply(KEY, FULLY_POPULATED_SPAN);
 
         verify(mockRandom).nextInt(ONE_HUNDRED_PERCENT);
-        verify(mockCountersAndTimer).incrementRequestCounter();
-        verify(mockCountersAndTimer).incrementCounter(FILTERED_IN_COUNTER_INDEX);
-        verify(mockCountersAndTimer).recordSpanArrivalDelta(FULLY_POPULATED_SPAN);
+        verify(mockTimersAndCounters).incrementRequestCounter();
+        verify(mockTimersAndCounters).incrementCounter(FILTERED_IN_COUNTER_INDEX);
+        verify(mockTimersAndCounters).recordSpanArrivalDelta(FULLY_POPULATED_SPAN);
         verify(mockContentCollector).addAndReturnBatch(JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
     }
 
@@ -140,9 +156,9 @@ public class HttpPostActionTest {
         httpPostExternalAction.apply(KEY, FULLY_POPULATED_SPAN);
 
         verify(mockRandom).nextInt(ONE_HUNDRED_PERCENT);
-        verify(mockCountersAndTimer).incrementRequestCounter();
-        verify(mockCountersAndTimer).incrementCounter(FILTERED_OUT_COUNTER_INDEX);
-        verify(mockCountersAndTimer).recordSpanArrivalDelta(FULLY_POPULATED_SPAN);
+        verify(mockTimersAndCounters).incrementRequestCounter();
+        verify(mockTimersAndCounters).incrementCounter(FILTERED_OUT_COUNTER_INDEX);
+        verify(mockTimersAndCounters).recordSpanArrivalDelta(FULLY_POPULATED_SPAN);
     }
 
     @Test
@@ -153,7 +169,7 @@ public class HttpPostActionTest {
 
         verify(mockOutputStream).write(JSON_SPAN_STRING_WITH_FLATTENED_TAGS.getBytes());
         verify(mockOutputStream).close();
-        verify(mockCountersAndTimer, times(2)).incrementCounter(FILTERED_IN_COUNTER_INDEX);
+        verify(mockTimersAndCounters, times(2)).incrementCounter(FILTERED_IN_COUNTER_INDEX);
     }
 
     @Test
@@ -162,7 +178,7 @@ public class HttpPostActionTest {
 
         testApply();
 
-        verify(mockCountersAndTimer, times(2)).incrementCounter(FILTERED_IN_COUNTER_INDEX);
+        verify(mockTimersAndCounters, times(2)).incrementCounter(FILTERED_IN_COUNTER_INDEX);
         verify(mockLogger).error(IO_EXCEPTION_MESSAGE, IO_EXCEPTION);
     }
 
@@ -176,7 +192,7 @@ public class HttpPostActionTest {
         verify(mockOutputStream).write(JSON_SPAN_STRING_WITH_FLATTENED_TAGS.getBytes());
         verify(mockOutputStream).close();
         verify(mockLogger).error(IO_EXCEPTION_MESSAGE, IO_EXCEPTION);
-        verify(mockCountersAndTimer, times(2)).incrementCounter(FILTERED_IN_COUNTER_INDEX);
+        verify(mockTimersAndCounters, times(2)).incrementCounter(FILTERED_IN_COUNTER_INDEX);
     }
 
     @Test
@@ -190,13 +206,13 @@ public class HttpPostActionTest {
         verify(mockOutputStream).write(JSON_SPAN_STRING_WITH_FLATTENED_TAGS.getBytes());
         verify(mockOutputStream).close();
         verify(mockLogger).error(IO_EXCEPTION_MESSAGE, IO_EXCEPTION);
-        verify(mockCountersAndTimer, times(2)).incrementCounter(FILTERED_IN_COUNTER_INDEX);
+        verify(mockTimersAndCounters, times(2)).incrementCounter(FILTERED_IN_COUNTER_INDEX);
     }
 
     private void testApply() throws IOException {
         when(mockContentCollector.addAndReturnBatch(anyString()))
                 .thenReturn("").thenReturn(JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
-        when(mockCountersAndTimer.startTimer()).thenReturn(mockStopwatch);
+        when(mockTimersAndCounters.startTimer()).thenReturn(mockStopwatch);
         when(mockFactory.createURL(anyString())).thenReturn(URL_);
         when(mockFactory.createConnection(any(URL.class))).thenReturn(mockHttpURLConnection);
         when(mockHttpPostConfigurationProvider.headers()).thenReturn(HEADERS);
@@ -204,13 +220,13 @@ public class HttpPostActionTest {
         httpPostExternalAction.apply(KEY, FULLY_POPULATED_SPAN);
         httpPostExternalAction.apply(KEY, FULLY_POPULATED_SPAN);
 
-        verify(mockCountersAndTimer, times(2)).incrementRequestCounter();
-        verify(mockCountersAndTimer, times(2)).recordSpanArrivalDelta(
+        verify(mockTimersAndCounters, times(2)).incrementRequestCounter();
+        verify(mockTimersAndCounters, times(2)).recordSpanArrivalDelta(
                 FULLY_POPULATED_SPAN);
         verify(mockContentCollector, times(2)).addAndReturnBatch(
                 JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
         verify(mockRandom, times(2)).nextInt(ONE_HUNDRED_PERCENT);
-        verify(mockCountersAndTimer).startTimer();
+        verify(mockTimersAndCounters).startTimer();
         verify(mockFactory).createURL(HTTP_LOCALHOST);
         verify(mockFactory).createConnection(URL_);
         verify(mockHttpURLConnection).setRequestMethod("POST");
@@ -229,7 +245,7 @@ public class HttpPostActionTest {
     public void testGetBatchInvalidProtocolBufferException() throws InvalidProtocolBufferException {
         wantedNumberOfInvocationsPollPercent = 2;
         wantedNumberOfInvocationsInfo = 2;
-        httpPostExternalAction = new HttpPostAction(mockPrinter, mockContentCollector, mockCountersAndTimer,
+        httpPostExternalAction = new HttpPostAction(mockPrinter, mockContentCollector, mockTimersAndCounters,
                 mockLogger, mockHttpPostConfigurationProvider, mockFactory, mockRandom);
         final InvalidProtocolBufferException exception = new InvalidProtocolBufferException(EXCEPTION_MESSAGE);
         when(mockPrinter.print(any(Span.class))).thenThrow(exception);

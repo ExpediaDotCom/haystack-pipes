@@ -14,8 +14,19 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.jsonTransformer;
+package com.expedia.www.haystack.pipes.commons;
 
-public interface Constants {
-    String APPLICATION = "haystack-pipes-json-transformer";
+import com.netflix.servo.monitor.Timer;
+
+public class Timers {
+    private final Timer[] timers;
+
+    public Timers(Timer...timers) {
+        this.timers = new Timer[timers.length];
+        System.arraycopy(timers, 0, this.timers, 0, timers.length);
+    }
+
+    Timer getTimer(int position) {
+        return timers[position];
+    }
 }

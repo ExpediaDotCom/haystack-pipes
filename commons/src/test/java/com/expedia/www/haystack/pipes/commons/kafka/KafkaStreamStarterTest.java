@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Expedia, Inc.
+ * Copyright 2018 Expedia, Inc.
  *
  *       Licensed under the Apache License, Version 2.0 (the "License");
  *       you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class KafkaStreamStarterTest {
-    private final static String CLIENT_ID = RANDOM.nextLong() + "CLIENT_ID";
+    private static final String CLIENT_ID = RANDOM.nextLong() + "CLIENT_ID";
     private static final String BROKERS = "localhost";
     private static final int PORT = 65534;
     private static final String KAFKA_IP_AND_PORT = BROKERS + ":" + PORT;

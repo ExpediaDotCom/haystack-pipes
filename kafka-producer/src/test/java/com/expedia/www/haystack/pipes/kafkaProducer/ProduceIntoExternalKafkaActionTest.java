@@ -17,7 +17,7 @@
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
+import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
 import com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.Factory;
 import com.netflix.servo.monitor.Stopwatch;
 import org.apache.commons.pool2.ObjectPool;
@@ -52,16 +52,16 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProduceIntoExternalKafkaActionTest {
-    private final static String TOPIC = RANDOM.nextLong() + "TOPIC";
-    private final static String KEY = RANDOM.nextLong() + "KEY";
-    private final static String VALUE = RANDOM.nextLong() + "VALUE";
-    private final static String BROKERS = RANDOM.nextLong() + "BROKERS";
-    private final static int PORT = RANDOM.nextInt();
+    private static final String TOPIC = RANDOM.nextLong() + "TOPIC";
+    private static final String KEY = RANDOM.nextLong() + "KEY";
+    private static final String VALUE = RANDOM.nextLong() + "VALUE";
+    private static final String BROKERS = RANDOM.nextLong() + "BROKERS";
+    private static final int PORT = RANDOM.nextInt();
 
     @Mock
     private Factory mockFactory;
     @Mock
-    private CountersAndTimer mockCountersAndTimer;
+    private TimersAndCounters mockTimersAndCounters;
     @Mock
     private Logger mockLogger;
     @Mock
@@ -85,7 +85,7 @@ public class ProduceIntoExternalKafkaActionTest {
     public void setUp() {
         whensForConstructor();
         produceIntoExternalKafkaAction = new ProduceIntoExternalKafkaAction(
-                mockFactory, mockCountersAndTimer, mockLogger, mockExternalKafkaConfigurationProvider);
+                mockFactory, mockTimersAndCounters, mockLogger, mockExternalKafkaConfigurationProvider);
         realFactory = new Factory();
     }
 
@@ -100,7 +100,7 @@ public class ProduceIntoExternalKafkaActionTest {
     @After
     public void tearDown() {
         verifiesForConstructor();
-        verifyNoMoreInteractions(mockFactory, mockCountersAndTimer, mockLogger, mockExternalKafkaConfigurationProvider);
+        verifyNoMoreInteractions(mockFactory, mockTimersAndCounters, mockLogger, mockExternalKafkaConfigurationProvider);
         verifyNoMoreInteractions(mockStopwatch, mockKafkaProducer, mockProducerRecord, mockObjectPool, mockMap);
     }
 
@@ -128,7 +128,7 @@ public class ProduceIntoExternalKafkaActionTest {
 
         produceIntoExternalKafkaAction.apply(KEY, span);
 
-        verify(mockCountersAndTimer).incrementRequestCounter();
+        verify(mockTimersAndCounters).incrementRequestCounter();
         verifiesForTestApply(jsonSpanString);
     }
 
@@ -138,8 +138,8 @@ public class ProduceIntoExternalKafkaActionTest {
 
         produceIntoExternalKafkaAction.apply(KEY, null);
 
-        verify(mockCountersAndTimer).incrementRequestCounter();
-        verify(mockCountersAndTimer).startTimer();
+        verify(mockTimersAndCounters).incrementRequestCounter();
+        verify(mockTimersAndCounters).startTimer();
         verify(mockLogger).error(eq(String.format(ERROR_MSG, "", null)), any(NullPointerException.class));
         verify(mockStopwatch).stop();
     }
@@ -152,24 +152,24 @@ public class ProduceIntoExternalKafkaActionTest {
         try {
             produceIntoExternalKafkaAction.apply(KEY, FULLY_POPULATED_SPAN);
         } finally {
-            verify(mockCountersAndTimer).incrementRequestCounter();
+            verify(mockTimersAndCounters).incrementRequestCounter();
             verifiesForTestApply(JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
         }
 
     }
 
     private void whensForTestApply() {
-        when(mockCountersAndTimer.startTimer()).thenReturn(mockStopwatch);
+        when(mockTimersAndCounters.startTimer()).thenReturn(mockStopwatch);
         when(mockFactory.createProducerRecord(anyString(), anyString(), anyString())).thenReturn(mockProducerRecord);
     }
 
     private void verifiesForTestApply(String jsonSpanString) {
-        verify(mockCountersAndTimer).startTimer();
+        verify(mockTimersAndCounters).startTimer();
         verify(mockFactory).createProducerRecord(TOPIC, KEY, jsonSpanString);
         // TODO verify below without any() when the ProduceIntoExternalKafkaCallback object is returned by a factory
         verify(mockKafkaProducer).send(eq(mockProducerRecord), any(ProduceIntoExternalKafkaCallback.class));
         verify(mockStopwatch).stop();
-        verify(mockCountersAndTimer).incrementCounter(POSTS_IN_FLIGHT_COUNTER_INDEX);
+        verify(mockTimersAndCounters).incrementCounter(POSTS_IN_FLIGHT_COUNTER_INDEX);
     }
 
     @Test

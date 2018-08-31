@@ -1,8 +1,24 @@
+/*
+ * Copyright 2018 Expedia, Inc.
+ *
+ *       Licensed under the Apache License, Version 2.0 (the "License");
+ *       you may not use this file except in compliance with the License.
+ *       You may obtain a copy of the License at
+ *
+ *           http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *       Unless required by applicable law or agreed to in writing, software
+ *       distributed under the License is distributed on an "AS IS" BASIS,
+ *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *       See the License for the specific language governing permissions and
+ *       limitations under the License.
+ *
+ */
 package com.expedia.www.haystack.pipes.httpPoster;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.CommonConstants;
-import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
+import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
 import com.expedia.www.haystack.pipes.commons.kafka.TagFlattener;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat.Printer;
@@ -39,7 +55,7 @@ class HttpPostAction implements ForeachAction<String, Span> {
     private final TagFlattener tagFlattener = new TagFlattener();
     private final Printer printer;
     private final ContentCollector contentCollector;
-    private final CountersAndTimer countersAndTimer;
+    private final TimersAndCounters timersAndCounters;
     private final Logger httpPostActionLogger;
     private final HttpPostConfigurationProvider httpPostConfigurationProvider;
     private final Factory factory;
@@ -48,14 +64,14 @@ class HttpPostAction implements ForeachAction<String, Span> {
     @Autowired
     HttpPostAction(Printer printer,
                    ContentCollector contentCollector,
-                   CountersAndTimer countersAndTimer,
+                   TimersAndCounters timersAndCounters,
                    Logger httpPostActionLogger,
                    HttpPostConfigurationProvider httpPostConfigurationProvider,
                    Factory httpPostActionFactory,
                    Random random) {
         this.printer = printer;
         this.contentCollector = contentCollector;
-        this.countersAndTimer = countersAndTimer;
+        this.timersAndCounters = timersAndCounters;
         this.httpPostActionLogger = httpPostActionLogger;
         this.httpPostConfigurationProvider = httpPostConfigurationProvider;
         this.factory = httpPostActionFactory;
@@ -68,13 +84,13 @@ class HttpPostAction implements ForeachAction<String, Span> {
 
     @Override
     public void apply(String key, Span span) {
-        countersAndTimer.incrementRequestCounter();
-        countersAndTimer.recordSpanArrivalDelta(span);
+        timersAndCounters.incrementRequestCounter();
+        timersAndCounters.recordSpanArrivalDelta(span);
         if(random.nextInt(ONE_HUNDRED_PERCENT) < Integer.parseInt(httpPostConfigurationProvider.pollpercent())) {
-            countersAndTimer.incrementCounter(FILTERED_IN_COUNTER_INDEX);
+            timersAndCounters.incrementCounter(FILTERED_IN_COUNTER_INDEX);
             final String batch = getBatch(span);
             if (!StringUtils.isEmpty(batch)) {
-                final Stopwatch stopwatch = countersAndTimer.startTimer();
+                final Stopwatch stopwatch = timersAndCounters.startTimer();
                 try (final OutputStream outputStream = getOutputStream(batch)) {
                     outputStream.write(batch.getBytes());
                 } catch (Exception exception) {
@@ -86,7 +102,7 @@ class HttpPostAction implements ForeachAction<String, Span> {
                 }
             }
         } else {
-            countersAndTimer.incrementCounter(FILTERED_OUT_COUNTER_INDEX);
+            timersAndCounters.incrementCounter(FILTERED_OUT_COUNTER_INDEX);
         }
     }
 

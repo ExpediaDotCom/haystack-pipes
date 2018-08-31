@@ -42,7 +42,7 @@ public class FirehoseProcessorSupplierTest {
     @Mock
     private FirehoseConfigurationProvider mockFirehoseConfigurationProvider;
     @Mock
-    private FirehoseCountersAndTimer mockFirehoseCountersAndTimer;
+    private FirehoseTimersAndCounters mockFirehoseCountersAndTimer;
     @Mock
     private FirehoseProcessor.Factory mockFirehoseProcessorFactory;
     @Mock

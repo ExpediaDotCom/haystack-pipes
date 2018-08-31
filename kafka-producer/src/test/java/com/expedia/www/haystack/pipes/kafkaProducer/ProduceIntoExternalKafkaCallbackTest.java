@@ -16,7 +16,8 @@
  */
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
-import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
+import com.expedia.www.haystack.pipes.commons.Timers;
+import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
 import org.apache.commons.pool2.ObjectPool;
@@ -84,14 +85,14 @@ public class ProduceIntoExternalKafkaCallbackTest {
     @Mock
     private Timer mockSpanArrivalTimer;
 
-    private CountersAndTimer countersAndTimer;
+    private TimersAndCounters timersAndCounters;
     private RecordMetadata recordMetadata;
     private ProduceIntoExternalKafkaCallback produceIntoExternalKafkaCallback;
 
     @Before
     public void setUp() {
-        countersAndTimer = new CountersAndTimer(
-                mockClock, mockTimer, mockSpanArrivalTimer, mockRequestCounter, mockPostsInFlightCounter);
+        Timers timers = new Timers(mockTimer, mockSpanArrivalTimer);
+        timersAndCounters = new TimersAndCounters(mockClock, timers, mockRequestCounter, mockPostsInFlightCounter);
         injectMockAndSaveRealObjects();
         //noinspection deprecation
         recordMetadata = new RecordMetadata(TOPIC_PARTITION, BASE_OFFSET, RELATIVE_OFFSET, TIMESTAMP, CHECKSUM,
@@ -101,7 +102,7 @@ public class ProduceIntoExternalKafkaCallbackTest {
 
     private void injectMockAndSaveRealObjects() {
         saveRealAndInjectMockObjectPool();
-        COUNTERS_AND_TIMER.set(countersAndTimer);
+        COUNTERS_AND_TIMER.set(timersAndCounters);
     }
 
     private void saveRealAndInjectMockObjectPool() {

@@ -20,7 +20,8 @@ import com.expedia.www.haystack.commons.secretDetector.span.SpanDetector;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanNameAndCountRecorder;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanS3ConfigFetcher;
 import com.expedia.www.haystack.metrics.MetricObjects;
-import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
+import com.expedia.www.haystack.pipes.commons.Timers;
+import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.HealthStatusListener;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
@@ -69,7 +70,7 @@ public class SpringConfigTest {
     @Mock
     private HealthStatusListener mockHealthStatusListener;
     @Mock
-    private CountersAndTimer mockCountersAndTimer;
+    private TimersAndCounters mockTimersAndCounters;
     @Mock
     private SpanDetector mockSpanDetector;
     @Mock
@@ -87,10 +88,12 @@ public class SpringConfigTest {
     @Mock
     private Timer mockSpanArrivalTimer;
 
+    private Timers timers;
     private SpringConfig springConfig;
 
     @Before
     public void setUp() {
+        timers = new Timers(mockTimer, mockSpanArrivalTimer);
         springConfig = new SpringConfig(mockMetricObjects);
     }
 
@@ -101,7 +104,7 @@ public class SpringConfigTest {
         verifyNoMoreInteractions(mockTimer);
         verifyNoMoreInteractions(mockHealthController);
         verifyNoMoreInteractions(mockHealthStatusListener);
-        verifyNoMoreInteractions(mockCountersAndTimer);
+        verifyNoMoreInteractions(mockTimersAndCounters);
         verifyNoMoreInteractions(mockSpanDetector);
         verifyNoMoreInteractions(mockLogger);
         verifyNoMoreInteractions(mockFinderEngine);
@@ -213,13 +216,13 @@ public class SpringConfigTest {
 
     @Test
     public void testCountersAndTimer() {
-        assertNotNull(springConfig.countersAndTimer(mockClock, mockCounter, mockTimer, mockSpanArrivalTimer));
+        assertNotNull(springConfig.countersAndTimer(mockClock, mockCounter, timers));
     }
 
     @Test
     public void testDetectorAction() {
         assertNotNull(springConfig.detectorAction(
-                mockCountersAndTimer, mockSpanDetector, mockLogger, mockActionsConfigurationProvider));
+                mockTimersAndCounters, mockSpanDetector, mockLogger, mockActionsConfigurationProvider));
     }
 
     @Test

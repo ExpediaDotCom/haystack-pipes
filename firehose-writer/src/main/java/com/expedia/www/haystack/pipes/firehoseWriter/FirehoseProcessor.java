@@ -35,7 +35,7 @@ public class FirehoseProcessor extends AbstractProcessor<String, Span> {
     @VisibleForTesting
     static final String PUT_RECORD_BATCH_ERROR_MSG = "putRecordBatch() could not put %d recordList after %d tries, but will continue trying...";
 
-    private final FirehoseCountersAndTimer firehoseCountersAndTimer;
+    private final FirehoseTimersAndCounters firehoseTimersAndCounters;
     private final Batch batch;
     private final Factory factory;
     private final FirehoseConfigurationProvider firehoseConfigurationProvider;
@@ -44,12 +44,12 @@ public class FirehoseProcessor extends AbstractProcessor<String, Span> {
 
     @Autowired
     FirehoseProcessor(Logger firehoseProcessorLogger,
-                      FirehoseCountersAndTimer firehoseCountersAndTimer,
+                      FirehoseTimersAndCounters firehoseTimersAndCounters,
                       Supplier<Batch> batch,
                       Factory firehoseProcessorFactory,
                       FirehoseConfigurationProvider firehoseConfigurationProvider,
                       S3Sender s3Sender) {
-        this.firehoseCountersAndTimer = firehoseCountersAndTimer;
+        this.firehoseTimersAndCounters = firehoseTimersAndCounters;
         this.batch = batch.get();
         this.factory = firehoseProcessorFactory;
         this.firehoseConfigurationProvider = firehoseConfigurationProvider;
@@ -60,8 +60,8 @@ public class FirehoseProcessor extends AbstractProcessor<String, Span> {
 
     @Override
     public void process(String key, Span span) {
-        firehoseCountersAndTimer.incrementRequestCounter();
-        firehoseCountersAndTimer.recordSpanArrivalDelta(span);
+        firehoseTimersAndCounters.incrementRequestCounter();
+        firehoseTimersAndCounters.recordSpanArrivalDelta(span);
         final List<Record> records = batch.getRecordList(span);
         processRecordsReinterruptingIfInterrupted(records);
     }

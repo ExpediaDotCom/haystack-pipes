@@ -49,7 +49,7 @@ class FirehoseAsyncHandler implements AsyncHandler<PutRecordBatchRequest, PutRec
     @VisibleForTesting
     final Semaphore parallelismSemaphore;
     @VisibleForTesting
-    final FirehoseCountersAndTimer firehoseCountersAndTimer;
+    final FirehoseTimersAndCounters firehoseTimersAndCounters;
     @VisibleForTesting
     final FailedRecordExtractor failedRecordExtractor;
 
@@ -62,7 +62,7 @@ class FirehoseAsyncHandler implements AsyncHandler<PutRecordBatchRequest, PutRec
                          RetryCalculator retryCalculator,
                          Sleeper sleeper,
                          Semaphore parallelismSemaphore,
-                         FirehoseCountersAndTimer firehoseCountersAndTimer,
+                         FirehoseTimersAndCounters firehoseTimersAndCounters,
                          FailedRecordExtractor failedRecordExtractor) {
         this.stopwatch = stopwatch;
         this.putRecordBatchRequest = putRecordBatchRequest;
@@ -73,21 +73,21 @@ class FirehoseAsyncHandler implements AsyncHandler<PutRecordBatchRequest, PutRec
         this.sleeper = sleeper;
         this.s3Sender = s3Sender;
         this.parallelismSemaphore = parallelismSemaphore;
-        this.firehoseCountersAndTimer = firehoseCountersAndTimer;
+        this.firehoseTimersAndCounters = firehoseTimersAndCounters;
         this.failedRecordExtractor = failedRecordExtractor;
     }
 
     @Override
     public void onError(Exception exception) {
         s3Sender.onFirehoseCallback(stopwatch, putRecordBatchRequest, null, sleepMillis, retryCount, exception,
-                firehoseCountersAndTimer);
+                firehoseTimersAndCounters);
         s3Sender.sendRecordsToS3(recordList, retryCalculator, sleeper, retryCount + 1, parallelismSemaphore);
     }
 
     @Override
     public void onSuccess(final PutRecordBatchRequest request, final PutRecordBatchResult result) {
         s3Sender.onFirehoseCallback(stopwatch, request, result, sleepMillis, retryCount, null,
-                firehoseCountersAndTimer);
+                firehoseTimersAndCounters);
         if (s3Sender.areThereRecordsThatFirehoseHasNotProcessed(result.getFailedPutCount())) {
             final List<Record> failedRecords = failedRecordExtractor.extractFailedRecords(request, result, retryCount);
             s3Sender.sendRecordsToS3(

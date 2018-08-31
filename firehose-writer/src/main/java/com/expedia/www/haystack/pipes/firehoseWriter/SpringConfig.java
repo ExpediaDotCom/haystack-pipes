@@ -20,6 +20,7 @@ import java.time.Clock;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import com.expedia.www.haystack.pipes.commons.Timers;
 import com.netflix.servo.util.VisibleForTesting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -250,16 +251,21 @@ class SpringConfig {
 
     @Bean
     @Autowired
-    FirehoseCountersAndTimer counters(Clock clock,
-                                      Timer putBatchRequestTimer,
-                                      Timer spanArrivalTimer,
+    Timers timers(Timer putBatchRequestTimer,
+                  Timer spanArrivalTimer) {
+        return new Timers(putBatchRequestTimer, spanArrivalTimer);
+    }
+
+    @Bean
+    @Autowired
+    FirehoseTimersAndCounters counters(Clock clock,
+                                      Timers timers,
                                       Counter spanCounter,
                                       Counter successCounter,
                                       Counter failureCounter,
                                       Counter exceptionCounter,
                                       Counter socketTimeoutCounter) {
-        return new FirehoseCountersAndTimer(clock,
-                putBatchRequestTimer, spanArrivalTimer,
+        return new FirehoseTimersAndCounters(clock, timers,
                 spanCounter, successCounter, failureCounter, exceptionCounter, socketTimeoutCounter);
     }
 
@@ -274,12 +280,12 @@ class SpringConfig {
     @Bean
     @Autowired
     FirehoseProcessorSupplier firehoseProcessorSupplier(Logger firehoseProcessorLogger,
-                                                        FirehoseCountersAndTimer firehoseCountersAndTimer,
+                                                        FirehoseTimersAndCounters firehoseTimersAndCounters,
                                                         Supplier<Batch> batch,
                                                         FirehoseProcessor.Factory firehoseProcessorFactory,
                                                         FirehoseConfigurationProvider firehoseConfigurationProvider,
                                                         S3Sender s3Sender) {
-        return new FirehoseProcessorSupplier(firehoseProcessorLogger, firehoseCountersAndTimer, batch,
+        return new FirehoseProcessorSupplier(firehoseProcessorLogger, firehoseTimersAndCounters, batch,
                 firehoseProcessorFactory, firehoseConfigurationProvider, s3Sender);
     }
 

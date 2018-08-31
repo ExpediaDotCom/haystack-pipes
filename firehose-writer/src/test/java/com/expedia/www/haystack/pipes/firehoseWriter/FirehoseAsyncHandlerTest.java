@@ -48,7 +48,7 @@ public class FirehoseAsyncHandlerTest {
     @Mock
     private FailedRecordExtractor mockFailedRecordExtractor;
     @Mock
-    private FirehoseCountersAndTimer mockFirehoseCountersAndTimer;
+    private FirehoseTimersAndCounters mockFirehoseCountersAndTimer;
     @Mock
     private List<Record> mockRecordList;
     @Mock

@@ -18,7 +18,7 @@ package com.expedia.www.haystack.pipes.secretDetector;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanDetector;
-import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
+import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
 import com.expedia.www.haystack.pipes.secretDetector.actions.DetectedAction;
 import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
 import com.netflix.servo.monitor.Stopwatch;
@@ -51,7 +51,7 @@ public class DetectorActionTest {
     private static final String KEY = RANDOM.nextLong() + "KEY";
 
     @Mock
-    private CountersAndTimer mockCountersAndTimer;
+    private TimersAndCounters mockTimersAndCounters;
     @Mock
     private SpanDetector mockSpanDetector;
     @Mock
@@ -70,12 +70,12 @@ public class DetectorActionTest {
     public void setUp() {
         detectedActions = Collections.singletonList(mockDetectedAction);
         detectorAction = new DetectorAction(
-                mockCountersAndTimer, mockSpanDetector, mockLogger, mockActionsConfigurationProvider);
+                mockTimersAndCounters, mockSpanDetector, mockLogger, mockActionsConfigurationProvider);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockCountersAndTimer, mockSpanDetector, mockLogger, mockTimer,
+        verifyNoMoreInteractions(mockTimersAndCounters, mockSpanDetector, mockLogger, mockTimer,
                 mockActionsConfigurationProvider, mockDetectedAction);
     }
 
@@ -104,15 +104,15 @@ public class DetectorActionTest {
     }
 
     private void whensForApply(Map<String, List<String>> secrets) {
-        when(mockCountersAndTimer.startTimer()).thenReturn(mockTimer);
+        when(mockTimersAndCounters.startTimer()).thenReturn(mockTimer);
         when(mockSpanDetector.findSecrets(any(Span.class))).thenReturn(secrets);
     }
 
     private void verifiesForApply() {
-        verify(mockCountersAndTimer).incrementRequestCounter();
-        verify(mockCountersAndTimer).startTimer();
+        verify(mockTimersAndCounters).incrementRequestCounter();
+        verify(mockTimersAndCounters).startTimer();
         verify(mockSpanDetector).findSecrets(FULLY_POPULATED_SPAN);
         verify(mockTimer).stop();
-        verify(mockCountersAndTimer).recordSpanArrivalDelta(FULLY_POPULATED_SPAN);
+        verify(mockTimersAndCounters).recordSpanArrivalDelta(FULLY_POPULATED_SPAN);
     }
 }
