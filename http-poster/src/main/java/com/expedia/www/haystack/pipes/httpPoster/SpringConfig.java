@@ -1,7 +1,24 @@
+/*
+ * Copyright 2018 Expedia, Inc.
+ *
+ *       Licensed under the Apache License, Version 2.0 (the "License");
+ *       you may not use this file except in compliance with the License.
+ *       You may obtain a copy of the License at
+ *
+ *           http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *       Unless required by applicable law or agreed to in writing, software
+ *       distributed under the License is distributed on an "AS IS" BASIS,
+ *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *       See the License for the specific language governing permissions and
+ *       limitations under the License.
+ *
+ */
 package com.expedia.www.haystack.pipes.httpPoster;
 
 import com.expedia.www.haystack.metrics.MetricObjects;
-import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
+import com.expedia.www.haystack.pipes.commons.Timers;
+import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
@@ -145,14 +162,19 @@ public class SpringConfig {
 
     @Bean
     @Autowired
-    CountersAndTimer countersAndTimer(Clock clock,
-                                      Counter requestCounter,
-                                      Counter filteredOutCounter,
-                                      Counter filteredInCounter,
-                                      Timer httpPostTimer,
-                                      Timer spanArrivalTimer) {
-        return new CountersAndTimer(
-                clock, httpPostTimer, spanArrivalTimer, requestCounter, filteredOutCounter, filteredInCounter);
+    Timers timers(Timer httpPostTimer,
+                  Timer spanArrivalTimer) {
+        return new Timers(httpPostTimer, spanArrivalTimer);
+    }
+
+    @Bean
+    @Autowired
+    TimersAndCounters countersAndTimer(Clock clock,
+                                       Counter requestCounter,
+                                       Counter filteredOutCounter,
+                                       Counter filteredInCounter,
+                                       Timers timers) {
+        return new TimersAndCounters(clock, timers, requestCounter, filteredOutCounter, filteredInCounter);
     }
 
     /*

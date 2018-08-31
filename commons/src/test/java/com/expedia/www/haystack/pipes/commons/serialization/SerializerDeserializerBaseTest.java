@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Expedia, Inc.
+ * Copyright 2018 Expedia, Inc.
  *
  *       Licensed under the Apache License, Version 2.0 (the "License");
  *       you may not use this file except in compliance with the License.
@@ -47,10 +47,10 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SerializerDeserializerBaseTest {
-    private final static String APPLICATION = RANDOM.nextLong() + "APPLICATION";
-    private final static String CLASS_NAME = RANDOM.nextLong() + "CLASS_NAME";
-    private final static String COUNTER_NAME = RANDOM.nextLong() + "COUNTER_NAME";
-    private final static String TIMER_NAME = RANDOM.nextLong() + "TIMER_NAME";
+    private static final String APPLICATION = RANDOM.nextLong() + "APPLICATION";
+    private static final String CLASS_NAME = RANDOM.nextLong() + "CLASS_NAME";
+    private static final String COUNTER_NAME = RANDOM.nextLong() + "COUNTER_NAME";
+    private static final String TIMER_NAME = RANDOM.nextLong() + "TIMER_NAME";
     private static final String SIMPLE_NAME = SerializerDeserializerBase.class.getSimpleName();
 
     @Mock

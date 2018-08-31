@@ -39,7 +39,7 @@ public class S3Sender {
     static final String UNEXPECTED_EXCEPTION_MSG = "Unexpected exception received from AWS Firehose, will retry all records";
     private final FirehoseConfigurationProvider firehoseConfigurationProvider;
     private final Factory factory;
-    private final FirehoseCountersAndTimer firehoseCountersAndTimer;
+    private final FirehoseTimersAndCounters firehoseTimersAndCounters;
     private final AmazonKinesisFirehoseAsync amazonKinesisFirehoseAsync;
     private final Logger logger;
     private final FailedRecordExtractor failedRecordExtractor;
@@ -47,13 +47,13 @@ public class S3Sender {
     @Autowired
     public S3Sender(FirehoseConfigurationProvider firehoseConfigurationProvider,
                     Factory factory,
-                    FirehoseCountersAndTimer firehoseCountersAndTimer,
+                    FirehoseTimersAndCounters firehoseTimersAndCounters,
                     AmazonKinesisFirehoseAsync amazonKinesisFirehoseAsync,
                     Logger s3SenderLogger,
                     FailedRecordExtractor failedRecordExtractor) {
         this.firehoseConfigurationProvider = firehoseConfigurationProvider;
         this.factory = factory;
-        this.firehoseCountersAndTimer = firehoseCountersAndTimer;
+        this.firehoseTimersAndCounters = firehoseTimersAndCounters;
         this.amazonKinesisFirehoseAsync = amazonKinesisFirehoseAsync;
         this.logger = s3SenderLogger;
         this.failedRecordExtractor = failedRecordExtractor;
@@ -66,7 +66,7 @@ public class S3Sender {
                          final Semaphore parallelism) {
         final String streamName = firehoseConfigurationProvider.streamname();
         final PutRecordBatchRequest request = factory.createPutRecordBatchRequest(streamName, records);
-        final Stopwatch stopwatch = firehoseCountersAndTimer.startTimer();
+        final Stopwatch stopwatch = firehoseTimersAndCounters.startTimer();
         final int sleepMillis = retryCalculator.calculateSleepMillis();
         boolean isInterrupted = false;
 
@@ -81,7 +81,7 @@ public class S3Sender {
         } finally {
             amazonKinesisFirehoseAsync.putRecordBatchAsync(request,
                     factory.createFirehoseAsyncHandler(this, stopwatch, request, sleepMillis, retryCount,
-                            records, retryCalculator, sleeper, parallelism, firehoseCountersAndTimer,
+                            records, retryCalculator, sleeper, parallelism, firehoseTimersAndCounters,
                             failedRecordExtractor));
         }
         if(isInterrupted) {
@@ -95,16 +95,16 @@ public class S3Sender {
                             final int sleepMillis,
                             final int retryCount,
                             Exception exception,
-                            FirehoseCountersAndTimer firehoseCountersAndTimer) {
+                            FirehoseTimersAndCounters firehoseTimersAndCounters) {
         stopwatch.stop();
         if(exception != null) {
             if (exception instanceof SdkClientException && exception.getCause() instanceof SocketTimeoutException) {
-                firehoseCountersAndTimer.incrementSocketTimeoutCounter();
+                firehoseTimersAndCounters.incrementSocketTimeoutCounter();
             } else {
                 logger.error(UNEXPECTED_EXCEPTION_MSG, exception);
             }
         }
-        int failureCount = firehoseCountersAndTimer.countSuccessesAndFailures(request, result);
+        int failureCount = firehoseTimersAndCounters.countSuccessesAndFailures(request, result);
 
         final int maxRetrySleep = firehoseConfigurationProvider.maxretrysleep();
         if (shouldLogErrorMessage(failureCount, maxRetrySleep, sleepMillis)) {
@@ -136,10 +136,10 @@ public class S3Sender {
                                                         RetryCalculator retryCalculator,
                                                         Sleeper sleeper,
                                                         Semaphore parallelism,
-                                                        FirehoseCountersAndTimer firehoseCountersAndTimer,
+                                                        FirehoseTimersAndCounters firehoseTimersAndCounters,
                                                         FailedRecordExtractor failedRecordExtractor) {
             return new FirehoseAsyncHandler(s3Sender, stopwatch, request, sleepMillis, retryCount, records,
-                    retryCalculator, sleeper, parallelism, firehoseCountersAndTimer, failedRecordExtractor);
+                    retryCalculator, sleeper, parallelism, firehoseTimersAndCounters, failedRecordExtractor);
         }
 
         PutRecordBatchRequest createPutRecordBatchRequest(String streamName, List<Record> records) {

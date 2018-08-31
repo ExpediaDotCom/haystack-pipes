@@ -18,7 +18,7 @@ package com.expedia.www.haystack.pipes.secretDetector;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanDetector;
-import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
+import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
 import com.expedia.www.haystack.pipes.secretDetector.actions.DetectedAction;
 import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
 import com.netflix.servo.monitor.Stopwatch;
@@ -36,17 +36,17 @@ public class DetectorAction implements ForeachAction<String, Span> {
     @VisibleForTesting
     static final String CONFIDENTIAL_DATA_MSG =
             "Confidential data has been found for service [%s] operation [%s] span [%s] trace [%s] tag(s) [%s]";
-    private final CountersAndTimer countersAndTimer;
+    private final TimersAndCounters timersAndCounters;
     private final SpanDetector spanDetector;
     private final Logger detectorActionLogger;
     private final ActionsConfigurationProvider actionsConfigurationProvider;
 
     @Autowired
-    public DetectorAction(CountersAndTimer countersAndTimer,
+    public DetectorAction(TimersAndCounters timersAndCounters,
                           SpanDetector springWiredDetector,
                           Logger detectorActionLogger,
                           ActionsConfigurationProvider actionsConfigurationProvider) {
-        this.countersAndTimer = countersAndTimer;
+        this.timersAndCounters = timersAndCounters;
         this.spanDetector = springWiredDetector;
         this.detectorActionLogger = detectorActionLogger;
         this.actionsConfigurationProvider = actionsConfigurationProvider;
@@ -54,9 +54,9 @@ public class DetectorAction implements ForeachAction<String, Span> {
 
     @Override
     public void apply(String key, Span span) {
-        countersAndTimer.incrementRequestCounter();
-        countersAndTimer.recordSpanArrivalDelta(span);
-        final Stopwatch stopwatch = countersAndTimer.startTimer();
+        timersAndCounters.incrementRequestCounter();
+        timersAndCounters.recordSpanArrivalDelta(span);
+        final Stopwatch stopwatch = timersAndCounters.startTimer();
         try {
             final Map<String, List<String>> mapOfTypeToKeysOfSecrets = spanDetector.findSecrets(span);
             if (!mapOfTypeToKeysOfSecrets.isEmpty()) {

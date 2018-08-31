@@ -24,7 +24,8 @@ import com.expedia.www.haystack.commons.secretDetector.span.SpanNameAndCountReco
 import com.expedia.www.haystack.commons.secretDetector.span.SpanS3ConfigFetcher;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanSecretMasker;
 import com.expedia.www.haystack.metrics.MetricObjects;
-import com.expedia.www.haystack.pipes.commons.CountersAndTimer;
+import com.expedia.www.haystack.pipes.commons.Timers;
+import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.HealthStatusListener;
 import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
@@ -201,11 +202,17 @@ public class SpringConfig {
 
     @Bean
     @Autowired
-    CountersAndTimer countersAndTimer(Clock clock,
-                                      Counter detectorActionRequestCounter,
-                                      Timer detectorDetectTimer,
-                                      Timer spanArrivalTimer) {
-        return new CountersAndTimer(clock, detectorDetectTimer, spanArrivalTimer, detectorActionRequestCounter);
+    Timers timers(Timer detectorDetectTimer,
+                  Timer spanArrivalTimer) {
+        return new Timers(detectorDetectTimer, spanArrivalTimer);
+    }
+
+    @Bean
+    @Autowired
+    TimersAndCounters countersAndTimer(Clock clock,
+                                       Counter detectorActionRequestCounter,
+                                       Timers timers) {
+        return new TimersAndCounters(clock, timers, detectorActionRequestCounter);
     }
 
     @Bean
@@ -235,7 +242,7 @@ public class SpringConfig {
 
     @Bean
     @Autowired
-    DetectorAction detectorAction(CountersAndTimer detectorDetectTimer,
+    DetectorAction detectorAction(TimersAndCounters detectorDetectTimer,
                                   SpanDetector spanDetector,
                                   Logger detectorActionLogger,
                                   ActionsConfigurationProvider actionsConfigurationProvider) {

@@ -28,7 +28,7 @@ import java.util.function.Supplier;
 @Component
 public class FirehoseProcessorSupplier implements ProcessorSupplier<String, Span> {
     private final Logger firehoseProcessorLogger;
-    private final FirehoseCountersAndTimer firehoseCountersAndTimer;
+    private final FirehoseTimersAndCounters firehoseTimersAndCounters;
     private final Supplier<Batch> batch;
     private final FirehoseProcessor.Factory firehoseProcessorFactory;
     private final FirehoseConfigurationProvider firehoseConfigurationProvider;
@@ -36,12 +36,12 @@ public class FirehoseProcessorSupplier implements ProcessorSupplier<String, Span
 
     @Autowired
     public FirehoseProcessorSupplier(Logger firehoseProcessorLogger,
-                                     FirehoseCountersAndTimer firehoseCountersAndTimer,
+                                     FirehoseTimersAndCounters firehoseTimersAndCounters,
                                      Supplier<Batch> batch,
                                      FirehoseProcessor.Factory firehoseProcessorFactory,
                                      FirehoseConfigurationProvider firehoseConfigurationProvider, S3Sender s3Sender) {
         this.firehoseProcessorLogger = firehoseProcessorLogger;
-        this.firehoseCountersAndTimer = firehoseCountersAndTimer;
+        this.firehoseTimersAndCounters = firehoseTimersAndCounters;
         this.batch = batch;
         this.firehoseProcessorFactory = firehoseProcessorFactory;
         this.firehoseConfigurationProvider = firehoseConfigurationProvider;
@@ -50,7 +50,7 @@ public class FirehoseProcessorSupplier implements ProcessorSupplier<String, Span
 
     @Override
     public Processor<String, Span> get() {
-        return new FirehoseProcessor(firehoseProcessorLogger, firehoseCountersAndTimer, batch,
+        return new FirehoseProcessor(firehoseProcessorLogger, firehoseTimersAndCounters, batch,
                 firehoseProcessorFactory, firehoseConfigurationProvider, s3Sender);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Expedia, Inc.
+ * Copyright 2018 Expedia, Inc.
  *
  *       Licensed under the Apache License, Version 2.0 (the "License");
  *       you may not use this file except in compliance with the License.
@@ -49,8 +49,8 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SpanProtobufDeserializerTest {
-    private final static String APPLICATION_NAME = SpanProtobufDeserializerTest.class.getSimpleName();
-    private final static String CLASS_NAME = SpanProtobufDeserializer.class.getSimpleName();
+    private static final String APPLICATION_NAME = SpanProtobufDeserializerTest.class.getSimpleName();
+    private static final String CLASS_NAME = SpanProtobufDeserializer.class.getSimpleName();
 
     @Mock
     private SerializerDeserializerBase.Factory mockFactory;

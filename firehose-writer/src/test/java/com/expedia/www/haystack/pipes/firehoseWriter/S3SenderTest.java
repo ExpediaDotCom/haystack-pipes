@@ -73,7 +73,7 @@ public class S3SenderTest {
     @Mock
     private FirehoseConfigurationProvider mockFirehoseConfigurationProvider;
     @Mock
-    private FirehoseCountersAndTimer mockFirehoseCountersAndTimer;
+    private FirehoseTimersAndCounters mockFirehoseCountersAndTimer;
     @Mock
     private Logger mockLogger;
     @Mock
@@ -224,7 +224,7 @@ public class S3SenderTest {
         assertSame(mockRetryCalculator, firehoseAsyncHandler.retryCalculator);
         assertSame(mockSleeper, firehoseAsyncHandler.sleeper);
         assertSame(mockSemaphore, firehoseAsyncHandler.parallelismSemaphore);
-        assertSame(mockFirehoseCountersAndTimer, firehoseAsyncHandler.firehoseCountersAndTimer);
+        assertSame(mockFirehoseCountersAndTimer, firehoseAsyncHandler.firehoseTimersAndCounters);
         assertSame(mockFailedRecordExtractor, firehoseAsyncHandler.failedRecordExtractor);
     }
 
