@@ -7,37 +7,7 @@
 	</finder>
 	<finder>
 		<class>com.expedia.www.haystack.commons.secretDetector.HaystackPhoneNumberFinder</class>
-		<region>CANADA</region>
 		<enabled>true</enabled>
-	</finder>
-	<finder>
-		<class>com.expedia.www.haystack.commons.secretDetector.HaystackPhoneNumberFinder</class>
-		<region>FRANCE</region>
-		<enabled>true</enabled>
-	</finder>
-	<finder>
-		<class>com.expedia.www.haystack.commons.secretDetector.HaystackPhoneNumberFinder</class>
-		<region>GERMANY</region>
-		<enabled>true</enabled>
-	</finder>
-	<finder>
-		<class>com.expedia.www.haystack.commons.secretDetector.HaystackPhoneNumberFinder</class>
-		<region>ITALY</region>
-		<enabled>true</enabled>
-	</finder>
-	<finder>
-		<class>com.expedia.www.haystack.commons.secretDetector.HaystackPhoneNumberFinder</class>
-		<region>JAPAN</region>
-		<enabled>true</enabled>
-	</finder>
-	<finder>
-		<class>com.expedia.www.haystack.commons.secretDetector.HaystackPhoneNumberFinder</class>
-		<region>UNITED_KINGDOM</region>
-		<enabled>true</enabled>
-	</finder>
-	<finder>
-		<class>com.expedia.www.haystack.commons.secretDetector.HaystackPhoneNumberFinder</class>
-		<region>UNITED_STATES</region>
 	</finder>
 	<finder>
 		<class>com.expedia.www.haystack.commons.secretDetector.HaystackCompositeCreditCardFinder</class>
@@ -54,15 +24,16 @@
 		<flags>10</flags>
 		<enabled>true</enabled>
 	</finder>
+	<!--
 	<finder>
 		<name>SSN-spaces</name>
 		<pattern>^[0-9]{3}\s[0-9]{2}\s[0-9]{4}$</pattern>
-		<enabled>false</enabled>
+		<enabled>true</enabled>
 	</finder>
 	<finder>
 		<name>SSN-dashes</name>
 		<pattern>^[0-9]{3}\-[0-9]{2}\-[0-9]{4}$</pattern>
-		<enabled>false</enabled>
+		<enabled>true</enabled>
 	</finder>
 	<finder>
 		<name>ZipCode</name>
@@ -79,4 +50,5 @@
 		<pattern><![CDATA[(\D|^)(?:(?:(?:[A-F0-9]{1,4}:){6}|(?=(?:[A-F0-9]{0,4}:){0,6}(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?![:.\w]))(([0-9A-F]{1,4}:){0,5}|:)((:[0-9A-F]{1,4}){1,5}:|:)|::(?:[A-F0-9]{1,4}:){5})(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}|(?=(?:[A-F0-9]{0,4}:){0,7}[A-F0-9]{0,4}(?![:.\w]))(([0-9A-F]{1,4}:){1,7}|:)((:[0-9A-F]{1,4}){1,7}|:)|(?:[A-F0-9]{1,4}:){7}:|:(:[A-F0-9]{1,4}){7})(?![:.\w])(\D|$)]]></pattern>
 		<enabled>false</enabled>
 	</finder>
+    -->
 </finders>
