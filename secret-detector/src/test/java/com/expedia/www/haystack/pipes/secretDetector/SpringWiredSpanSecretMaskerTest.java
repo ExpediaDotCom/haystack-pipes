@@ -16,11 +16,11 @@
  */
 package com.expedia.www.haystack.pipes.secretDetector;
 
+import com.expedia.www.haystack.commons.secretDetector.HaystackFinderEngine;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanNameAndCountRecorder;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanS3ConfigFetcher;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanSecretMasker;
 import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
-import io.dataapps.chlorine.finder.FinderEngine;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +37,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 @RunWith(MockitoJUnitRunner.class)
 public class SpringWiredSpanSecretMaskerTest {
     @Mock
-    private FinderEngine mockFinderEngine;
+    private HaystackFinderEngine mockHaystackFinderEngine;
     @Mock
     private SpanSecretMasker.Factory mockSpanSecretMaskerFactory;
     @Mock
@@ -51,13 +51,13 @@ public class SpringWiredSpanSecretMaskerTest {
 
     @Before
     public void setUp() {
-        springWiredSpanSecretMasker = new SpringWiredSpanSecretMasker(mockFinderEngine, mockSpanSecretMaskerFactory,
-                mockS3ConfigFetcher, mockTimersAndCounters, mockSpanNameAndCountRecorder);
+        springWiredSpanSecretMasker = new SpringWiredSpanSecretMasker(mockHaystackFinderEngine,
+                mockSpanSecretMaskerFactory, mockS3ConfigFetcher, mockTimersAndCounters, mockSpanNameAndCountRecorder);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockFinderEngine);
+        verifyNoMoreInteractions(mockHaystackFinderEngine);
         verifyNoMoreInteractions(mockSpanSecretMaskerFactory);
         verifyNoMoreInteractions(mockS3ConfigFetcher);
         verifyNoMoreInteractions(mockTimersAndCounters);
@@ -69,7 +69,7 @@ public class SpringWiredSpanSecretMaskerTest {
         springWiredSpanSecretMasker.apply(NO_TAGS_SPAN);
 
         verify(mockTimersAndCounters).recordSpanArrivalDelta(NO_TAGS_SPAN);
-        verify(mockFinderEngine).findWithType(STRING_FIELD_VALUE);
-        verify(mockFinderEngine).findWithType(BASE_64_DECODED_STRING);
+        verify(mockHaystackFinderEngine).findWithType(STRING_FIELD_VALUE);
+        verify(mockHaystackFinderEngine).findWithType(BASE_64_DECODED_STRING);
     }
 }

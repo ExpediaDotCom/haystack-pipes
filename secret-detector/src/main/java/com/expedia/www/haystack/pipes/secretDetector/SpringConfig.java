@@ -19,6 +19,7 @@ package com.expedia.www.haystack.pipes.secretDetector;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.expedia.www.haystack.commons.secretDetector.HaystackFinderEngine;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanDetector;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanNameAndCountRecorder;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanS3ConfigFetcher;
@@ -43,7 +44,6 @@ import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufSpanToEmailIn
 import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufToDetectorAction;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
-import io.dataapps.chlorine.finder.FinderEngine;
 import org.cfg4j.provider.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -216,8 +216,8 @@ public class SpringConfig {
     }
 
     @Bean
-    FinderEngine finderEngine() {
-        return new FinderEngine();
+    HaystackFinderEngine haystackFinderEngine() {
+        return new HaystackFinderEngine();
     }
 
     @Bean
@@ -228,10 +228,10 @@ public class SpringConfig {
     @Bean
     @Autowired
     SpringWiredDetector spanDetector(Logger detectorLogger,
-                                     FinderEngine finderEngine,
+                                     HaystackFinderEngine HaystackFinderEngine,
                                      SpanDetector.Factory detectorFactory,
                                      SpanS3ConfigFetcher s3ConfigFetcher) {
-        return new SpringWiredDetector(detectorLogger, finderEngine, detectorFactory, s3ConfigFetcher);
+        return new SpringWiredDetector(detectorLogger, HaystackFinderEngine, detectorFactory, s3ConfigFetcher);
     }
 
     @Bean

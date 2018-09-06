@@ -16,6 +16,7 @@
  */
 package com.expedia.www.haystack.pipes.secretDetector;
 
+import com.expedia.www.haystack.commons.secretDetector.HaystackFinderEngine;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanDetector;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanNameAndCountRecorder;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanS3ConfigFetcher;
@@ -30,7 +31,6 @@ import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfiguration
 import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufToDetectorAction;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
-import io.dataapps.chlorine.finder.FinderEngine;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -76,7 +76,7 @@ public class SpringConfigTest {
     @Mock
     private Logger mockLogger;
     @Mock
-    private FinderEngine mockFinderEngine;
+    private HaystackFinderEngine mockHaystackFinderEngine;
     @Mock
     private ActionsConfigurationProvider mockActionsConfigurationProvider;
     @Mock
@@ -107,7 +107,7 @@ public class SpringConfigTest {
         verifyNoMoreInteractions(mockTimersAndCounters);
         verifyNoMoreInteractions(mockSpanDetector);
         verifyNoMoreInteractions(mockLogger);
-        verifyNoMoreInteractions(mockFinderEngine);
+        verifyNoMoreInteractions(mockHaystackFinderEngine);
         verifyNoMoreInteractions(mockActionsConfigurationProvider);
         verifyNoMoreInteractions(mockSpanDetectorFactory);
         verifyNoMoreInteractions(mockSpanS3ConfigFetcher);
@@ -227,7 +227,8 @@ public class SpringConfigTest {
 
     @Test
     public void testDetector() {
-        assertNotNull(springConfig.spanDetector(mockLogger, mockFinderEngine, mockSpanDetectorFactory, mockSpanS3ConfigFetcher));
+        assertNotNull(springConfig.spanDetector(
+                mockLogger, mockHaystackFinderEngine, mockSpanDetectorFactory, mockSpanS3ConfigFetcher));
     }
 
     @Test
@@ -241,8 +242,8 @@ public class SpringConfigTest {
     }
 
     @Test
-    public void testFinderEngine() {
-        assertNotNull(springConfig.finderEngine());
+    public void testHaystackFinderEngine() {
+        assertNotNull(springConfig.haystackFinderEngine());
     }
 
     @Test
