@@ -17,11 +17,11 @@
 package com.expedia.www.haystack.pipes.secretDetector;
 
 import com.expedia.open.tracing.Span;
+import com.expedia.www.haystack.commons.secretDetector.HaystackFinderEngine;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanNameAndCountRecorder;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanS3ConfigFetcher;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanSecretMasker;
 import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
-import io.dataapps.chlorine.finder.FinderEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,12 +32,12 @@ public class SpringWiredSpanSecretMasker extends SpanSecretMasker {
     private final TimersAndCounters timersAndCounters;
 
     @Autowired
-    public SpringWiredSpanSecretMasker(FinderEngine finderEngine,
+    public SpringWiredSpanSecretMasker(HaystackFinderEngine haystackFinderEngine,
                                        SpanSecretMasker.Factory spanSecretMaskerFactory,
                                        SpanS3ConfigFetcher s3ConfigFetcher,
                                        TimersAndCounters timersAndCounters,
                                        SpanNameAndCountRecorder spanNameAndCountRecorder) {
-        super(finderEngine, spanSecretMaskerFactory, s3ConfigFetcher, spanNameAndCountRecorder, APPLICATION);
+        super(haystackFinderEngine, spanSecretMaskerFactory, s3ConfigFetcher, spanNameAndCountRecorder, APPLICATION);
         this.timersAndCounters = timersAndCounters;
     }
 
