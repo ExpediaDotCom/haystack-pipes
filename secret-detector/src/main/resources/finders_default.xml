@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <finders>
 	<finder>
+		<class>com.expedia.www.haystack.commons.secretDetector.NonLocalIpV4AddressFinder</class>
+		<name>NonLocalIpV4</name>
+		<enabled>true</enabled>
+	</finder>
+	<finder>
 		<name>Email</name>
 		<pattern>(\D|^)[A-Z0-9._%+-]+@([A-Z0-9.-]+)\.([A-Z]{2,4})(\D|$)</pattern>
 		<enabled>true</enabled>
@@ -41,11 +46,6 @@
 	</finder>
 	<finder>
 		<class>com.expedia.www.haystack.commons.secretDetector.HaystackCompositeCreditCardFinder</class>
-		<enabled>true</enabled>
-	</finder>
-	<finder>
-		<class>com.expedia.www.haystack.commons.secretDetector.NonLocalIpV4AddressFinder</class>
-		<name>NonLocalIpV4</name>
 		<enabled>true</enabled>
 	</finder>
 	<finder>
