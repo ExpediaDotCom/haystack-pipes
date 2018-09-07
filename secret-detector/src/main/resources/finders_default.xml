@@ -11,38 +11,43 @@
 		<enabled>true</enabled>
 	</finder>
 	<finder>
+		<class>com.expedia.www.haystack.commons.secretDetector.HaystackCompositePhoneNumberFinder</class>
+		<enabled>true</enabled>
+	</finder>
+	<finder>
 		<class>com.expedia.www.haystack.commons.secretDetector.HaystackPhoneNumberFinder</class>
 		<region>CANADA</region>
-		<enabled>true</enabled>
+		<enabled>false</enabled>
 	</finder>
 	<finder>
 		<class>com.expedia.www.haystack.commons.secretDetector.HaystackPhoneNumberFinder</class>
 		<region>FRANCE</region>
-		<enabled>true</enabled>
+		<enabled>false</enabled>
 	</finder>
 	<finder>
 		<class>com.expedia.www.haystack.commons.secretDetector.HaystackPhoneNumberFinder</class>
 		<region>GERMANY</region>
-		<enabled>true</enabled>
+		<enabled>false</enabled>
 	</finder>
 	<finder>
 		<class>com.expedia.www.haystack.commons.secretDetector.HaystackPhoneNumberFinder</class>
 		<region>ITALY</region>
-		<enabled>true</enabled>
+		<enabled>false</enabled>
 	</finder>
 	<finder>
 		<class>com.expedia.www.haystack.commons.secretDetector.HaystackPhoneNumberFinder</class>
 		<region>JAPAN</region>
-		<enabled>true</enabled>
+		<enabled>false</enabled>
 	</finder>
 	<finder>
 		<class>com.expedia.www.haystack.commons.secretDetector.HaystackPhoneNumberFinder</class>
 		<region>UNITED_KINGDOM</region>
-		<enabled>true</enabled>
+		<enabled>false</enabled>
 	</finder>
 	<finder>
 		<class>com.expedia.www.haystack.commons.secretDetector.HaystackPhoneNumberFinder</class>
 		<region>UNITED_STATES</region>
+        <enabled>false</enabled>
 	</finder>
 	<finder>
 		<class>com.expedia.www.haystack.commons.secretDetector.HaystackCompositeCreditCardFinder</class>
