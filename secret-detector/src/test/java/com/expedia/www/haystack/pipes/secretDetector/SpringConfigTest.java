@@ -243,7 +243,7 @@ public class SpringConfigTest {
 
     @Test
     public void testHaystackFinderEngine() {
-        assertNotNull(springConfig.haystackFinderEngine());
+        assertNotNull(springConfig.haystackFinderEngine(mockMetricObjects));
     }
 
     @Test

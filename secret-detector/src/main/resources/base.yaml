@@ -18,7 +18,7 @@ haystack:
     sendasrate: false
   secretsnotifications:
     mainbean: "protobufSpanMaskerToKafkaTransformer"  # (method) name of the bean in SpringConfig.java, always needed
-    actionfactories: # This section is not needed when masking, because masking is just reads from and writes to Kafka
+    actionfactories: # This section is not needed when masking, because masking just reads from and writes to Kafka
       - "emailerDetectedActionFactory" # (method) name of the bean in SpringConfig.java
     whitelist:
       bucket: "haystack-config"
