@@ -216,8 +216,8 @@ public class SpringConfig {
     }
 
     @Bean
-    HaystackFinderEngine haystackFinderEngine() {
-        return new HaystackFinderEngine();
+    HaystackFinderEngine haystackFinderEngine(MetricObjects metricObjects) {
+        return new HaystackFinderEngine(metricObjects, SUBSYSTEM, APPLICATION);
     }
 
     @Bean
