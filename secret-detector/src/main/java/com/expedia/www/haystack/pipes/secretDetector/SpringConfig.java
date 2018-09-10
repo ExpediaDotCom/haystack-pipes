@@ -216,6 +216,7 @@ public class SpringConfig {
     }
 
     @Bean
+    @Autowired
     HaystackFinderEngine haystackFinderEngine(MetricObjects metricObjects) {
         return new HaystackFinderEngine(metricObjects, SUBSYSTEM, APPLICATION);
     }
