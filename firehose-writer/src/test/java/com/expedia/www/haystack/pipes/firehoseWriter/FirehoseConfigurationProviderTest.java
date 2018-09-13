@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class FirehoseConfigurationProviderTest {
     private FirehoseConfigurationProvider firehoseConfigurationProvider;
@@ -36,7 +37,7 @@ public class FirehoseConfigurationProviderTest {
 
     @Test
     public void testMaxRetrySleep() {
-        assertEquals(314159, firehoseConfigurationProvider.maxretrysleep());
+        assertEquals(5000, firehoseConfigurationProvider.maxretrysleep());
     }
 
     @Test
@@ -46,7 +47,7 @@ public class FirehoseConfigurationProviderTest {
 
     @Test
     public void testUseStringBuffering() {
-        assertEquals(true, firehoseConfigurationProvider.usestringbuffering());
+        assertTrue(firehoseConfigurationProvider.usestringbuffering());
     }
 
     @Test

@@ -18,7 +18,7 @@ haystack:
     sendasrate: false
   firehose:
     initialretrysleep: 42
-    maxretrysleep: 314159
+    maxretrysleep: 5000
     url: "https://firehose.us-west-2.amazonaws.com"
     streamname: "haystack-traces-test"
     signingregion: "us-west-2"
