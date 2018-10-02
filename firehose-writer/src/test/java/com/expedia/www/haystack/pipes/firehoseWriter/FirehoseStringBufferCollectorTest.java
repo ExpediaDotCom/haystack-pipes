@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseCollector.MAX_BYTES_IN_BATCH;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseCollector.MAX_BYTES_IN_RECORD;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseStringBufferCollector.MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR;
 import static org.junit.Assert.assertEquals;
@@ -199,6 +200,40 @@ public class FirehoseStringBufferCollectorTest {
         final List<Record> batch = firehoseStringBufferCollector.createIncompleteBatch();
         final Record actual = batch.get(0);
         assertEquals(DATA_PLUS_NEWLINE + DATA_PLUS_NEWLINE, new String(actual.getData().array()));
+    }
+
+    @Test
+    public void testAddRecordToBufferBoundaryCaseRealLimits() {
+        firehoseStringBufferCollector = new FirehoseStringBufferCollector(
+                mockFactory, MAX_BYTES_IN_RECORD, MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR, MAX_BATCH_INTERVAL);
+        fillFirstThreeRecords();
+        fillFourthRecordToTheBrim();
+        final int recordSizeForLastRecord = MAX_BYTES_IN_BATCH - firehoseStringBufferCollector.getTotalBatchSize();
+        final String dataForLastRecord = createStringOfSize(recordSizeForLastRecord);
+        assertFalse(firehoseStringBufferCollector.addRecordAndReturnBatch(dataForLastRecord).isEmpty());
+        assertEquals(recordSizeForLastRecord, firehoseStringBufferCollector.getTotalBatchSize());
+        verify(mockFactory, times(MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR + 2))
+                .currentTimeMillis();
+    }
+
+    private void fillFirstThreeRecords() {
+        final String dataThatConsumesTheEntireBatch = createStringOfSize(MAX_BYTES_IN_RECORD);
+        for(int i = 0 ; i < MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR - 1 ; i++) {
+            assertTrue(firehoseStringBufferCollector.addRecordAndReturnBatch(dataThatConsumesTheEntireBatch).isEmpty());
+        }
+    }
+
+    private void fillFourthRecordToTheBrim() {
+        final String dataForAllRecordsButLast = createStringOfSize(MAX_BYTES_IN_RECORD - 1);
+        assertTrue(firehoseStringBufferCollector.addRecordAndReturnBatch(dataForAllRecordsButLast).isEmpty());
+    }
+
+    private String createStringOfSize(int size) {
+        final StringBuilder stringBuilder = new StringBuilder(size);
+        for(int i = 0 ; i < size ; i++) {
+            stringBuilder.append('!');
+        }
+        return stringBuilder.toString();
     }
 
     @Test
