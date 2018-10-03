@@ -32,7 +32,7 @@ import java.util.Optional;
 public class FirehoseStringBufferCollector implements FirehoseCollector {
     @VisibleForTesting
     static final int MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR = 4;
-    static final String BYTE_BUFFER_LENGTH_TOO_LARGE = "Byte buffer length [%d] is too large: %s";
+    static final String BYTE_BUFFER_LENGTH_TOO_LARGE = "Byte buffer length [{}] is too large: {}";
 
     private final Factory factory;
     private final int maxBatchInterval;
