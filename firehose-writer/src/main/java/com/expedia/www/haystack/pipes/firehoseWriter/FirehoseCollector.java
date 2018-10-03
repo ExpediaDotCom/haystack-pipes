@@ -34,8 +34,13 @@ public interface FirehoseCollector {
     /**
      * Maximum record size in bytes; see https://docs.aws.amazon.com/firehose/latest/dev/limits.html to read that "The
      * maximum size of a record sent to Kinesis Data Firehose, before base64-encoding, is 1,000 KB."
+     * Error messages received from AWS Kinesis Firehose (documented in
+     * https://github.com/ExpediaDotCom/haystack-pipes/issues/251) make it clear than the limit should
+     * be 1024 * 1000; for details about why it is now 999 * 1000 see
+     * https://github.com/ExpediaDotCom/haystack-pipes/issues/251#issuecomment-426733404.
+     *
      */
-    int MAX_BYTES_IN_RECORD = 1000 * 1000; // ~ 1 MB
+    int MAX_BYTES_IN_RECORD = 999 * 1000; // ~ 1 MB
 
     /**
      * Maximum number of Records allowed in a batch; see https://docs.aws.amazon.com/firehose/latest/dev/limits.html to
