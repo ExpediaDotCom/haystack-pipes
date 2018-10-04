@@ -77,7 +77,7 @@ public class FirehoseByteArrayCollectorTest {
 
     @Test
     public void testDefaultConstructorInitializedWithProvidedDefaults() {
-        assertEquals(999 * 1000, firehoseByteArrayCollector.getMaxBytesInRecord());
+        assertEquals(1024 * 1000, firehoseByteArrayCollector.getMaxBytesInRecord());
         assertEquals(MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR,
                 firehoseByteArrayCollector.getMaxRecordsInBatch());
         assertEquals( 0, firehoseByteArrayCollector.getMaxBatchInterval());
