@@ -26,15 +26,15 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseCollector.MAX_BYTES_IN_BATCH;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseCollector.MAX_BYTES_IN_RECORD;
-import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseStringBufferCollector.BYTE_BUFFER_LENGTH_TOO_LARGE;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseStringBufferCollector.MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -45,8 +45,11 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FirehoseStringBufferCollectorTest {
-    private static final String DATA = "Hello World!";
-    private static final String DATA_PLUS_NEWLINE = DATA + '\n';
+    private static final String HELLO_WORLD = "Hello World!\u1234"; // include non-ASCII character
+    private static final byte[] DATA = HELLO_WORLD.getBytes(StandardCharsets.UTF_8);
+    private static final String DATA_STRING = new String(DATA);
+    private static final String DATA_PLUS_NEWLINE_STRING = HELLO_WORLD + '\n';
+    private static final byte[] DATA_PLUS_NEWLINE = DATA_PLUS_NEWLINE_STRING.getBytes(StandardCharsets.UTF_8);
 
     private static final long NOW = System.currentTimeMillis();
     private static final int MAX_BATCH_INTERVAL = 10;
@@ -85,11 +88,11 @@ public class FirehoseStringBufferCollectorTest {
         firehoseStringBufferCollector = new FirehoseStringBufferCollector();
 
         int actual = firehoseStringBufferCollector.expectedBufferSizeWithData(DATA);
-        assertEquals(DATA.length() + 1, actual);
+        assertEquals(DATA.length + 1, actual);
         
-        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA);
+        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA_STRING);
         actual = firehoseStringBufferCollector.expectedBufferSizeWithData(DATA);
-        assertEquals((2 * DATA.length()) + 1, actual);
+        assertEquals((2 * DATA.length) + 1, actual);
     }
 
     @Test
@@ -108,7 +111,7 @@ public class FirehoseStringBufferCollectorTest {
     public void testBatchCreationTimeoutShouldReturnTrueIfEnabledAndTimeHasElapsed() {
         when(mockFactory.currentTimeMillis()).thenReturn(NOW, NOW + MAX_BATCH_INTERVAL + 1);
         firehoseStringBufferCollector = new FirehoseStringBufferCollector(mockFactory, MAX_BYTES_IN_RECORD,
-                MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR, MAX_BATCH_INTERVAL, mockLogger);
+                MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR, MAX_BATCH_INTERVAL);
         assertTrue(firehoseStringBufferCollector.batchCreationTimedOut());
         verify(mockFactory, times(2)).currentTimeMillis();
     }
@@ -117,7 +120,7 @@ public class FirehoseStringBufferCollectorTest {
     public void testBatchCreationTimeoutShouldReturnTrueIfEnabledAndTimeHasNotQuiteElapsed() {
         when(mockFactory.currentTimeMillis()).thenReturn(NOW, NOW + MAX_BATCH_INTERVAL);
         firehoseStringBufferCollector = new FirehoseStringBufferCollector(mockFactory, MAX_BYTES_IN_RECORD,
-                MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR, MAX_BATCH_INTERVAL, mockLogger);
+                MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR, MAX_BATCH_INTERVAL);
         assertFalse(firehoseStringBufferCollector.batchCreationTimedOut());
         verify(mockFactory, times(2)).currentTimeMillis();
     }
@@ -125,43 +128,43 @@ public class FirehoseStringBufferCollectorTest {
     @Test
     public void testInitializeBufferShouldInitializeBuffer() {
         firehoseStringBufferCollector = new FirehoseStringBufferCollector(10);
-        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA);
-        assertTrue(firehoseStringBufferCollector.bufferSize() > 0);
+        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA_STRING);
+        assertTrue(firehoseStringBufferCollector.bufferIndex > 0);
 
         firehoseStringBufferCollector.initializeBuffer();
-        assertEquals(0, firehoseStringBufferCollector.bufferSize());
+        assertEquals(0, firehoseStringBufferCollector.bufferIndex);
     }
 
     @Test
     public void testShouldCreateNewBatchDueToRecordSizeShouldReturnTrueIfDataSizeEqualsMaxRecordSize() {
         firehoseStringBufferCollector = new FirehoseStringBufferCollector(
-                realFactory, 12, 1, MAX_BATCH_INTERVAL, mockLogger);
+                realFactory, 12, 1, MAX_BATCH_INTERVAL);
         assertTrue(firehoseStringBufferCollector.shouldCreateNewRecordDueToRecordSize(DATA));
     }
 
     @Test
     public void testShouldCreateNewBatchDueToRecordSizeShouldReturnTrueIfExpectedDataSizeExceedsMaxRecordSize() {
         firehoseStringBufferCollector = new FirehoseStringBufferCollector(
-                realFactory, 20, 1, MAX_BATCH_INTERVAL, mockLogger);
-        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA);
+                realFactory, 20, 1, MAX_BATCH_INTERVAL);
+        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA_STRING);
         assertTrue(firehoseStringBufferCollector.shouldCreateNewRecordDueToRecordSize(DATA));
     }
 
     @Test
     public void testShouldCreateNewBatchDueToRecordSizeShouldReturnFalseIfExpectedDataSizeLessThanMaxRecordSize() {
         firehoseStringBufferCollector = new FirehoseStringBufferCollector(
-                realFactory, 30, 1, MAX_BATCH_INTERVAL, mockLogger);
-        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA);
+                realFactory, 36, 1, MAX_BATCH_INTERVAL);
+        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA_STRING);
         assertFalse(firehoseStringBufferCollector.shouldCreateNewRecordDueToRecordSize(DATA));
     }
 
     @Test
     public void testAddRecordAndReturnBatchReturnsNonEmptyBatchIfBatchIsNotFull() {
         firehoseStringBufferCollector = new FirehoseStringBufferCollector(
-                realFactory, 12, 1, MAX_BATCH_INTERVAL, mockLogger);
+                realFactory, 15, 1, MAX_BATCH_INTERVAL);
         firehoseStringBufferCollector.addToRecordBuffer(DATA);
 
-        final List<Record> records = firehoseStringBufferCollector.addRecordAndReturnBatch(DATA);
+        final List<Record> records = firehoseStringBufferCollector.addRecordAndReturnBatch(DATA_STRING);
 
         assertEquals(1, records.size());
     }
@@ -170,7 +173,7 @@ public class FirehoseStringBufferCollectorTest {
     public void testCreateNewBatchIfFullReturnsNonEmptyBatchIfBatchHasTimedOut() {
         when(mockFactory.currentTimeMillis()).thenReturn(NOW, NOW + MAX_BATCH_INTERVAL + 1);
         firehoseStringBufferCollector = new FirehoseStringBufferCollector(
-                mockFactory, 100, 1, MAX_BATCH_INTERVAL, mockLogger);
+                mockFactory, 100, 1, MAX_BATCH_INTERVAL);
         firehoseStringBufferCollector.addToRecordBuffer(DATA);
 
         final List<Record> records = firehoseStringBufferCollector.createNewBatchIfFull();
@@ -182,47 +185,45 @@ public class FirehoseStringBufferCollectorTest {
     @Test
     public void testCreateRecordFromBufferShouldReturnEmptyIfBufferIsEmpty() {
         firehoseStringBufferCollector = new FirehoseStringBufferCollector(
-                realFactory, 100, 1, MAX_BATCH_INTERVAL, mockLogger);
-        final Optional<Record> actual = firehoseStringBufferCollector.createRecordFromBuffer(
-                firehoseStringBufferCollector.buffer);
+                realFactory, 100, 1, MAX_BATCH_INTERVAL);
+        final Optional<Record> actual = firehoseStringBufferCollector.createRecordFromBuffer();
         assertFalse(actual.isPresent());
     }
 
     @Test
     public void testCreateRecordFromBufferShouldReturnARecord() {
         firehoseStringBufferCollector = new FirehoseStringBufferCollector(
-                realFactory, 100, 1, MAX_BATCH_INTERVAL, mockLogger);
-        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA);
-        final Optional<Record> actual = firehoseStringBufferCollector.createRecordFromBuffer(
-                firehoseStringBufferCollector.buffer);
+                realFactory, 100, 1, MAX_BATCH_INTERVAL);
+        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA_STRING);
+        final Optional<Record> actual = firehoseStringBufferCollector.createRecordFromBuffer();
         assertTrue(actual.isPresent());
-        assertEquals(DATA, new String(actual.get().getData().array()));
+        assertArrayEquals(DATA, actual.get().getData().array());
     }
 
     @Test
     public void testCreateNewBatchIfFullShouldReturnEmptyIfBatchIsNotFull() {
         firehoseStringBufferCollector = new FirehoseStringBufferCollector(
-                realFactory, 100, 1, MAX_BATCH_INTERVAL, mockLogger);
-        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA);
+                realFactory, 100, 1, MAX_BATCH_INTERVAL);
+        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA_STRING);
         assertTrue(firehoseStringBufferCollector.createNewBatchIfFull().isEmpty());
     }
 
     @Test
     public void testAddToRecordBufferShouldAppendANewLineIfBufferHasData() {
         firehoseStringBufferCollector = new FirehoseStringBufferCollector(
-                realFactory, 100, 1, MAX_BATCH_INTERVAL, mockLogger);
+                realFactory, 100, 1, MAX_BATCH_INTERVAL);
         firehoseStringBufferCollector.addToRecordBuffer(DATA_PLUS_NEWLINE);
         firehoseStringBufferCollector.addToRecordBuffer(DATA_PLUS_NEWLINE);
-        assertEquals(26, firehoseStringBufferCollector.getTotalBatchSize());
+        assertEquals(32, firehoseStringBufferCollector.getTotalBatchSize());
         final List<Record> batch = firehoseStringBufferCollector.createIncompleteBatch();
         final Record actual = batch.get(0);
-        assertEquals(DATA_PLUS_NEWLINE + DATA_PLUS_NEWLINE, new String(actual.getData().array()));
+        assertEquals(DATA_PLUS_NEWLINE_STRING + DATA_PLUS_NEWLINE_STRING, new String(actual.getData().array()));
     }
 
     @Test
     public void testAddRecordToBufferBoundaryCaseRealLimits() {
         firehoseStringBufferCollector = new FirehoseStringBufferCollector(mockFactory, MAX_BYTES_IN_RECORD,
-                MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR, MAX_BATCH_INTERVAL, mockLogger);
+                MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR, MAX_BATCH_INTERVAL);
         fillFirstThreeRecords();
         fillFourthRecordToTheBrim();
         final int recordSizeForLastRecord = MAX_BYTES_IN_BATCH - firehoseStringBufferCollector.getTotalBatchSize();
@@ -248,7 +249,7 @@ public class FirehoseStringBufferCollectorTest {
     private String createStringOfSize(int size) {
         final StringBuilder stringBuilder = new StringBuilder(size);
         for(int i = 0 ; i < size ; i++) {
-            stringBuilder.append('!');
+            stringBuilder.append("!");
         }
         return stringBuilder.toString();
     }
@@ -256,14 +257,14 @@ public class FirehoseStringBufferCollectorTest {
     @Test
     public void testAddingRecordsToABatchShouldReturnRightBatchSize() {
         firehoseStringBufferCollector = new FirehoseStringBufferCollector(
-                realFactory, 30, 3, MAX_BATCH_INTERVAL, mockLogger);
-        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA_PLUS_NEWLINE);
-        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA_PLUS_NEWLINE);
-        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA_PLUS_NEWLINE);
-        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA_PLUS_NEWLINE);
-        assertEquals(52, firehoseStringBufferCollector.getTotalBatchSize());
+                realFactory, 36, 3, MAX_BATCH_INTERVAL);
+        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA_PLUS_NEWLINE_STRING);
+        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA_PLUS_NEWLINE_STRING);
+        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA_PLUS_NEWLINE_STRING);
+        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA_PLUS_NEWLINE_STRING);
+        assertEquals(64, firehoseStringBufferCollector.getTotalBatchSize());
         final List<Record> batch = firehoseStringBufferCollector.createIncompleteBatch();
-        final String expected = DATA_PLUS_NEWLINE + DATA_PLUS_NEWLINE;
+        final String expected = DATA_PLUS_NEWLINE_STRING + DATA_PLUS_NEWLINE_STRING;
         assertEquals(expected, new String(batch.get(0).getData().array()));
         assertEquals(expected, new String(batch.get(1).getData().array()));
     }
@@ -271,36 +272,22 @@ public class FirehoseStringBufferCollectorTest {
     @Test(expected = IllegalArgumentException.class)
     public void testAddingDataLargerThanRecordSizeShouldThrow() {
         firehoseStringBufferCollector = new FirehoseStringBufferCollector(
-                realFactory, 10, 3, MAX_BATCH_INTERVAL, mockLogger);
-        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA);
+                realFactory, 10, 3, MAX_BATCH_INTERVAL);
+        firehoseStringBufferCollector.addRecordAndReturnBatch(DATA_STRING);
     }
 
     @Test
     public void testShouldReturnBatchOfRecordsWhenBufferIsFull() {
         firehoseStringBufferCollector = new FirehoseStringBufferCollector(
-                realFactory, 40, 2, MAX_BATCH_INTERVAL, mockLogger);
+                realFactory, 49, 2, MAX_BATCH_INTERVAL);
         List<Record> batch = Collections.emptyList();
         while (batch.isEmpty()) {
-            batch = firehoseStringBufferCollector.addRecordAndReturnBatch(DATA_PLUS_NEWLINE);
+            batch = firehoseStringBufferCollector.addRecordAndReturnBatch(DATA_PLUS_NEWLINE_STRING);
         }
         assertEquals(2, batch.size());
-        final String expected = DATA_PLUS_NEWLINE + DATA_PLUS_NEWLINE + DATA_PLUS_NEWLINE;
+        final String expected = DATA_PLUS_NEWLINE_STRING + DATA_PLUS_NEWLINE_STRING + DATA_PLUS_NEWLINE_STRING;
         assertEquals(expected, new String(batch.get(0).getData().array()));
         assertEquals(expected, new String(batch.get(1).getData().array()));
-    }
-
-    @Test
-    public void testCreateRecordFromBufferLogsBufferTooLarge() {
-        firehoseStringBufferCollector = new FirehoseStringBufferCollector(realFactory, MAX_BYTES_IN_RECORD,
-                MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR, MAX_BATCH_INTERVAL, mockLogger);
-        final int size = MAX_BYTES_IN_RECORD + 1;
-        final StringBuilder stringBuilder = new StringBuilder(size);
-        for(int i = 0; i < size; i++) {
-            stringBuilder.append('!');
-        }
-        firehoseStringBufferCollector.createRecordFromBuffer(stringBuilder);
-        final String string = Arrays.toString(stringBuilder.toString().getBytes());
-        verify(mockLogger).error(BYTE_BUFFER_LENGTH_TOO_LARGE, size, string);
     }
 
 }
