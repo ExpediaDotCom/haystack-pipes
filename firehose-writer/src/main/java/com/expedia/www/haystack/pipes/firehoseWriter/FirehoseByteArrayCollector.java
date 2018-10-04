@@ -28,7 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class FirehoseStringBufferCollector implements FirehoseCollector {
+public class FirehoseByteArrayCollector implements FirehoseCollector {
     @VisibleForTesting
     static final int MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR = 4;
 
@@ -44,18 +44,18 @@ public class FirehoseStringBufferCollector implements FirehoseCollector {
     private long batchLastCreatedAt;
     private int totalBatchSize;
 
-    FirehoseStringBufferCollector() {
+    FirehoseByteArrayCollector() {
         this(0);
     }
 
-    FirehoseStringBufferCollector(int maxBatchInterval) {
+    FirehoseByteArrayCollector(int maxBatchInterval) {
         this(new Factory(), MAX_BYTES_IN_RECORD, MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR, maxBatchInterval);
     }
 
-    FirehoseStringBufferCollector(Factory factory,
-                                  int maxBytesInRecord,
-                                  int maxRecordsInBatch,
-                                  int maxBatchInterval) {
+    FirehoseByteArrayCollector(Factory factory,
+                               int maxBytesInRecord,
+                               int maxRecordsInBatch,
+                               int maxBatchInterval) {
         Validate.notNull(factory);
         this.factory = factory;
         this.maxBatchInterval = maxBatchInterval;
