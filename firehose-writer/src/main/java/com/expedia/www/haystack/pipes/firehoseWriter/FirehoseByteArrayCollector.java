@@ -19,54 +19,50 @@ package com.expedia.www.haystack.pipes.firehoseWriter;
 import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.netflix.servo.util.VisibleForTesting;
 import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class FirehoseStringBufferCollector implements FirehoseCollector {
+public class FirehoseByteArrayCollector implements FirehoseCollector {
     @VisibleForTesting
     static final int MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR = 4;
-    static final String BYTE_BUFFER_LENGTH_TOO_LARGE = "Byte buffer length [{}] is too large: {}";
 
     private final Factory factory;
     private final int maxBatchInterval;
     private final int maxRecordsInBatch;
     private final int maxBytesInRecord;
-    private final Logger logger;
 
+    private final byte[] buffer;
     @VisibleForTesting
-    StringBuilder buffer; // TODO Replace with "final byte[] bytes" to minimize garbage creation
+    int bufferIndex;
     private List<Record> recordsInBatch;
     private long batchLastCreatedAt;
     private int totalBatchSize;
 
-    FirehoseStringBufferCollector() {
+    FirehoseByteArrayCollector() {
         this(0);
     }
 
-    FirehoseStringBufferCollector(int maxBatchInterval) {
-        this(new Factory(), MAX_BYTES_IN_RECORD, MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR, maxBatchInterval,
-                LoggerFactory.getLogger(FirehoseStringBufferCollector.class));
+    FirehoseByteArrayCollector(int maxBatchInterval) {
+        this(new Factory(), MAX_BYTES_IN_RECORD, MAX_RECORDS_IN_BATCH_FOR_STRING_BUFFER_COLLECTOR, maxBatchInterval);
     }
 
-    FirehoseStringBufferCollector(Factory factory,
-                                  int maxBytesInRecord,
-                                  int maxRecordsInBatch,
-                                  int maxBatchInterval,
-                                  Logger logger) {
+    FirehoseByteArrayCollector(Factory factory,
+                               int maxBytesInRecord,
+                               int maxRecordsInBatch,
+                               int maxBatchInterval) {
         Validate.notNull(factory);
         this.factory = factory;
         this.maxBatchInterval = maxBatchInterval;
         this.maxBytesInRecord = maxBytesInRecord;
         this.maxRecordsInBatch = maxRecordsInBatch;
-        this.logger = logger;
-        initializeBuffer();
+        this.bufferIndex = 0;
+        buffer = new byte[maxBytesInRecord];
         initializeBatch();
     }
 
@@ -88,28 +84,29 @@ public class FirehoseStringBufferCollector implements FirehoseCollector {
 
     @Override
     public List<Record> addRecordAndReturnBatch(final String data) {
-        if (data.length() > maxBytesInRecord) {
-            throw new IllegalArgumentException("length of data [" + data.length() +
+        final byte[] bytes = data.getBytes(StandardCharsets.UTF_8);
+        if (bytes.length > maxBytesInRecord) {
+            throw new IllegalArgumentException("length of data [" + bytes.length +
                                                        "] is greater than max size allowed : " + maxBytesInRecord);
         }
 
-        if (shouldCreateNewRecordDueToRecordSize(data)) {
-            final Optional<Record> record = createRecordFromBuffer(buffer);
+        if (shouldCreateNewRecordDueToRecordSize(bytes)) {
+            final Optional<Record> record = createRecordFromBuffer();
             record.ifPresent(recordsInBatch::add);
 
             final List<Record> returnBatch = createNewBatchIfFull();
 
-            addToRecordBuffer(data);
+            addToRecordBuffer(bytes);
             return returnBatch;
         } else {
-            addToRecordBuffer(data);
+            addToRecordBuffer(bytes);
             return Collections.emptyList();
         }
     }
 
     @Override
     public List<Record> createIncompleteBatch() {
-        final Optional<Record> record = createRecordFromBuffer(buffer);
+        final Optional<Record> record = createRecordFromBuffer();
         record.ifPresent(recordsInBatch::add);
         final List<Record> returnBatch = recordsInBatch;
         initializeBatch();
@@ -117,9 +114,9 @@ public class FirehoseStringBufferCollector implements FirehoseCollector {
     }
 
     @VisibleForTesting
-    int expectedBufferSizeWithData(final String data) {
+    int expectedBufferSizeWithData(final byte[] bytes) {
         //add 1 for NEW_LINE
-        return (bufferSize() + data.length() + 1);
+        return (bufferIndex + bytes.length + 1);
     }
 
     @VisibleForTesting
@@ -130,26 +127,28 @@ public class FirehoseStringBufferCollector implements FirehoseCollector {
 
     @VisibleForTesting
     void initializeBuffer() {
-        buffer = new StringBuilder();
+        bufferIndex = 0;
     }
 
     @VisibleForTesting
-    boolean shouldCreateNewRecordDueToRecordSize(String data) {
-        return expectedBufferSizeWithData(data) > maxBytesInRecord;
+    boolean shouldCreateNewRecordDueToRecordSize(byte[] bytes) {
+        return expectedBufferSizeWithData(bytes) > maxBytesInRecord;
     }
 
     @VisibleForTesting
-    Optional<Record> createRecordFromBuffer(StringBuilder stringBuilder) {
-        if (stringBuilder.length() == 0) {
+    Optional<Record> createRecordFromBuffer() {
+        if (bufferIndex == 0) {
             return Optional.empty();
         }
 
         //add the current buffer to a record and clear the buffer
-        final byte[] bytes = stringBuilder.toString().getBytes();
-        if(bytes.length > MAX_BYTES_IN_RECORD) {
-            logger.error(BYTE_BUFFER_LENGTH_TOO_LARGE, bytes.length, Arrays.toString(bytes));
-        }
-        final Record record = new Record().withData(ByteBuffer.wrap(bytes));
+        final Record record = new Record().withData(
+                ByteBuffer.wrap(Arrays.copyOfRange(buffer, 0, bufferIndex))
+                        .duplicate());
+        // AWS SDK says "It is recommended to call ByteBuffer.duplicate()"; see
+        // https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/index.html?com/amazonaws/services/kinesisfirehose/AmazonKinesisFirehoseClient.html
+        // That Javadoc promises a change; when that happens, the call to duplicate() may no longer be necessary.
+
         initializeBuffer();
         return Optional.of(record);
     }
@@ -171,19 +170,16 @@ public class FirehoseStringBufferCollector implements FirehoseCollector {
     }
 
     @VisibleForTesting
-    void addToRecordBuffer(final String data) {
-        buffer.append(data);
-        totalBatchSize += data.length();
-    }
-
-    @VisibleForTesting
-    int bufferSize() {
-       return buffer.length();
+    void addToRecordBuffer(final byte[] bytes) {
+        System.arraycopy(bytes, 0, buffer, bufferIndex, bytes.length);
+        bufferIndex = bufferIndex + bytes.length;
+        totalBatchSize += bytes.length;
     }
 
     private void initializeBatch() {
         recordsInBatch = new ArrayList<>(maxRecordsInBatch);
         batchLastCreatedAt = factory.currentTimeMillis();
         totalBatchSize = 0;
+        bufferIndex = 0;
     }
 }

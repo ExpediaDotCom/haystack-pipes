@@ -41,7 +41,7 @@ public class SimpleSpringConfigTest {
 
         final Supplier<FirehoseCollector> supplier = springConfig.firehoseCollector(mockConfigration);
 
-        assertEquals(FirehoseStringBufferCollector.class, supplier.get().getClass());
+        assertEquals(FirehoseByteArrayCollector.class, supplier.get().getClass());
         verify(mockConfigration).usestringbuffering();
     }
 

@@ -216,7 +216,7 @@ class SpringConfig {
     @Bean
     Supplier<FirehoseCollector> firehoseCollector(FirehoseConfigurationProvider configurationProvider) {
         return () -> configurationProvider.usestringbuffering() ?
-                new FirehoseStringBufferCollector(configurationProvider.maxbatchinterval()) : new FirehoseRecordBufferCollector();
+                new FirehoseByteArrayCollector(configurationProvider.maxbatchinterval()) : new FirehoseRecordBufferCollector();
     }
 
     @Bean
