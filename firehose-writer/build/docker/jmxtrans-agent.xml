@@ -61,6 +61,7 @@
                resultAlias="kstreams.process.latency_max"/>
 
         <!-- service mbeans -->
+<!-- Turn off these metrics to minimize the number of metrics sent to InfluxDb, whose default limit is 1 million
         <query objectName="metrics:name=metricpoint.deser.failure" attributes="FiveMinuteRate,MeanRate"
                resultAlias="metricpoint.deser.failure.#attribute#"/>
         <query objectName="metrics:name=metricpoint.ser.failure" attributes="FiveMinuteRate,MeanRate"
@@ -98,7 +99,7 @@
 
         <query objectName="metrics:name=metricprocessor.trendcount"
                resultAlias="metricprocessor.trendcount.#attribute#"/>
-
+-->
     </queries>
     <outputWriter class="org.jmxtrans.agent.GraphitePlainTextTcpOutputWriter">
         <host>${HAYSTACK_GRAPHITE_HOST:monitoring-influxdb-graphite.kube-system.svc}</host>
