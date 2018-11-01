@@ -7,4 +7,4 @@ docker_build:
 	docker build -t $(DOCKER_IMAGE_NAME) -f build/docker/Dockerfile .
 
 release: docker_build
-	..deployment/scripts/publish-to-docker-hub.sh
+	../deployment/scripts/publish-to-docker-hub.sh
