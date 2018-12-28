@@ -67,8 +67,8 @@
         <coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
         <haystack-secrets-commons.version>1.0.10</haystack-secrets-commons.version>
         <haystack-metrics.version>2.0.1</haystack-metrics.version>
-        <haystack-logback-metrics-appender.version>1.0.5</haystack-logback-metrics-appender.version>
-        <haystack-log4j-metrics-appender.version>1.0.4</haystack-log4j-metrics-appender.version>
+        <haystack-logback-metrics-appender.version>1.0.6</haystack-logback-metrics-appender.version>
+        <haystack-log4j-metrics-appender.version>1.0.5</haystack-log4j-metrics-appender.version>
         <haystack-pipes-commons.version>1.0-SNAPSHOT</haystack-pipes-commons.version>
         <guava.version>19.0</guava.version>
         <jacoco-maven-plugin.version>0.8.0</jacoco-maven-plugin.version>
