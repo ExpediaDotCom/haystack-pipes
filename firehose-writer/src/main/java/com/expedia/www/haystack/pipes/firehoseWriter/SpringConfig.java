@@ -169,10 +169,16 @@ class SpringConfig {
     }
 
     @Bean
+    Logger internalFailureErrorLoggerLogger() {
+        return LoggerFactory.getLogger(InternalFailureErrorLogger.class);
+    }
+
+    @Bean
     @Autowired
     FailedRecordExtractor failedRecordExtractor(Logger failedRecordExtractorLogger,
-                                                Counter throttledCounter) {
-        return new FailedRecordExtractor(failedRecordExtractorLogger, throttledCounter);
+                                                Counter throttledCounter,
+                                                InternalFailureErrorLogger internalFailureErrorLogger) {
+        return new FailedRecordExtractor(failedRecordExtractorLogger, throttledCounter, internalFailureErrorLogger);
     }
 
     @Bean
@@ -202,6 +208,12 @@ class SpringConfig {
     }
 
     // Beans without unit tests ////////////////////////////////////////////////////////////////////////////////////////
+    @Bean
+    @Autowired
+    InternalFailureErrorLogger internalFailureErrorLogger(Logger internalFailureErrorLoggerLogger) {
+        return new InternalFailureErrorLogger(internalFailureErrorLoggerLogger);
+    }
+
     @Bean
     @Autowired
     AmazonKinesisFirehoseAsync amazonKinesisFirehoseAsync(EndpointConfiguration endpointConfiguration,
