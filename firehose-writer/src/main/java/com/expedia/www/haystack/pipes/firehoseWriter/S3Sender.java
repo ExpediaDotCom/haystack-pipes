@@ -36,13 +36,13 @@ import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.PU
 @Component
 public class S3Sender {
     @VisibleForTesting
-    static final String UNEXPECTED_EXCEPTION_MSG = "Unexpected exception received from AWS Firehose, will retry all records";
     private final FirehoseConfigurationProvider firehoseConfigurationProvider;
     private final Factory factory;
     private final FirehoseTimersAndCounters firehoseTimersAndCounters;
     private final AmazonKinesisFirehoseAsync amazonKinesisFirehoseAsync;
     private final Logger logger;
     private final FailedRecordExtractor failedRecordExtractor;
+    private final UnexpectedExceptionLogger unexpectedExceptionLogger;
 
     @Autowired
     public S3Sender(FirehoseConfigurationProvider firehoseConfigurationProvider,
@@ -50,13 +50,15 @@ public class S3Sender {
                     FirehoseTimersAndCounters firehoseTimersAndCounters,
                     AmazonKinesisFirehoseAsync amazonKinesisFirehoseAsync,
                     Logger s3SenderLogger,
-                    FailedRecordExtractor failedRecordExtractor) {
+                    FailedRecordExtractor failedRecordExtractor,
+                    UnexpectedExceptionLogger unexpectedExceptionLogger) {
         this.firehoseConfigurationProvider = firehoseConfigurationProvider;
         this.factory = factory;
         this.firehoseTimersAndCounters = firehoseTimersAndCounters;
         this.amazonKinesisFirehoseAsync = amazonKinesisFirehoseAsync;
         this.logger = s3SenderLogger;
         this.failedRecordExtractor = failedRecordExtractor;
+        this.unexpectedExceptionLogger = unexpectedExceptionLogger;
     }
 
     void sendRecordsToS3(final List<Record> records,
@@ -101,7 +103,7 @@ public class S3Sender {
             if (exception instanceof SdkClientException && exception.getCause() instanceof SocketTimeoutException) {
                 firehoseTimersAndCounters.incrementSocketTimeoutCounter();
             } else {
-                logger.error(UNEXPECTED_EXCEPTION_MSG, exception);
+                unexpectedExceptionLogger.logError(exception);
             }
         }
         int failureCount = firehoseTimersAndCounters.countSuccessesAndFailures(request, result);

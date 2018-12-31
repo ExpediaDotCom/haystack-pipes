@@ -174,6 +174,11 @@ class SpringConfig {
     }
 
     @Bean
+    Logger unexpectedExceptionLoggerLogger() {
+        return LoggerFactory.getLogger(UnexpectedExceptionLogger.class);
+    }
+
+    @Bean
     @Autowired
     FailedRecordExtractor failedRecordExtractor(Logger failedRecordExtractorLogger,
                                                 Counter throttledCounter,
@@ -212,6 +217,12 @@ class SpringConfig {
     @Autowired
     InternalFailureErrorLogger internalFailureErrorLogger(Logger internalFailureErrorLoggerLogger) {
         return new InternalFailureErrorLogger(internalFailureErrorLoggerLogger);
+    }
+
+    @Bean
+    @Autowired
+    UnexpectedExceptionLogger unexpectedExceptionLogger(Logger unexpectedExceptionLoggerLogger) {
+        return new UnexpectedExceptionLogger(unexpectedExceptionLoggerLogger);
     }
 
     @Bean
