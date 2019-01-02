@@ -27,6 +27,8 @@ import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.HealthStatusListener;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction;
+import com.expedia.www.haystack.pipes.secretDetector.actions.FromAddressExceptionLogger;
+import com.expedia.www.haystack.pipes.secretDetector.actions.ToAddressExceptionLogger;
 import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
 import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufToDetectorAction;
 import com.netflix.servo.monitor.Counter;
@@ -127,6 +129,20 @@ public class SpringConfigTest {
         final Logger logger = springConfig.detectorActionLogger();
 
         assertEquals(DetectorAction.class.getName(), logger.getName());
+    }
+
+    @Test
+    public void testFromAddressExceptionLoggerLogger() {
+        final Logger logger = springConfig.fromAddressExceptionLoggerLogger();
+
+        assertEquals(FromAddressExceptionLogger.class.getName(), logger.getName());
+    }
+
+    @Test
+    public void testToAddressExceptionLoggerLogger() {
+        final Logger logger = springConfig.toAddressExceptionLoggerLogger();
+
+        assertEquals(ToAddressExceptionLogger.class.getName(), logger.getName());
     }
 
     @Test

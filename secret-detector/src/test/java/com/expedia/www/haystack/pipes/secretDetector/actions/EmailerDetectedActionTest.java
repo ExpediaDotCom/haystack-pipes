@@ -25,6 +25,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
@@ -45,11 +46,9 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.SERVICE_NAME;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.SPAN_ID;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.TRACE_ID;
-import static com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.FROM_ADDRESS_EXCEPTION_MSG;
 import static com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.HOST_KEY;
 import static com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.SENDING_EXCEPTION_MSG;
 import static com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.TEXT_TEMPLATE;
-import static com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction.TOS_ADDRESS_EXCEPTION_MSG;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -66,6 +65,8 @@ public class EmailerDetectedActionTest {
     private static final String TO2 = RANDOM.nextInt(Integer.MAX_VALUE) + "@expedia.com";
     private static final List<String> TOS = ImmutableList.of(TO1, TO2);
     private static final Address[] TO_ADDRESSES = new Address[TOS.size()];
+    private static final String ILLEGAL_ADDRESS = "Illegal address";
+
     static {
         for(int i = 0; i < TOS.size() ; i++) {
             try {
@@ -93,6 +94,10 @@ public class EmailerDetectedActionTest {
     private SecretsEmailConfigurationProvider mockSecretsEmailConfigurationProvider;
     @Mock
     private MimeMessage mockMimeMessage;
+    @Mock
+    private FromAddressExceptionLogger mockFromAddressExceptionLogger;
+    @Mock
+    private ToAddressExceptionLogger mockToAddressExceptionLogger;
 
     private EmailerDetectedAction emailerDetectedAction;
     private MimeMessageFactory mimeMessageFactory;
@@ -101,8 +106,8 @@ public class EmailerDetectedActionTest {
     @Before
     public void setUp() {
         whensForConstructor(mockSecretsEmailConfigurationProvider);
-        emailerDetectedAction = new EmailerDetectedAction(
-                mockMimeMessageFactory, mockLogger, mockSender, mockSecretsEmailConfigurationProvider);
+        emailerDetectedAction = new EmailerDetectedAction(mockMimeMessageFactory, mockLogger, mockSender,
+                mockSecretsEmailConfigurationProvider, mockFromAddressExceptionLogger, mockToAddressExceptionLogger);
         mimeMessageFactory = new MimeMessageFactory();
     }
 
@@ -117,8 +122,13 @@ public class EmailerDetectedActionTest {
     public void tearDown() {
         verifiesForConstructor(mockSecretsEmailConfigurationProvider, constructorTimes);
 
-        verifyNoMoreInteractions(mockMimeMessageFactory, mockLogger, mockSender, mockSecretsEmailConfigurationProvider);
+        verifyNoMoreInteractions(mockMimeMessageFactory);
+        verifyNoMoreInteractions(mockLogger);
+        verifyNoMoreInteractions(mockSender);
+        verifyNoMoreInteractions(mockSecretsEmailConfigurationProvider);
         verifyNoMoreInteractions(mockMimeMessage);
+        verifyNoMoreInteractions(mockFromAddressExceptionLogger);
+        verifyNoMoreInteractions(mockToAddressExceptionLogger);
     }
 
     static void verifiesForConstructor(SecretsEmailConfigurationProvider mockSecretsEmailConfigurationProvider, int constructorTimes) {
@@ -139,20 +149,24 @@ public class EmailerDetectedActionTest {
     public void testCreateFromAddressException() {
         final String illegalFrom = TOS.toString();
         when(mockSecretsEmailConfigurationProvider.from()).thenReturn(illegalFrom);
-        testConstructorAddressException(String.format(FROM_ADDRESS_EXCEPTION_MSG, illegalFrom));
+        constructorTimes = 2;
+        new EmailerDetectedAction(mockMimeMessageFactory, mockLogger, mockSender, mockSecretsEmailConfigurationProvider,
+                mockFromAddressExceptionLogger, mockToAddressExceptionLogger);
+        final ArgumentCaptor<Exception> argumentCaptor = ArgumentCaptor.forClass(Exception.class);
+        verify(mockFromAddressExceptionLogger).logError(eq(illegalFrom), argumentCaptor.capture());
+        assertEquals(ILLEGAL_ADDRESS, argumentCaptor.getValue().getMessage());
     }
 
     @Test
     public void testCreateToAddressesException() {
         final List<String> illegalTos = ImmutableList.of(TOS.toString());
         when(mockSecretsEmailConfigurationProvider.tos()).thenReturn(illegalTos);
-        testConstructorAddressException(String.format(TOS_ADDRESS_EXCEPTION_MSG, illegalTos));
-    }
-
-    private void testConstructorAddressException(String message) {
         constructorTimes = 2;
-        new EmailerDetectedAction(mockMimeMessageFactory, mockLogger, mockSender, mockSecretsEmailConfigurationProvider);
-        verify(mockLogger).error(message);
+        new EmailerDetectedAction(mockMimeMessageFactory, mockLogger, mockSender, mockSecretsEmailConfigurationProvider,
+                mockFromAddressExceptionLogger, mockToAddressExceptionLogger);
+        final ArgumentCaptor<Exception> argumentCaptor = ArgumentCaptor.forClass(Exception.class);
+        verify(mockToAddressExceptionLogger).logError(eq(illegalTos), argumentCaptor.capture());
+        assertEquals(ILLEGAL_ADDRESS, argumentCaptor.getValue().getMessage());
     }
 
     @Test
@@ -163,8 +177,8 @@ public class EmailerDetectedActionTest {
         when(mockSecretsEmailConfigurationProvider.subject()).thenReturn(SUBJECT);
         when(mockSecretsEmailConfigurationProvider.host()).thenReturn(HOST);
 
-        new EmailerDetectedAction(
-                mockMimeMessageFactory, mockLogger, mockSender, mockSecretsEmailConfigurationProvider);
+        new EmailerDetectedAction(mockMimeMessageFactory, mockLogger, mockSender, mockSecretsEmailConfigurationProvider,
+                mockFromAddressExceptionLogger, mockToAddressExceptionLogger);
     }
 
     @Test
@@ -203,7 +217,7 @@ public class EmailerDetectedActionTest {
     public void testToAddressEmpty() {
         constructorTimes = 2;
         when(mockSecretsEmailConfigurationProvider.tos()).thenReturn(ImmutableList.of(""));
-        emailerDetectedAction = new EmailerDetectedAction(
-                mockMimeMessageFactory, mockLogger, mockSender, mockSecretsEmailConfigurationProvider);
+        emailerDetectedAction = new EmailerDetectedAction(mockMimeMessageFactory, mockLogger, mockSender,
+                mockSecretsEmailConfigurationProvider, mockFromAddressExceptionLogger, mockToAddressExceptionLogger);
     }
 }

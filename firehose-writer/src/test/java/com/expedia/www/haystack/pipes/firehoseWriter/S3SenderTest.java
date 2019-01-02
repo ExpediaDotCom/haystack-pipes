@@ -38,7 +38,6 @@ import java.util.concurrent.Semaphore;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.PUT_RECORD_BATCH_ERROR_MSG;
-import static com.expedia.www.haystack.pipes.firehoseWriter.S3Sender.UNEXPECTED_EXCEPTION_MSG;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.any;
@@ -92,6 +91,8 @@ public class S3SenderTest {
     private Stopwatch mockStopwatch;
     @Mock
     private Thread mockThread;
+    @Mock
+    private UnexpectedExceptionLogger mockUnexpectedExceptionLogger;
 
     private S3Sender s3Sender;
     private List<Record> recordList;
@@ -100,7 +101,7 @@ public class S3SenderTest {
     @Before
     public void setUp() {
         s3Sender = new S3Sender(mockFirehoseConfigurationProvider, mockFactory, mockFirehoseCountersAndTimer,
-                mockAmazonKinesisFirehoseAsync, mockLogger, mockFailedRecordExtractor);
+                mockAmazonKinesisFirehoseAsync, mockLogger, mockFailedRecordExtractor, mockUnexpectedExceptionLogger);
         factory = new Factory();
         recordList = Collections.singletonList(mockRecord);
     }
@@ -123,6 +124,7 @@ public class S3SenderTest {
         verifyNoMoreInteractions(mockSleeper);
         verifyNoMoreInteractions(mockStopwatch);
         verifyNoMoreInteractions(mockThread);
+        verifyNoMoreInteractions(mockUnexpectedExceptionLogger);
     }
 
     @Test
@@ -205,7 +207,7 @@ public class S3SenderTest {
         if(exception instanceof SdkClientException && exception.getCause() instanceof SocketTimeoutException) {
             verify(mockFirehoseCountersAndTimer).incrementSocketTimeoutCounter();
         } else {
-            verify(mockLogger, times(failureCount)).error(UNEXPECTED_EXCEPTION_MSG, exception);
+            verify(mockUnexpectedExceptionLogger, times(failureCount)).logError(exception);
         }
     }
 

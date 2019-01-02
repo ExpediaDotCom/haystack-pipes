@@ -39,7 +39,6 @@ import java.util.Set;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FailedRecordExtractor.ERROR_CODES_AND_MESSAGES_OF_FAILURES;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FailedRecordExtractor.INTERNAL_FAILURE_ERROR_CODE;
-import static com.expedia.www.haystack.pipes.firehoseWriter.FailedRecordExtractor.INTERNAL_FAILURE_MSG;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FailedRecordExtractor.THROTTLED_ERROR_CODE;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FailedRecordExtractor.THROTTLED_MESSAGE;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseAsyncHandler.RESULT_NULL;
@@ -51,7 +50,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FailedRecordExtractorTest {
-    private static final String REQUEST_ID = RANDOM.nextLong() + "REQUEST_ID";
     private static final int RETRY_COUNT = RANDOM.nextInt(Byte.MAX_VALUE);
     private static final int SIZE = 1 + RANDOM.nextInt(Byte.MAX_VALUE);
 
@@ -81,12 +79,14 @@ public class FailedRecordExtractorTest {
     private ResponseMetadata mockResponseMetadata;
     @Mock
     private Set<Map.Entry<String, String>> mockEntrySet;
+    @Mock
+    private InternalFailureErrorLogger mockInternalFailureErrorLogger;
 
     private FailedRecordExtractor failedRecordExtractor;
 
     @Before
     public void setUp() {
-        failedRecordExtractor = new FailedRecordExtractor(mockLogger, mockCounter);
+        failedRecordExtractor = new FailedRecordExtractor(mockLogger, mockCounter, mockInternalFailureErrorLogger);
     }
 
     @After
@@ -104,6 +104,7 @@ public class FailedRecordExtractorTest {
         verifyNoMoreInteractions(mockRecord);
         verifyNoMoreInteractions(mockResponseMetadata);
         verifyNoMoreInteractions(mockEntrySet);
+        verifyNoMoreInteractions(mockInternalFailureErrorLogger);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -117,25 +118,21 @@ public class FailedRecordExtractorTest {
         when(mockPutRecordBatchResponseEntry.getErrorCode()).thenReturn(INTERNAL_FAILURE_ERROR_CODE);
         when(mockPutRecordBatchResponseEntry.getErrorMessage()).thenReturn("Internal Server Error");
         when(mockPutRecordBatchResponseEntry.getRecordId()).thenReturn("RecordId");
-        when(mockPutRecordBatchRequest.getRecords()).thenReturn(Collections.singletonList(mockRecord));
-        when(mockResponseMetadata.getRequestId()).thenReturn(REQUEST_ID);
 
         failedRecordExtractor.extractFailedRecords(mockPutRecordBatchRequest, mockPutRecordBatchResult, RETRY_COUNT);
 
         verify(mockPutRecordBatchResult).getRequestResponses();
         verify(mockPutRecordBatchResult).getFailedPutCount();
-        verify(mockPutRecordBatchResult).getSdkResponseMetadata();
         verify(mockPutRecordBatchResponseEntryList).size();
         //noinspection ResultOfMethodCallIgnored
         verify(mockPutRecordBatchResponseEntryList).get(0);
         verify(mockPutRecordBatchResponseEntry).getErrorCode();
         verify(mockPutRecordBatchResponseEntry).getErrorMessage();
         verify(mockPutRecordBatchResponseEntry).getRecordId();
-        verify(mockPutRecordBatchRequest, times(2)).getRecords();
+        verify(mockPutRecordBatchRequest).getRecords();
         verify(mockLogger).warn(String.format(ERROR_CODES_AND_MESSAGES_OF_FAILURES,
                 "{InternalFailure=Error Message: [Internal Server Error] Record ID: [RecordId]},", RETRY_COUNT));
-        verify(mockLogger).error(String.format(INTERNAL_FAILURE_MSG, 1, RETRY_COUNT, REQUEST_ID));
-        verify(mockResponseMetadata).getRequestId();
+        verify(mockInternalFailureErrorLogger).logError(mockPutRecordBatchRequest, mockPutRecordBatchResult, RETRY_COUNT);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

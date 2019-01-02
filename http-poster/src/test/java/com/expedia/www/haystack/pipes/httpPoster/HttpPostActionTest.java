@@ -101,6 +101,8 @@ public class HttpPostActionTest {
     private OutputStream mockOutputStream;
     @Mock
     private Random mockRandom;
+    @Mock
+    private InvalidProtocolBufferExceptionLogger mockInvalidProtocolBufferExceptionLogger;
 
     private HttpPostAction httpPostExternalAction;
     private Factory factory;
@@ -115,7 +117,7 @@ public class HttpPostActionTest {
         when(mockHttpPostConfigurationProvider.pollpercent()).thenReturn(Integer.toString(ONE_HUNDRED_PERCENT));
         final Printer realPrinter = JsonFormat.printer().omittingInsignificantWhitespace();
         httpPostExternalAction = new HttpPostAction(realPrinter, mockContentCollector, mockTimersAndCounters,
-                mockLogger, mockHttpPostConfigurationProvider, mockFactory, mockRandom);
+                mockLogger, mockHttpPostConfigurationProvider, mockFactory, mockRandom, mockInvalidProtocolBufferExceptionLogger);
         factory = new Factory();
         mockServer = ClientAndServer.startClientAndServer(1080);
     }
@@ -128,7 +130,8 @@ public class HttpPostActionTest {
         String msg = String.format(STARTUP_MESSAGE, HTTP_LOCALHOST, ONE_HUNDRED_PERCENT);
         verify(mockLogger, times(wantedNumberOfInvocationsInfo)).info(msg);
         verifyNoMoreInteractions(mockPrinter, mockContentCollector, mockTimersAndCounters,
-                mockLogger, mockHttpPostConfigurationProvider, mockFactory, mockRandom);
+                mockLogger, mockHttpPostConfigurationProvider, mockFactory, mockRandom,
+                mockInvalidProtocolBufferExceptionLogger);
         verifyNoMoreInteractions(mockStopwatch, mockHttpURLConnection, mockOutputStream);
     }
 
@@ -246,7 +249,8 @@ public class HttpPostActionTest {
         wantedNumberOfInvocationsPollPercent = 2;
         wantedNumberOfInvocationsInfo = 2;
         httpPostExternalAction = new HttpPostAction(mockPrinter, mockContentCollector, mockTimersAndCounters,
-                mockLogger, mockHttpPostConfigurationProvider, mockFactory, mockRandom);
+                mockLogger, mockHttpPostConfigurationProvider, mockFactory, mockRandom,
+                mockInvalidProtocolBufferExceptionLogger);
         final InvalidProtocolBufferException exception = new InvalidProtocolBufferException(EXCEPTION_MESSAGE);
         when(mockPrinter.print(any(Span.class))).thenThrow(exception);
 
@@ -254,8 +258,7 @@ public class HttpPostActionTest {
 
         assertEquals("", batch);
         verify(mockPrinter).print(NO_TAGS_SPAN);
-        final String message = String.format(PROTOBUF_ERROR_MSG, NO_TAGS_SPAN.toString(), EXCEPTION_MESSAGE);
-        verify(mockLogger).error(message, exception);
+        verify(mockInvalidProtocolBufferExceptionLogger).logError(NO_TAGS_SPAN, exception);
     }
 
     @Test

@@ -113,7 +113,18 @@ public class SpringConfig {
         return LoggerFactory.getLogger(HttpPostAction.class);
     }
 
+    @Bean
+    Logger invalidProtocolBufferExceptionLoggerLogger() {
+        return LoggerFactory.getLogger(InvalidProtocolBufferExceptionLogger.class);
+    }
+
     // Beans without unit tests
+    @Bean
+    InvalidProtocolBufferExceptionLogger invalidProtocolBufferExceptionLogger(
+            Logger invalidProtocolBufferExceptionLoggerLogger) {
+        return new InvalidProtocolBufferExceptionLogger(invalidProtocolBufferExceptionLoggerLogger);
+    }
+
     @Bean
     HttpPostConfigurationProvider httpPostConfigurationProvider() {
         return new HttpPostConfigurationProvider();

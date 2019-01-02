@@ -17,7 +17,6 @@
 package com.expedia.www.haystack.pipes.httpPoster;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.pipes.commons.CommonConstants;
 import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
 import com.expedia.www.haystack.pipes.commons.kafka.TagFlattener;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -60,6 +59,7 @@ class HttpPostAction implements ForeachAction<String, Span> {
     private final HttpPostConfigurationProvider httpPostConfigurationProvider;
     private final Factory factory;
     private final Random random;
+    private final InvalidProtocolBufferExceptionLogger invalidProtocolBufferExceptionLogger;
 
     @Autowired
     HttpPostAction(Printer printer,
@@ -68,7 +68,8 @@ class HttpPostAction implements ForeachAction<String, Span> {
                    Logger httpPostActionLogger,
                    HttpPostConfigurationProvider httpPostConfigurationProvider,
                    Factory httpPostActionFactory,
-                   Random random) {
+                   Random random,
+                   InvalidProtocolBufferExceptionLogger invalidProtocolBufferExceptionLogger) {
         this.printer = printer;
         this.contentCollector = contentCollector;
         this.timersAndCounters = timersAndCounters;
@@ -76,6 +77,7 @@ class HttpPostAction implements ForeachAction<String, Span> {
         this.httpPostConfigurationProvider = httpPostConfigurationProvider;
         this.factory = httpPostActionFactory;
         this.random = random;
+        this.invalidProtocolBufferExceptionLogger = invalidProtocolBufferExceptionLogger;
 
         String msg = String.format(STARTUP_MESSAGE,
                 this.httpPostConfigurationProvider.url(), this.httpPostConfigurationProvider.pollpercent());
@@ -115,9 +117,7 @@ class HttpPostAction implements ForeachAction<String, Span> {
             jsonWithFlattenedTags = tagFlattener.flattenTags(jsonWithOpenTracingTags);
             return contentCollector.addAndReturnBatch(jsonWithFlattenedTags);
         } catch (InvalidProtocolBufferException exception) {
-            // Must format below because log4j2 underneath slf4j doesn't handle .error(varargs) properly
-            final String message = String.format(CommonConstants.PROTOBUF_ERROR_MSG, span.toString(), exception.getMessage());
-            httpPostActionLogger.error(message, exception);
+            invalidProtocolBufferExceptionLogger.logError(span, exception);
             return "";
         }
     }

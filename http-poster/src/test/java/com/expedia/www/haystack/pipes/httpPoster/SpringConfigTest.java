@@ -96,6 +96,13 @@ public class SpringConfigTest {
         assertEquals(HttpPostIsActiveController.class.getName(), logger.getName());
     }
 
+    @Test
+    public void testInvalidProtocolBufferExceptionLogger() {
+        final Logger logger = springConfig.invalidProtocolBufferExceptionLoggerLogger();
+
+        assertEquals(InvalidProtocolBufferExceptionLogger.class.getName(), logger.getName());
+    }
+
     // All of the other beans in SpringConfig use default constructors, or use arguments provided by other Spring beans
     // in SpringConfig, so tests on the methods that create those beans have little value.
 }

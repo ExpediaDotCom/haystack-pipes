@@ -53,11 +53,15 @@ public class FailedRecordExtractor {
 
     private final Logger logger;
     private final Counter throttledCounter;
+    private final InternalFailureErrorLogger internalFailureErrorLogger;
 
     @Autowired
-    FailedRecordExtractor(Logger failedRecordExtractorLogger, Counter throttledCounter) {
+    FailedRecordExtractor(Logger failedRecordExtractorLogger,
+                          Counter throttledCounter,
+                          InternalFailureErrorLogger internalFailureErrorLogger) {
         this.logger = failedRecordExtractorLogger;
         this.throttledCounter = throttledCounter;
+        this.internalFailureErrorLogger = internalFailureErrorLogger;
     }
 
     List<Record> extractFailedRecords(PutRecordBatchRequest request,
@@ -98,8 +102,7 @@ public class FailedRecordExtractor {
                     // needing retry when reporting error code "InternalFailure"
                     recordsNeedingRetry.clear();
                     recordsNeedingRetry.addAll(request.getRecords());
-                    logger.error(String.format(INTERNAL_FAILURE_MSG,
-                            request.getRecords().size(), retryCount, result.getSdkResponseMetadata().getRequestId()));
+                    internalFailureErrorLogger.logError(request, result, retryCount);
                     break;
                 } else {
                     final List<Record> records = request.getRecords();

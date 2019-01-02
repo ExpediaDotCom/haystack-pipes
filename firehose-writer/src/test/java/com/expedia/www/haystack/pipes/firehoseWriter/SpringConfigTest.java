@@ -222,6 +222,20 @@ public class SpringConfigTest {
     }
 
     @Test
+    public void testInternalFailureErrorLoggerLogger() {
+        final Logger logger = springConfig.internalFailureErrorLoggerLogger();
+
+        assertEquals(InternalFailureErrorLogger.class.getName(), logger.getName());
+    }
+
+    @Test
+    public void testUnexpectedExceptionLoggerLogger() {
+        final Logger logger = springConfig.unexpectedExceptionLoggerLogger();
+
+        assertEquals(UnexpectedExceptionLogger.class.getName(), logger.getName());
+    }
+
+    @Test
     public void testEndpointConfiguration() {
         final EndpointConfiguration endpointConfiguration = springConfig.endpointConfiguration(URL, SIGNING_REGION);
 
