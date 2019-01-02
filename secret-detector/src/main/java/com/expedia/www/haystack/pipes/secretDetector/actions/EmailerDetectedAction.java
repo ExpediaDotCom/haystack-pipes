@@ -40,10 +40,6 @@ public class EmailerDetectedAction implements DetectedAction {
     static final String TEXT_TEMPLATE =
             "Confidential data has been found in a span: service [%s] operation [%s] span [%s] trace [%s] tag(s) [%s]";
     @VisibleForTesting
-    static final String FROM_ADDRESS_EXCEPTION_MSG = "Problem using eMail configurations: from [%s]";
-    @VisibleForTesting
-    static final String TOS_ADDRESS_EXCEPTION_MSG = "Problem using eMail configurations: tos [%s]";
-    @VisibleForTesting
     static final String SENDING_EXCEPTION_MSG = "Problem sending eMail";
     @VisibleForTesting
     static final String HOST_KEY = "mail.smtp.host";
@@ -51,6 +47,8 @@ public class EmailerDetectedAction implements DetectedAction {
     private final MimeMessageFactory mimeMessageFactory;
     private final Sender sender;
     private final Logger logger;
+    private final FromAddressExceptionLogger fromAddressExceptionLogger;
+    private final ToAddressExceptionLogger toAddressExceptionLogger;
 
     private final Address from;
     private final Address[] toAddresses;
@@ -60,10 +58,14 @@ public class EmailerDetectedAction implements DetectedAction {
     public EmailerDetectedAction(MimeMessageFactory mimeMessageFactory,
                           Logger emailerDetectedActionLogger,
                           Sender sender,
-                          SecretsEmailConfigurationProvider secretsEmailConfigurationProvider) {
+                          SecretsEmailConfigurationProvider secretsEmailConfigurationProvider,
+                          FromAddressExceptionLogger fromAddressExceptionLogger,
+                          ToAddressExceptionLogger toAddressExceptionLogger) {
         this.mimeMessageFactory = mimeMessageFactory;
         this.logger = emailerDetectedActionLogger;
         this.sender = sender;
+        this.fromAddressExceptionLogger = fromAddressExceptionLogger;
+        this.toAddressExceptionLogger = toAddressExceptionLogger;
 
         this.from = createFromAddress(secretsEmailConfigurationProvider);
         this.toAddresses = createToAddresses(secretsEmailConfigurationProvider);
@@ -77,8 +79,7 @@ public class EmailerDetectedAction implements DetectedAction {
             try {
                 return new InternetAddress(sFrom);
             } catch (AddressException e) {
-                final String message = String.format(FROM_ADDRESS_EXCEPTION_MSG, sFrom);
-                logger.error(message);
+                fromAddressExceptionLogger.logError(sFrom, e);
             }
         }
         return null;
@@ -97,8 +98,7 @@ public class EmailerDetectedAction implements DetectedAction {
                 }
                 return addresses;
             } catch (AddressException e) {
-                final String message = String.format(TOS_ADDRESS_EXCEPTION_MSG, tos);
-                logger.error(message);
+                toAddressExceptionLogger.logError(tos, e);
             }
         }
         return null;

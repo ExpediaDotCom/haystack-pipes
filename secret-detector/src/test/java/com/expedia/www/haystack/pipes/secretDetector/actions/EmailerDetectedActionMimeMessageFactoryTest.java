@@ -38,13 +38,18 @@ public class EmailerDetectedActionMimeMessageFactoryTest {
     private EmailerDetectedAction.Sender mockSender;
     @Mock
     private SecretsEmailConfigurationProvider mockSecretsEmailConfigurationProvider;
+    @Mock
+    private FromAddressExceptionLogger mockFromAddressExceptionLogger;
+    @Mock
+    private ToAddressExceptionLogger mockToAddressExceptionLogger;
 
     private EmailerDetectedActionFactory emailerDetectedActionFactory;
 
     @Before
     public void setUp() {
-        emailerDetectedActionFactory = new EmailerDetectedActionFactory(
-                mockEmailerMimeMessageFactory, mockEmailerLogger, mockSender, mockSecretsEmailConfigurationProvider);
+        emailerDetectedActionFactory = new EmailerDetectedActionFactory(mockEmailerMimeMessageFactory,
+                mockEmailerLogger, mockSender, mockSecretsEmailConfigurationProvider, mockFromAddressExceptionLogger,
+                mockToAddressExceptionLogger);
     }
 
     @After

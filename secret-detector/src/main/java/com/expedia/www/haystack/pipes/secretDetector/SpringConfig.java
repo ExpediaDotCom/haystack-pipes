@@ -42,6 +42,8 @@ import com.expedia.www.haystack.pipes.secretDetector.config.SpringWiredWhiteList
 import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufSpanMaskerToKafkaTransformer;
 import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufSpanToEmailInKafkaTransformer;
 import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufToDetectorAction;
+import com.expedia.www.haystack.pipes.secretDetector.actions.FromAddressExceptionLogger;
+import com.expedia.www.haystack.pipes.secretDetector.actions.ToAddressExceptionLogger;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
 import org.cfg4j.provider.ConfigurationProvider;
@@ -121,6 +123,16 @@ public class SpringConfig {
     @Bean
     Logger emailerDetectedActionLogger() {
         return LoggerFactory.getLogger(EmailerDetectedAction.class);
+    }
+
+    @Bean
+    Logger fromAddressExceptionLoggerLogger() {
+        return LoggerFactory.getLogger(FromAddressExceptionLogger.class);
+    }
+
+    @Bean
+    Logger toAddressExceptionLoggerLogger() {
+        return LoggerFactory.getLogger(ToAddressExceptionLogger.class);
     }
 
     @Bean
@@ -270,9 +282,23 @@ public class SpringConfig {
     EmailerDetectedActionFactory emailerDetectedActionFactory(EmailerDetectedAction.MimeMessageFactory mimeMessageFactory,
                                                               Logger emailerDetectedActionLogger,
                                                               EmailerDetectedAction.Sender sender,
-                                                              SecretsEmailConfigurationProvider secretsEmailConfigurationProvider) {
+                                                              SecretsEmailConfigurationProvider secretsEmailConfigurationProvider,
+                                                              FromAddressExceptionLogger fromAddressExceptionLogger,
+                                                              ToAddressExceptionLogger toAddressExceptionLogger) {
         return new EmailerDetectedActionFactory(mimeMessageFactory, emailerDetectedActionLogger,
-                sender, secretsEmailConfigurationProvider);
+                sender, secretsEmailConfigurationProvider, fromAddressExceptionLogger, toAddressExceptionLogger);
+    }
+
+    @Bean
+    @Autowired
+    FromAddressExceptionLogger fromAddressExceptionLogger(Logger fromAddressExceptionLoggerLogger) {
+        return new FromAddressExceptionLogger(fromAddressExceptionLoggerLogger);
+    }
+
+    @Bean
+    @Autowired
+    ToAddressExceptionLogger toAddressExceptionLogger(Logger toAddressExceptionLoggerLogger) {
+        return new ToAddressExceptionLogger(toAddressExceptionLoggerLogger);
     }
 
     @Bean
@@ -280,11 +306,15 @@ public class SpringConfig {
     EmailerDetectedAction emailerDetectedAction(EmailerDetectedAction.MimeMessageFactory mimeMessageFactory,
                                                 Logger emailerDetectedActionLogger,
                                                 EmailerDetectedAction.Sender sender,
-                                                SecretsEmailConfigurationProvider secretsEmailConfigurationProvider) {
+                                                SecretsEmailConfigurationProvider secretsEmailConfigurationProvider,
+                                                FromAddressExceptionLogger fromAddressExceptionLogger,
+                                                ToAddressExceptionLogger toAddressExceptionLogger) {
         return new EmailerDetectedAction(mimeMessageFactory,
                 emailerDetectedActionLogger,
                 sender,
-                secretsEmailConfigurationProvider);
+                secretsEmailConfigurationProvider,
+                fromAddressExceptionLogger,
+                toAddressExceptionLogger);
     }
 
     @Bean

@@ -28,20 +28,27 @@ public class EmailerDetectedActionFactory implements DetectedActionFactory {
     private final Logger emailerLogger;
     private final EmailerDetectedAction.Sender sender;
     private final SecretsEmailConfigurationProvider secretsEmailConfigurationProvider;
+    private final FromAddressExceptionLogger fromAddressExceptionLogger;
+    private final ToAddressExceptionLogger toAddressExceptionLogger;
 
     @Autowired
     public EmailerDetectedActionFactory(EmailerDetectedAction.MimeMessageFactory mimeMessageFactory,
                                         Logger emailerDetectedActionLogger,
                                         EmailerDetectedAction.Sender sender,
-                                        SecretsEmailConfigurationProvider secretsEmailConfigurationProvider) {
+                                        SecretsEmailConfigurationProvider secretsEmailConfigurationProvider,
+                                        FromAddressExceptionLogger fromAddressExceptionLogger,
+                                        ToAddressExceptionLogger toAddressExceptionLogger) {
         this.mimeMessageFactory = mimeMessageFactory;
         this.emailerLogger = emailerDetectedActionLogger;
         this.sender = sender;
         this.secretsEmailConfigurationProvider = secretsEmailConfigurationProvider;
+        this.fromAddressExceptionLogger = fromAddressExceptionLogger;
+        this.toAddressExceptionLogger = toAddressExceptionLogger;
     }
 
     @Override
     public DetectedAction create() {
-        return new EmailerDetectedAction(mimeMessageFactory, emailerLogger, sender, secretsEmailConfigurationProvider);
+        return new EmailerDetectedAction(mimeMessageFactory, emailerLogger, sender, secretsEmailConfigurationProvider,
+                fromAddressExceptionLogger, toAddressExceptionLogger);
     }
 }
