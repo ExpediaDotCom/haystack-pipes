@@ -29,14 +29,21 @@ Configuration:
         - ref: Console
         - ref: EmitToGraphiteLog4jAppender
     Logger:
-      name: com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter
+      name: com.expedia.www.haystack.pipes.commons.kafka.KafkaConsumerStarter
       level: info
       additivity: false
       AppenderRef:
         - ref: Console
         - ref: EmitToGraphiteLog4jAppender
     Logger:
-      name: com.expedia.www.haystack.pipes.firehoseWriter.FirehoseAction
+      name: com.expedia.www.haystack.pipes.commons.kafka.ConsumerTask
+      level: info
+      additivity: false
+      AppenderRef:
+        - ref: Console
+        - ref: EmitToGraphiteLog4jAppender
+    Logger:
+      name: com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor
       level: info
       additivity: false
       AppenderRef:
