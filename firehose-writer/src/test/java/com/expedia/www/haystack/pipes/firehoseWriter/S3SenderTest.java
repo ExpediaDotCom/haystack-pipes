@@ -34,7 +34,6 @@ import org.slf4j.Logger;
 import java.net.SocketTimeoutException;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Semaphore;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.PUT_RECORD_BATCH_ERROR_MSG;
@@ -45,11 +44,7 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class S3SenderTest {
@@ -84,7 +79,7 @@ public class S3SenderTest {
     @Mock
     private RetryCalculator mockRetryCalculator;
     @Mock
-    private Semaphore mockSemaphore;
+    private Callback mockCallback;
     @Mock
     private Sleeper mockSleeper;
     @Mock
@@ -120,7 +115,7 @@ public class S3SenderTest {
         verifyNoMoreInteractions(mockPutRecordBatchResult);
         verifyNoMoreInteractions(mockRecord);
         verifyNoMoreInteractions(mockRetryCalculator);
-        verifyNoMoreInteractions(mockSemaphore);
+        verifyNoMoreInteractions(mockCallback);
         verifyNoMoreInteractions(mockSleeper);
         verifyNoMoreInteractions(mockStopwatch);
         verifyNoMoreInteractions(mockThread);
@@ -131,7 +126,7 @@ public class S3SenderTest {
     public void testSendRecordsToS3HappyCase() throws InterruptedException {
         whenForSendRecordsToS3();
 
-        s3Sender.sendRecordsToS3(recordList, mockRetryCalculator, mockSleeper, RETRY_COUNT, mockSemaphore);
+        s3Sender.sendRecordsToS3(recordList, mockRetryCalculator, mockSleeper, RETRY_COUNT, mockCallback);
 
         verifiesForSendRecordsToS3();
     }
@@ -165,8 +160,8 @@ public class S3SenderTest {
         verify(mockFactory).createSleeper();
         verify(mockSleeper).sleep(SLEEP_MILLIS);
         verify(mockFactory).createFirehoseAsyncHandler(s3Sender, mockStopwatch, mockPutRecordBatchRequest, SLEEP_MILLIS,
-                RETRY_COUNT, recordList, mockRetryCalculator, mockSleeper, mockSemaphore, mockFirehoseCountersAndTimer,
-                mockFailedRecordExtractor);
+                RETRY_COUNT, recordList, mockRetryCalculator, mockSleeper, mockFirehoseCountersAndTimer,
+                mockFailedRecordExtractor, mockCallback);
         verify(mockAmazonKinesisFirehoseAsync).putRecordBatchAsync(mockPutRecordBatchRequest, mockFirehoseAsyncHandler);
     }
 
@@ -215,7 +210,7 @@ public class S3SenderTest {
     public void testFactoryCreateFirehoseAsyncHandler() {
         final FirehoseAsyncHandler firehoseAsyncHandler = factory.createFirehoseAsyncHandler(s3Sender, mockStopwatch,
                 mockPutRecordBatchRequest, SLEEP_MILLIS, RETRY_COUNT, recordList, mockRetryCalculator, mockSleeper,
-                mockSemaphore, mockFirehoseCountersAndTimer, mockFailedRecordExtractor);
+                mockFirehoseCountersAndTimer, mockFailedRecordExtractor, mockCallback);
 
         assertSame(s3Sender, firehoseAsyncHandler.s3Sender);
         assertSame(mockStopwatch, firehoseAsyncHandler.stopwatch);
@@ -225,7 +220,7 @@ public class S3SenderTest {
         assertSame(recordList, firehoseAsyncHandler.recordList);
         assertSame(mockRetryCalculator, firehoseAsyncHandler.retryCalculator);
         assertSame(mockSleeper, firehoseAsyncHandler.sleeper);
-        assertSame(mockSemaphore, firehoseAsyncHandler.parallelismSemaphore);
+        assertSame(mockCallback, firehoseAsyncHandler.callback);
         assertSame(mockFirehoseCountersAndTimer, firehoseAsyncHandler.firehoseTimersAndCounters);
         assertSame(mockFailedRecordExtractor, firehoseAsyncHandler.failedRecordExtractor);
     }

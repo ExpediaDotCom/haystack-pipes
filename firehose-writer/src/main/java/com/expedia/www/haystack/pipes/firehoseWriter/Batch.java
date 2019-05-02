@@ -47,7 +47,7 @@ class Batch {
         this.logger = batchLogger;
     }
 
-    List<Record> getRecordList(Span span) {
+    List<Record> getRecordList(final Span span) {
         try {
             final String jsonWithOpenTracingTags = printer.print(span);
             final String jsonWithFlattenedTags = tagFlattener.flattenTags(jsonWithOpenTracingTags);
@@ -62,5 +62,4 @@ class Batch {
     List<Record> getRecordListForShutdown() {
         return firehoseCollector.createIncompleteBatch();
     }
-
 }

@@ -59,4 +59,24 @@ public class KafkaConfigurationProvider implements KafkaConfig {
     public int sessiontimeout() {
         return kafkaConfig.sessiontimeout();
     }
+
+    @Override
+    public int maxwakeups() {
+        return kafkaConfig.maxwakeups();
+    }
+
+    @Override
+    public int wakeuptimeoutms() {
+        return kafkaConfig.wakeuptimeoutms();
+    }
+
+    @Override
+    public long polltimeoutms() {
+        return kafkaConfig.polltimeoutms();
+    }
+
+    @Override
+    public long commitms() {
+        return kafkaConfig.commitms();
+    }
 }

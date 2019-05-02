@@ -28,4 +28,12 @@ public interface KafkaConfig {
     int threadcount();
 
     int sessiontimeout();
+
+    int maxwakeups();
+
+    int wakeuptimeoutms();
+
+    long polltimeoutms();
+
+    long commitms();
 }

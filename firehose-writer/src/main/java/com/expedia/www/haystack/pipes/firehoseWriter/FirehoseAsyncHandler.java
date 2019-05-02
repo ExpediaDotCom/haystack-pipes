@@ -24,7 +24,6 @@ import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.util.VisibleForTesting;
 
 import java.util.List;
-import java.util.concurrent.Semaphore;
 
 class FirehoseAsyncHandler implements AsyncHandler<PutRecordBatchRequest, PutRecordBatchResult> {
     @VisibleForTesting
@@ -47,11 +46,11 @@ class FirehoseAsyncHandler implements AsyncHandler<PutRecordBatchRequest, PutRec
     @VisibleForTesting
     final S3Sender s3Sender;
     @VisibleForTesting
-    final Semaphore parallelismSemaphore;
-    @VisibleForTesting
     final FirehoseTimersAndCounters firehoseTimersAndCounters;
     @VisibleForTesting
     final FailedRecordExtractor failedRecordExtractor;
+    @VisibleForTesting
+    final Callback callback;
 
     FirehoseAsyncHandler(S3Sender s3Sender,
                          Stopwatch stopwatch,
@@ -61,9 +60,9 @@ class FirehoseAsyncHandler implements AsyncHandler<PutRecordBatchRequest, PutRec
                          List<Record> recordList,
                          RetryCalculator retryCalculator,
                          Sleeper sleeper,
-                         Semaphore parallelismSemaphore,
                          FirehoseTimersAndCounters firehoseTimersAndCounters,
-                         FailedRecordExtractor failedRecordExtractor) {
+                         FailedRecordExtractor failedRecordExtractor,
+                         Callback callback) {
         this.stopwatch = stopwatch;
         this.putRecordBatchRequest = putRecordBatchRequest;
         this.sleepMillis = sleepMillis;
@@ -72,16 +71,16 @@ class FirehoseAsyncHandler implements AsyncHandler<PutRecordBatchRequest, PutRec
         this.retryCalculator = retryCalculator;
         this.sleeper = sleeper;
         this.s3Sender = s3Sender;
-        this.parallelismSemaphore = parallelismSemaphore;
         this.firehoseTimersAndCounters = firehoseTimersAndCounters;
         this.failedRecordExtractor = failedRecordExtractor;
+        this.callback = callback;
     }
 
     @Override
     public void onError(Exception exception) {
         s3Sender.onFirehoseCallback(stopwatch, putRecordBatchRequest, null, sleepMillis, retryCount, exception,
                 firehoseTimersAndCounters);
-        s3Sender.sendRecordsToS3(recordList, retryCalculator, sleeper, retryCount + 1, parallelismSemaphore);
+        s3Sender.sendRecordsToS3(recordList, retryCalculator, sleeper, retryCount + 1, callback);
     }
 
     @Override
@@ -91,9 +90,9 @@ class FirehoseAsyncHandler implements AsyncHandler<PutRecordBatchRequest, PutRec
         if (s3Sender.areThereRecordsThatFirehoseHasNotProcessed(result.getFailedPutCount())) {
             final List<Record> failedRecords = failedRecordExtractor.extractFailedRecords(request, result, retryCount);
             s3Sender.sendRecordsToS3(
-                    failedRecords, retryCalculator, sleeper, retryCount + 1, parallelismSemaphore);
+                    failedRecords, retryCalculator, sleeper, retryCount + 1, callback);
         } else {
-            parallelismSemaphore.release();
+            callback.onComplete();
         }
     }
 

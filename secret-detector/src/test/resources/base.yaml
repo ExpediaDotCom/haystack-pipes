@@ -6,6 +6,10 @@ haystack:
     totopic: "proto-spans-scrubbed"
     threadcount: 1
     sessiontimeout: 15000
+    maxwakeups: -1
+    wakeuptimeoutms: -1
+    polltimeoutms: -1
+    commitms: -1
   pipe:
     streams:
       replicationfactor: 1

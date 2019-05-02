@@ -29,14 +29,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Semaphore;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FirehoseAsyncHandlerTest {
@@ -62,7 +59,7 @@ public class FirehoseAsyncHandlerTest {
     @Mock
     private S3Sender mockS3Sender;
     @Mock
-    private Semaphore mockSemaphore;
+    private Callback mockCallback;
     @Mock
     private Sleeper mockSleeper;
     @Mock
@@ -81,9 +78,9 @@ public class FirehoseAsyncHandlerTest {
                 mockRecordList,
                 mockRetryCalculator,
                 mockSleeper,
-                mockSemaphore,
                 mockFirehoseCountersAndTimer,
-                mockFailedRecordExtractor);
+                mockFailedRecordExtractor,
+                mockCallback);
         recordList = Collections.singletonList(mockRecord);
     }
 
@@ -99,7 +96,7 @@ public class FirehoseAsyncHandlerTest {
         verifyNoMoreInteractions(mockRecord);
         verifyNoMoreInteractions(mockRetryCalculator);
         verifyNoMoreInteractions(mockS3Sender);
-        verifyNoMoreInteractions(mockSemaphore);
+        verifyNoMoreInteractions(mockCallback);
         verifyNoMoreInteractions(mockSleeper);
         verifyNoMoreInteractions(mockStopwatch);
     }
@@ -111,14 +108,14 @@ public class FirehoseAsyncHandlerTest {
         verify(mockS3Sender).onFirehoseCallback(mockStopwatch, mockPutRecordBatchRequest, null, SLEEP_MILLIS,
                 RETRY_COUNT, mockException, mockFirehoseCountersAndTimer);
         verify(mockS3Sender).sendRecordsToS3(
-                mockRecordList, mockRetryCalculator, mockSleeper, RETRY_COUNT + 1, mockSemaphore);
+                mockRecordList, mockRetryCalculator, mockSleeper, RETRY_COUNT + 1, mockCallback);
     }
 
     @Test
     public void testOnSuccessNoFailures() {
         testOnSuccess(0);
 
-        verify(mockSemaphore).release();
+        verify(mockCallback).onComplete();
     }
 
     @Test
@@ -130,7 +127,7 @@ public class FirehoseAsyncHandlerTest {
         verify(mockFailedRecordExtractor).extractFailedRecords(
                 mockPutRecordBatchRequest, mockPutRecordBatchResult, RETRY_COUNT);
         verify(mockS3Sender).sendRecordsToS3(
-                recordList, mockRetryCalculator, mockSleeper, RETRY_COUNT + 1, mockSemaphore);
+                recordList, mockRetryCalculator, mockSleeper, RETRY_COUNT + 1, mockCallback);
     }
 
     private void testOnSuccess(int failureCount) {

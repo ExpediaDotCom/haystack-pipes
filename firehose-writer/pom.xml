@@ -18,6 +18,7 @@
 
     <properties>
         <finalName>${project.artifactId}-${project.version}</finalName>
+        <jacoco-percentage>0.8</jacoco-percentage>
     </properties>
 
     <dependencies>

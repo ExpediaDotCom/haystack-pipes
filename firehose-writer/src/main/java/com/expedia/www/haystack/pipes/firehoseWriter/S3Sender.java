@@ -65,7 +65,7 @@ public class S3Sender {
                          final RetryCalculator retryCalculator,
                          final Sleeper sleeper,
                          final int retryCount,
-                         final Semaphore parallelism) {
+                         final Callback callback) {
         final String streamName = firehoseConfigurationProvider.streamname();
         final PutRecordBatchRequest request = factory.createPutRecordBatchRequest(streamName, records);
         final Stopwatch stopwatch = firehoseTimersAndCounters.startTimer();
@@ -83,8 +83,9 @@ public class S3Sender {
         } finally {
             amazonKinesisFirehoseAsync.putRecordBatchAsync(request,
                     factory.createFirehoseAsyncHandler(this, stopwatch, request, sleepMillis, retryCount,
-                            records, retryCalculator, sleeper, parallelism, firehoseTimersAndCounters,
-                            failedRecordExtractor));
+                            records, retryCalculator, sleeper, firehoseTimersAndCounters,
+                            failedRecordExtractor,
+                            callback));
         }
         if(isInterrupted) {
             factory.currentThread().interrupt();
@@ -137,17 +138,15 @@ public class S3Sender {
                                                         List<Record> records,
                                                         RetryCalculator retryCalculator,
                                                         Sleeper sleeper,
-                                                        Semaphore parallelism,
                                                         FirehoseTimersAndCounters firehoseTimersAndCounters,
-                                                        FailedRecordExtractor failedRecordExtractor) {
+                                                        FailedRecordExtractor failedRecordExtractor,
+                                                        Callback callback) {
             return new FirehoseAsyncHandler(s3Sender, stopwatch, request, sleepMillis, retryCount, records,
-                    retryCalculator, sleeper, parallelism, firehoseTimersAndCounters, failedRecordExtractor);
+                    retryCalculator, sleeper, firehoseTimersAndCounters, failedRecordExtractor, callback);
         }
 
         PutRecordBatchRequest createPutRecordBatchRequest(String streamName, List<Record> records) {
             return new PutRecordBatchRequest().withDeliveryStreamName(streamName).withRecords(records);
         }
-
     }
-
 }

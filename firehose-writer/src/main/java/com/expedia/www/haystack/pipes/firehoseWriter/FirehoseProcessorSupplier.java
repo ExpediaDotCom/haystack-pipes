@@ -16,9 +16,8 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
-import com.expedia.open.tracing.Span;
-import org.apache.kafka.streams.processor.Processor;
-import org.apache.kafka.streams.processor.ProcessorSupplier;
+import com.expedia.www.haystack.pipes.commons.kafka.SpanProcessor;
+import com.expedia.www.haystack.pipes.commons.kafka.SpanProcessorSupplier;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -26,7 +25,7 @@ import org.springframework.stereotype.Component;
 import java.util.function.Supplier;
 
 @Component
-public class FirehoseProcessorSupplier implements ProcessorSupplier<String, Span> {
+public class FirehoseProcessorSupplier implements SpanProcessorSupplier {
     private final Logger firehoseProcessorLogger;
     private final FirehoseTimersAndCounters firehoseTimersAndCounters;
     private final Supplier<Batch> batch;
@@ -49,7 +48,7 @@ public class FirehoseProcessorSupplier implements ProcessorSupplier<String, Span
     }
 
     @Override
-    public Processor<String, Span> get() {
+    public SpanProcessor get() {
         return new FirehoseProcessor(firehoseProcessorLogger, firehoseTimersAndCounters, batch,
                 firehoseProcessorFactory, firehoseConfigurationProvider, s3Sender);
     }
