@@ -20,7 +20,7 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaConsumerStarter;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
 import org.junit.After;
@@ -36,23 +36,12 @@ import java.util.concurrent.TimeUnit;
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SPAN_ARRIVAL_TIMER_NAME;
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
-import static com.expedia.www.haystack.pipes.firehoseWriter.SpringConfig.EXCEPTION_COUNTER_NAME;
-import static com.expedia.www.haystack.pipes.firehoseWriter.SpringConfig.FAILURE_COUNTER_NAME;
-import static com.expedia.www.haystack.pipes.firehoseWriter.SpringConfig.PUT_BATCH_REQUEST_TIMER_NAME;
-import static com.expedia.www.haystack.pipes.firehoseWriter.SpringConfig.SOCKET_TIMEOUT_COUNTER_NAME;
-import static com.expedia.www.haystack.pipes.firehoseWriter.SpringConfig.SPAN_COUNTER_NAME;
-import static com.expedia.www.haystack.pipes.firehoseWriter.SpringConfig.SUCCESS_COUNTER_NAME;
-import static com.expedia.www.haystack.pipes.firehoseWriter.SpringConfig.THROTTLED_COUNTER_NAME;
+import static com.expedia.www.haystack.pipes.firehoseWriter.SpringConfig.*;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SpringConfigTest {
@@ -173,8 +162,7 @@ public class SpringConfigTest {
 
     @Test
     public void testKafkaStreamStarter() {
-        final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter(mockHealthController);
-
+        final KafkaConsumerStarter kafkaStreamStarter = springConfig.kafkaConsumerStarter(mockHealthController);
         assertSame(ProtobufToFirehoseProducer.class, kafkaStreamStarter.containingClass);
         assertSame(APPLICATION, kafkaStreamStarter.clientId);
     }

@@ -16,34 +16,32 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
-import java.time.Clock;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
-
-import com.expedia.www.haystack.pipes.commons.Timers;
-import com.netflix.servo.util.VisibleForTesting;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseAsync;
 import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseAsyncClientBuilder;
 import com.expedia.www.haystack.metrics.MetricObjects;
+import com.expedia.www.haystack.pipes.commons.Timers;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaConsumerStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.Printer;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
-
+import com.netflix.servo.util.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+
+import java.time.Clock;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SPAN_ARRIVAL_TIMER_NAME;
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
@@ -127,8 +125,8 @@ class SpringConfig {
 
     @Bean
     @Autowired
-    KafkaStreamStarter kafkaStreamStarter(final HealthController healthController) {
-        return new KafkaStreamStarter(ProtobufToFirehoseProducer.class, APPLICATION, healthController);
+    KafkaConsumerStarter kafkaConsumerStarter(final HealthController healthController) {
+        return new KafkaConsumerStarter(ProtobufToFirehoseProducer.class, APPLICATION, healthController);
     }
 
     @Bean
@@ -319,12 +317,9 @@ class SpringConfig {
 
     @Bean
     @Autowired
-    ProtobufToFirehoseProducer protobufToFirehoseProducer(KafkaStreamStarter kafkaStreamStarter,
-                                                          SerdeFactory serdeFactory,
-                                                          FirehoseProcessorSupplier firehoseProcessorSupplier,
-                                                          KafkaConfigurationProvider kafkaConfigurationProvider) {
-        return new ProtobufToFirehoseProducer(
-                kafkaStreamStarter, serdeFactory, firehoseProcessorSupplier, kafkaConfigurationProvider);
+    ProtobufToFirehoseProducer protobufToFirehoseProducer(KafkaConsumerStarter kafkaConsumerStarter,
+                                                          FirehoseProcessorSupplier firehoseProcessorSupplier) {
+        return new ProtobufToFirehoseProducer(kafkaConsumerStarter, firehoseProcessorSupplier);
     }
 
     @Bean

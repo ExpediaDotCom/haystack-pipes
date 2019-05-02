@@ -16,84 +16,48 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
-import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
-import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
-import org.apache.kafka.common.serialization.Serde;
-import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.KStreamBuilder;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaConsumerStarter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
-import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProtobufToFirehoseProducerTest {
     private static final String FROM_TOPIC = RANDOM.nextLong() + "FROM_TOPIC";
 
     @Mock
-    private KafkaStreamStarter mockKafkaStreamStarter;
-    @Mock
-    private SerdeFactory mockSerdeFactory;
+    private KafkaConsumerStarter mockKafkaConsumerStarter;
+
     @Mock
     private FirehoseProcessorSupplier mockFirehoseProcessorSupplier;
     @Mock
     private KafkaConfigurationProvider mockKafkaConfigurationProvider;
-    @Mock
-    private KStreamBuilder mockKStreamBuilder;
-    @Mock
-    private KStream<String, Span> mockKStream;
-    @Mock
-    private Serde<Span> mockSpanSerde;
 
     private ProtobufToFirehoseProducer protobufToFirehoseProducer;
 
     @Before
     public void setUp() {
-        protobufToFirehoseProducer = new ProtobufToFirehoseProducer(mockKafkaStreamStarter, mockSerdeFactory,
-                mockFirehoseProcessorSupplier, mockKafkaConfigurationProvider);
+        protobufToFirehoseProducer = new ProtobufToFirehoseProducer(mockKafkaConsumerStarter,
+                mockFirehoseProcessorSupplier);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSerdeFactory, mockFirehoseProcessorSupplier,
-                mockKafkaConfigurationProvider, mockKStreamBuilder, mockKStream, mockSpanSerde);
+        verifyNoMoreInteractions(mockKafkaConsumerStarter, mockFirehoseProcessorSupplier,
+                mockKafkaConfigurationProvider);
     }
 
     @Test
     public void testMain() {
         protobufToFirehoseProducer.main();
 
-        verify(mockKafkaStreamStarter).createAndStartStream(protobufToFirehoseProducer);
-    }
-
-    @SuppressWarnings("Duplicates")
-    @Test
-    public void testBuildStreamTopology() {
-        when(mockSerdeFactory.createJsonProtoSpanSerde(anyString())).thenReturn(mockSpanSerde);
-        when(mockKafkaConfigurationProvider.fromtopic()).thenReturn(FROM_TOPIC);
-        when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
-                .thenReturn(mockKStream);
-
-        protobufToFirehoseProducer.buildStreamTopology(mockKStreamBuilder);
-
-        verify(mockSerdeFactory).createJsonProtoSpanSerde(APPLICATION);
-        verify(mockKafkaConfigurationProvider).fromtopic();
-        verify(mockKStreamBuilder).stream(any(Serdes.StringSerde.class), eq(mockSpanSerde), eq(FROM_TOPIC));
-        verify(mockKStream).process(mockFirehoseProcessorSupplier);
+        verify(mockKafkaConsumerStarter).createAndStartConsumer(mockFirehoseProcessorSupplier);
     }
 }

@@ -18,18 +18,27 @@ package com.expedia.www.haystack.pipes.firehoseWriter;
 
 import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.expedia.open.tracing.Span;
+import com.expedia.www.haystack.pipes.commons.kafka.SpanProcessor;
 import com.netflix.servo.util.VisibleForTesting;
-import org.apache.kafka.streams.processor.AbstractProcessor;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.TopicPartition;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 @Component
-public class FirehoseProcessor extends AbstractProcessor<String, Span> {
+public class FirehoseProcessor implements SpanProcessor {
+    final static Logger logger = LoggerFactory.getLogger(FirehoseProcessor.class);
+
     @VisibleForTesting
     static final String STARTUP_MESSAGE = "Instantiating FirehoseAction into stream name [%s]";
     @VisibleForTesting
@@ -39,8 +48,10 @@ public class FirehoseProcessor extends AbstractProcessor<String, Span> {
     private final Batch batch;
     private final Factory factory;
     private final FirehoseConfigurationProvider firehoseConfigurationProvider;
-    private final Semaphore parallelismSemaphore;
     private final S3Sender s3Sender;
+    private TopicPartition topicPartition;
+    private final List<BatchRecords> batchRecords;
+    private final Semaphore semaphore;
 
     @Autowired
     FirehoseProcessor(Logger firehoseProcessorLogger,
@@ -55,40 +66,82 @@ public class FirehoseProcessor extends AbstractProcessor<String, Span> {
         this.firehoseConfigurationProvider = firehoseConfigurationProvider;
         this.s3Sender = s3Sender;
         firehoseProcessorLogger.info(String.format(STARTUP_MESSAGE, firehoseConfigurationProvider.streamname()));
-        this.parallelismSemaphore = factory.createSemaphore(firehoseConfigurationProvider.maxparallelismpershard());
+
+        final int maxParallelism = firehoseConfigurationProvider.maxparallelismpershard();
+        this.semaphore = factory.createSemaphore(maxParallelism);
+        this.batchRecords = new ArrayList<>(maxParallelism);
     }
 
     @Override
-    public void process(String key, Span span) {
+    public Optional<Long> process(final ConsumerRecord<String, Span> record) {
+        final Span span = record.value();
         firehoseTimersAndCounters.incrementRequestCounter();
         firehoseTimersAndCounters.recordSpanArrivalDelta(span);
-        final List<Record> records = batch.getRecordList(span);
-        processRecordsReinterruptingIfInterrupted(records);
+        final List<Record> recordList = batch.getRecordList(span);
+
+        if (recordList.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return processRecordsReinterruptingIfInterrupted(new BatchRecords(recordList, batchOffset(record.offset())));
     }
 
-    private void processRecords(List<Record> records) throws InterruptedException {
-        if (!records.isEmpty()) {
-            parallelismSemaphore.acquire();
-            final RetryCalculator retryCalculator = factory.createRetryCalculator(
-                    firehoseConfigurationProvider.initialretrysleep(),
-                    firehoseConfigurationProvider.maxretrysleep());
-            final Sleeper sleeper = factory.createSleeper();
-            s3Sender.sendRecordsToS3(records, retryCalculator, sleeper, 0, parallelismSemaphore);
-        }
+    private Optional<Long> processBatch(final BatchRecords batch) throws InterruptedException {
+        semaphore.acquire();
+
+        batchRecords.add(batch);
+
+        final RetryCalculator retryCalculator =
+                factory.createRetryCalculator(
+                        firehoseConfigurationProvider.initialretrysleep(),
+                        firehoseConfigurationProvider.maxretrysleep());
+
+        final Sleeper sleeper = factory.createSleeper();
+        final Callback callback = factory.createCallback(batch, semaphore);
+
+        s3Sender.sendRecordsToS3(batch.records, retryCalculator, sleeper, 0, callback);
+
+        // compute the offset that needs to be committed
+        return anyOffsetToCommit();
+    }
+
+    @Override
+    public void init(final TopicPartition topicPartition) {
+        this.topicPartition = topicPartition;
+        logger.info("Initializing the processor with topic partition {}", topicPartition);
     }
 
     @Override
     public void close() {
-        final List<Record> records = batch.getRecordListForShutdown();
-        processRecordsReinterruptingIfInterrupted(records);
+        logger.info("closing the processor with topic partition {}", topicPartition);
     }
 
-    private void processRecordsReinterruptingIfInterrupted(List<Record> records) {
+    private long batchOffset(long offset) {
+        return offset == 0 ? 0 : offset - 1;
+    }
+
+    private Optional<Long> anyOffsetToCommit() {
+        Long offset = null;
+        Iterator<BatchRecords> iterator = batchRecords.iterator();
+        while (iterator.hasNext()) {
+            final BatchRecords br = iterator.next();
+            if (br.isCompleted.get()) {
+                iterator.remove();
+                offset = br.offset;
+            } else {
+                break;
+            }
+        }
+        return Optional.ofNullable(offset);
+    }
+
+    private Optional<Long> processRecordsReinterruptingIfInterrupted(final BatchRecords batch) {
         try {
-            processRecords(records);
+            return processBatch(batch);
         } catch (InterruptedException e) {
             factory.currentThread().interrupt();
         }
+        return Optional.empty();
     }
 
     static class Factory extends FactoryBase {
@@ -107,6 +160,13 @@ public class FirehoseProcessor extends AbstractProcessor<String, Span> {
         Semaphore createSemaphore(int maxParallelismPerShare) {
             return new Semaphore(maxParallelismPerShare);
         }
+
+        Callback createCallback(final BatchRecords batch, final Semaphore semaphore) {
+            return () -> {
+                batch.isCompleted.set(true);
+                semaphore.release();
+            };
+        }
     }
 
     static class ShutdownHook implements Runnable {
@@ -122,4 +182,14 @@ public class FirehoseProcessor extends AbstractProcessor<String, Span> {
         }
     }
 
+    static class BatchRecords {
+        private final long offset;
+        private final List<Record> records;
+        private final AtomicBoolean isCompleted;
+        BatchRecords(List<Record> records, long offset) {
+            this.records = records;
+            this.offset = offset;
+            this.isCompleted = new AtomicBoolean(false);
+        }
+    }
 }

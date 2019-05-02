@@ -6,6 +6,10 @@ haystack:
      totopic: "json-spans"
      threadcount: 1
      sessiontimeout: 15000
+     maxwakeups: 10
+     wakeuptimeoutms: 3000
+     polltimeoutms: 250
+     commitms: 3000
   pipe:
     streams:
       replicationfactor: 1

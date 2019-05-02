@@ -16,22 +16,28 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilderBase;
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
-import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaConsumerStarter;
+import com.expedia.www.haystack.pipes.commons.kafka.Main;
+import com.expedia.www.haystack.pipes.commons.kafka.SpanProcessorSupplier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATION;
-
 @Component
-class ProtobufToFirehoseProducer extends KafkaStreamBuilderBase {
+class ProtobufToFirehoseProducer implements Main {
+
+    private final KafkaConsumerStarter starter;
+    private final SpanProcessorSupplier processorSupplier;
+
     @Autowired
-    ProtobufToFirehoseProducer(KafkaStreamStarter kafkaStreamStarter,
-                               SerdeFactory serdeFactory,
-                               FirehoseProcessorSupplier firehoseProcessorSupplier,
-                               KafkaConfigurationProvider kafkaConfigurationProvider) {
-        super(kafkaStreamStarter, serdeFactory, APPLICATION, kafkaConfigurationProvider, firehoseProcessorSupplier);
+    ProtobufToFirehoseProducer(KafkaConsumerStarter starter,
+                               FirehoseProcessorSupplier processorSupplier) {
+
+        this.starter = starter;
+        this.processorSupplier = processorSupplier;
+    }
+
+    @Override
+    public void main() {
+        starter.createAndStartConsumer(processorSupplier);
     }
 }

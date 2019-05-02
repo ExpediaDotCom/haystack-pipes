@@ -20,6 +20,7 @@ import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.Factory;
 import com.netflix.servo.monitor.Stopwatch;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,11 +40,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FirehoseProcessorTest {
@@ -74,6 +72,8 @@ public class FirehoseProcessorTest {
     private RetryCalculator mockRetryCalculator;
     @Mock
     private Semaphore mockSemaphore;
+    @Mock
+    private Callback mockCallback;
     @Mock
     private Sleeper mockSleeper;
     @Mock
@@ -125,7 +125,7 @@ public class FirehoseProcessorTest {
         when(mockBatch.getRecordList(any(Span.class))).thenReturn(mockRecordList);
         when(mockRecordList.isEmpty()).thenReturn(true);
 
-        firehoseProcessor.process(KEY, FULLY_POPULATED_SPAN);
+        firehoseProcessor.process(consumerRecord(KEY, FULLY_POPULATED_SPAN));
 
         commonVerifiesForTestApply(0);
         verify(mockFirehoseCountersAndTimer).recordSpanArrivalDelta(FULLY_POPULATED_SPAN);
@@ -133,16 +133,19 @@ public class FirehoseProcessorTest {
 
     @Test
     public void testApplyHappyPath() throws InterruptedException {
+        when(mockFactory.createCallback(anyObject(), anyObject())).thenReturn(mockCallback);
+
         wantedNumberOfInvocationsStreamName = 1;
         commonWhensForTestApply();
 
-        firehoseProcessor.process(KEY, FULLY_POPULATED_SPAN);
+        firehoseProcessor.process(consumerRecord(KEY, FULLY_POPULATED_SPAN));
 
         commonVerifiesForTestApply(1);
         commonVerifiesForTestApplyNotEmpty();
         verify(mockFirehoseCountersAndTimer).recordSpanArrivalDelta(FULLY_POPULATED_SPAN);
-        verify(mockS3Sender).sendRecordsToS3(mockRecordList, mockRetryCalculator, mockSleeper, 0, mockSemaphore);
+        verify(mockS3Sender).sendRecordsToS3(mockRecordList, mockRetryCalculator, mockSleeper, 0, mockCallback);
         verify(mockSemaphore).acquire();
+        verify(mockFactory, times(numberOfTimesConstructorWasCalled)).createCallback(anyObject(), anyObject());
     }
 
     @Test
@@ -155,7 +158,7 @@ public class FirehoseProcessorTest {
         commonWhensForTestApply();
         doThrow(INTERRUPTED_EXCEPTION).when(mockSemaphore).acquire();
 
-        firehoseProcessor.process(KEY, FULLY_POPULATED_SPAN);
+        firehoseProcessor.process(consumerRecord(KEY, FULLY_POPULATED_SPAN));
 
         commonVerifiesForTestApply(0);
         verify(mockFactory).currentThread();
@@ -171,10 +174,6 @@ public class FirehoseProcessorTest {
         when(mockBatch.getRecordListForShutdown()).thenReturn(mockRecordList);
 
         firehoseProcessor.close();
-
-        //noinspection ResultOfMethodCallIgnored
-        verify(mockRecordList).isEmpty();
-        verify(mockBatch).getRecordListForShutdown();
     }
 
     private void commonWhensForTestApply() {
@@ -245,5 +244,10 @@ public class FirehoseProcessorTest {
         final Semaphore semaphore = factory.createSemaphore(MAX_PARALLELISM_PER_SHARD);
 
         assertEquals((long) MAX_PARALLELISM_PER_SHARD, semaphore.availablePermits());
+    }
+
+
+    private ConsumerRecord<String,Span> consumerRecord(String key, Span fullyPopulatedSpan) {
+        return new ConsumerRecord<>("topic", 1, 1, key, fullyPopulatedSpan);
     }
 }
