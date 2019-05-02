@@ -98,7 +98,7 @@ public class ConsumerTask implements Runnable, Closeable{
                     if (processor != null) {
                         final Optional<Long> commitableOffset = processor.process(record);
                         if (commitableOffset.isPresent()) {
-                            offsets.putIfAbsent(new TopicPartition(config.fromtopic(), partition),
+                            offsets.put(new TopicPartition(config.fromtopic(), partition),
                                     new OffsetAndMetadata(commitableOffset.get()));
                         }
                     } else {
@@ -137,7 +137,7 @@ public class ConsumerTask implements Runnable, Closeable{
             }
             wakeups = wakeups + 1;
             if (wakeups >= this.config.maxwakeups()) {
-                logger.error("WakeupException limit exceeded, throwing up wakeup exception", we);
+                logger.error("WakeupException limit exceeded, set app in unhealthy state", we);
                 healthController.setUnhealthy();
                 throw we;
             } else {
@@ -153,6 +153,7 @@ public class ConsumerTask implements Runnable, Closeable{
     private Properties getProperties(Class<?> containingClass) {
         final Properties props = new Properties();
         props.put(ConsumerConfig.CLIENT_ID_CONFIG, UUID.randomUUID().toString());
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
         props.put(ConsumerConfig.GROUP_ID_CONFIG, containingClass.getName());
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, this.config.brokers() + ":" + this.config.port());
         props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, this.config.sessiontimeout());
