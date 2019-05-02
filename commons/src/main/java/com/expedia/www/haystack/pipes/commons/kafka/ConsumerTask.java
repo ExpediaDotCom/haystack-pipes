@@ -74,9 +74,11 @@ public class ConsumerTask implements Runnable, Closeable{
             public void onPartitionsAssigned(Collection<TopicPartition> topicPartitions) {
                 synchronized (this) {
                     topicPartitions.forEach(topicPartition -> {
-                        final SpanProcessor processor = processors.putIfAbsent(topicPartition.partition(), processorSupplier.get());
-                        if (processor == null) {
-                            processors.get(topicPartition.partition()).init(topicPartition);
+                        SpanProcessor processor = processors.get(topicPartition.partition());
+                        if(processor == null) {
+                            processor = processorSupplier.get();
+                            processors.put(topicPartition.partition(), processor);
+                            processor.init(topicPartition);
                         }
                     });
                 }

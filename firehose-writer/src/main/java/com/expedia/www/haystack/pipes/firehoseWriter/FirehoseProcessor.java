@@ -184,8 +184,8 @@ public class FirehoseProcessor implements SpanProcessor {
 
     static class BatchRecords {
         private final long offset;
-        List<Record> records;
-        AtomicBoolean isCompleted;
+        private final List<Record> records;
+        private final AtomicBoolean isCompleted;
         BatchRecords(List<Record> records, long offset) {
             this.records = records;
             this.offset = offset;
