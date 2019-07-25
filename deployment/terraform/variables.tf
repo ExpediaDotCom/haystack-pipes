@@ -7,6 +7,7 @@ variable "kubectl_context_name" {}
 variable "kubectl_executable_name" {}
 variable "app_namespace" {}
 variable "node_selector_label"{}
+variable "firehose_writer_firehose_streamname" {}
 
 # pipes config
 variable "pipes" {
