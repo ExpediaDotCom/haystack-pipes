@@ -3,3 +3,9 @@ target/
 *.iml
 *.ipr
 *.iws
+.settings
+.project
+*/.project
+*/.settings
+*/.classpath
+*/.factorypath

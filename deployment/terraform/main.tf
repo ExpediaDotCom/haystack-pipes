@@ -1,3 +1,7 @@
+locals {
+  default_firehose_writer_firehose_streamname = "${var.firehose_writer_firehose_streamname}"
+}
+
 module "pipes-json-transformer" {
   source = "pipes-json-transformer"
   image = "expediadotcom/haystack-pipes-json-transformer:${var.pipes["version"]}"
@@ -77,7 +81,7 @@ module "pipes-firehose-writer" {
   firehose_kafka_threadcount = "${var.pipes["firehose_kafka_threadcount"]}"
   firehose_maxretrysleep = "${var.pipes["firehose_writer_firehose_maxretrysleep"]}"
   firehose_signingregion = "${var.pipes["firehose_writer_firehose_signingregion"]}"
-  firehose_streamname = "${var.pipes["firehose_writer_firehose_streamname"]}"
+  firehose_streamname = "${var.pipes["firehose_writer_firehose_streamname"] == "" ? local.default_firehose_writer_firehose_streamname : var.pipes["firehose_writer_firehose_streamname"]}"
   firehose_url = "${var.pipes["firehose_writer_firehose_url"]}"
   firehose_writer_haystack_kafka_fromtopic = "${var.pipes["firehose_writer_haystack_kafka_fromtopic"]}"
   graphite_hostname = "${var.graphite_hostname}"
@@ -88,7 +92,6 @@ module "pipes-firehose-writer" {
   memory_request = "${var.pipes["firehose_writer_memory_request"]}"
   jvm_memory_limit = "${var.pipes["firehose_writer_jvm_memory_limit"]}"
   kafka_hostname = "${var.kafka_hostname}"
-
 }
 
 module "pipes-secret-detector" {
