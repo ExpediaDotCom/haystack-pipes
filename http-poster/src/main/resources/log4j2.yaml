@@ -16,21 +16,21 @@ Configuration:
   Loggers:
     Logger:
       name: com.expedia.www.haystack.pipes.httpPoster.HttpPostIsActiveController
-      level: info
+      level: warn
       additivity: false
       AppenderRef:
         - ref: Console
         - ref: EmitToGraphiteLog4jAppender
     Logger:
       name: com.expedia.www.haystack.pipes.httpPoster.HttpPostAction
-      level: info
+      level: warn
       additivity: false
       AppenderRef:
         - ref: Console
         - ref: EmitToGraphiteLog4jAppender
     Logger:
       name: com.expedia.www.haystack.metrics.MetricPublishing
-      level: info
+      level: warn
       additivity: false
       AppenderRef:
         - ref: Console
