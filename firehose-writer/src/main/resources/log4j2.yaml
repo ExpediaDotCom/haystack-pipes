@@ -16,7 +16,7 @@ Configuration:
   Loggers:
     Logger:
       name: com.expedia.www.haystack.pipes.firehoseWriter.FirehoseIsActiveController
-      level: info
+      level: warn
       additivity: false
       AppenderRef:
         - ref: Console
@@ -30,28 +30,28 @@ Configuration:
         - ref: EmitToGraphiteLog4jAppender
     Logger:
       name: com.expedia.www.haystack.pipes.commons.kafka.KafkaConsumerStarter
-      level: info
+      level: warn
       additivity: false
       AppenderRef:
         - ref: Console
         - ref: EmitToGraphiteLog4jAppender
     Logger:
       name: com.expedia.www.haystack.pipes.commons.kafka.ConsumerTask
-      level: info
+      level: warn
       additivity: false
       AppenderRef:
         - ref: Console
         - ref: EmitToGraphiteLog4jAppender
     Logger:
       name: com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor
-      level: info
+      level: warn
       additivity: false
       AppenderRef:
         - ref: Console
         - ref: EmitToGraphiteLog4jAppender
     Logger:
       name: com.expedia.www.haystack.metrics.MetricPublishing
-      level: info
+      level: WARN
       additivity: false
       AppenderRef:
         - ref: Console
