@@ -18,6 +18,7 @@ package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
+import com.expedia.www.haystack.pipes.commons.decorators.keyExtractor.config.SpanKeyExtractorConfigProvider;
 import com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.Factory;
 import com.netflix.servo.monitor.Stopwatch;
 import org.apache.commons.pool2.ObjectPool;
@@ -66,7 +67,8 @@ public class ProduceIntoExternalKafkaActionTest {
     private Logger mockLogger;
     @Mock
     private ExternalKafkaConfigurationProvider mockExternalKafkaConfigurationProvider;
-
+    @Mock
+    private SpanKeyExtractorConfigProvider mockSpanKeyExtractorConfigProvider;
     @Mock
     private Stopwatch mockStopwatch;
     @Mock
@@ -85,7 +87,7 @@ public class ProduceIntoExternalKafkaActionTest {
     public void setUp() {
         whensForConstructor();
         produceIntoExternalKafkaAction = new ProduceIntoExternalKafkaAction(
-                mockFactory, mockTimersAndCounters, mockLogger, mockExternalKafkaConfigurationProvider);
+                mockFactory, mockTimersAndCounters, mockLogger, mockExternalKafkaConfigurationProvider,mockSpanKeyExtractorConfigProvider);
         realFactory = new Factory();
     }
 
@@ -95,12 +97,13 @@ public class ProduceIntoExternalKafkaActionTest {
         when(mockExternalKafkaConfigurationProvider.totopic()).thenReturn(TOPIC);
         when(mockExternalKafkaConfigurationProvider.brokers()).thenReturn(BROKERS);
         when(mockExternalKafkaConfigurationProvider.port()).thenReturn(PORT);
+        when(mockSpanKeyExtractorConfigProvider.getSpanKeyExtractorConfig()).thenReturn(null);
     }
 
     @After
     public void tearDown() {
         verifiesForConstructor();
-        verifyNoMoreInteractions(mockFactory, mockTimersAndCounters, mockLogger, mockExternalKafkaConfigurationProvider);
+        verifyNoMoreInteractions(mockFactory, mockTimersAndCounters, mockLogger, mockExternalKafkaConfigurationProvider,mockSpanKeyExtractorConfigProvider);
         verifyNoMoreInteractions(mockStopwatch, mockKafkaProducer, mockProducerRecord, mockObjectPool, mockMap);
     }
 
@@ -111,6 +114,7 @@ public class ProduceIntoExternalKafkaActionTest {
         verify(mockExternalKafkaConfigurationProvider).brokers();
         verify(mockExternalKafkaConfigurationProvider).port();
         verify(mockLogger).info(String.format(TOPIC_MESSAGE, BROKERS, PORT, TOPIC));
+        verify(mockSpanKeyExtractorConfigProvider).getSpanKeyExtractorConfig();
     }
 
     @Test

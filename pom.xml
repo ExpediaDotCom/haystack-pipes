@@ -91,7 +91,7 @@
         <servo.version>0.12.17</servo.version>
         <slf4j.version>1.7.25</slf4j.version>
         <spring-boot-plugins.version>1.5.9.RELEASE</spring-boot-plugins.version>
-        <spring-context.version>4.3.13.RELEASE</spring-context.version>
+        <spring-context.version>5.2.6.RELEASE</spring-context.version>
         <zookeeper.version>3.4.9</zookeeper.version>
         <skipGpg>true</skipGpg>
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
@@ -99,8 +99,6 @@
 
     <modules>
         <module>commons</module>
-        <module>firehose-writer</module>
-        <module>http-poster</module>
         <module>json-transformer</module>
         <module>kafka-producer</module>
         <module>secret-detector</module>
@@ -337,28 +335,28 @@
     <build>
         <pluginManagement>
             <plugins>
-                <plugin>
-                    <groupId>com.github.os72</groupId>
-                    <artifactId>protoc-jar-maven-plugin</artifactId>
-                    <version>${protoc-jar-maven.version}</version>
-                    <executions>
-                        <execution>
-                            <phase>generate-sources</phase>
-                            <goals>
-                                <goal>run</goal>
-                            </goals>
-                            <configuration>
-                                <includeDirectories>
-                                    <include>../haystack-idl/proto</include>
-                                </includeDirectories>
-                                <inputDirectories>
-                                    <include>../haystack-idl/proto</include>
-                                </inputDirectories>
-                                <outputDirectory>target/generated-sources</outputDirectory>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
+<!--                <plugin>-->
+<!--                    <groupId>com.github.os72</groupId>-->
+<!--                    <artifactId>protoc-jar-maven-plugin</artifactId>-->
+<!--                    <version>${protoc-jar-maven.version}</version>-->
+<!--                    <executions>-->
+<!--                        <execution>-->
+<!--                            <phase>generate-sources</phase>-->
+<!--                            <goals>-->
+<!--                                <goal>run</goal>-->
+<!--                            </goals>-->
+<!--                            <configuration>-->
+<!--                                <includeDirectories>-->
+<!--                                    <include>../haystack-idl/proto</include>-->
+<!--                                </includeDirectories>-->
+<!--                                <inputDirectories>-->
+<!--                                    <include>../haystack-idl/proto</include>-->
+<!--                                </inputDirectories>-->
+<!--                                <outputDirectory>target/generated-sources</outputDirectory>-->
+<!--                            </configuration>-->
+<!--                        </execution>-->
+<!--                    </executions>-->
+<!--                </plugin>-->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
@@ -368,59 +366,7 @@
                         <target>${java.version}</target>
                     </configuration>
                 </plugin>
-                <plugin>
-                    <groupId>org.jacoco</groupId>
-                    <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>${jacoco-maven-plugin.version}</version>
-                    <configuration>
-                        <excludes>
-                            <exclude>**/com/expedia/open/tracing/**</exclude>
-                            <exclude>**/com/expedia/www/haystack/pipes/commons/test/*</exclude>
-                            <exclude>**/com/expedia/www/haystack/pipes/secretDetector/actions/SenderImpl*</exclude>
-                        </excludes>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>jacoco-initialize</id>
-                            <goals>
-                                <goal>prepare-agent</goal>
-                            </goals>
-                        </execution>
-                        <execution>
-                            <id>jacoco-report</id>
-                            <phase>test</phase>
-                            <goals>
-                                <goal>report</goal>
-                            </goals>
-                        </execution>
-                        <execution>
-                            <id>jacoco-check</id>
-                            <phase>test</phase>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                            <configuration>
-                                <rules>
-                                    <rule>
-                                        <element>BUNDLE</element>
-                                        <limits>
-                                            <limit>
-                                                <counter>INSTRUCTION</counter>
-                                                <value>COVEREDRATIO</value>
-                                                <minimum>${jacoco-percentage}</minimum>
-                                            </limit>
-                                            <limit>
-                                                <counter>BRANCH</counter>
-                                                <value>COVEREDRATIO</value>
-                                                <minimum>${jacoco-percentage}</minimum>
-                                            </limit>
-                                        </limits>
-                                    </rule>
-                                </rules>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
+
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
@@ -433,14 +379,7 @@
                         </execution>
                     </executions>
                 </plugin>
-                <plugin>
-                    <groupId>org.eluder.coveralls</groupId>
-                    <artifactId>coveralls-maven-plugin</artifactId>
-                    <version>${coveralls-maven-plugin.version}</version>
-                    <configuration>
-                        <repoToken>PutRepoTokenHere</repoToken>
-                    </configuration>
-                </plugin>
+
             </plugins>
         </pluginManagement>
 
@@ -462,30 +401,17 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
-            </plugin>
-            <plugin>
-                <!-- Build a JavaDoc JAR -->
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.4</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.sonatype.plugins</groupId>-->
+<!--                <artifactId>nexus-staging-maven-plugin</artifactId>-->
+<!--                <extensions>true</extensions>-->
+<!--                <configuration>-->
+<!--                    <serverId>ossrh</serverId>-->
+<!--                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>-->
+<!--                    <autoReleaseAfterClose>true</autoReleaseAfterClose>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -502,14 +428,14 @@
         </plugins>
     </build>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
+<!--    <distributionManagement>-->
+<!--        <snapshotRepository>-->
+<!--            <id>ossrh</id>-->
+<!--            <url>https://oss.sonatype.org/content/repositories/snapshots</url>-->
+<!--        </snapshotRepository>-->
+<!--        <repository>-->
+<!--            <id>ossrh</id>-->
+<!--            <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>-->
+<!--        </repository>-->
+<!--    </distributionManagement>-->
 </project>

@@ -18,6 +18,10 @@ package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
+import com.expedia.www.haystack.pipes.commons.decorators.keyExtractor.SpanKeyExtractor;
+import com.expedia.www.haystack.pipes.commons.decorators.keyExtractor.config.SpanKeyExtractorConfig;
+import com.expedia.www.haystack.pipes.commons.decorators.keyExtractor.config.SpanKeyExtractorConfigProvider;
+import com.expedia.www.haystack.pipes.commons.decorators.keyExtractor.loader.SpanKeyExtractorLoader;
 import com.expedia.www.haystack.pipes.commons.kafka.TagFlattener;
 import com.google.protobuf.util.JsonFormat;
 import com.netflix.servo.monitor.Stopwatch;
@@ -55,12 +59,14 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
     private final String topic;
 
     private final TagFlattener tagFlattener = new TagFlattener();
+    private SpanKeyExtractorConfig spanKeyExtractorConfig;
 
     @Autowired
     public ProduceIntoExternalKafkaAction(Factory produceIntoExternalKafkaActionFactory,
                                           TimersAndCounters timersAndCounters,
                                           Logger produceIntoExternalKafkaActionLogger,
-                                          ExternalKafkaConfigurationProvider externalKafkaConfigurationProvider) {
+                                          ExternalKafkaConfigurationProvider externalKafkaConfigurationProvider,
+                                          SpanKeyExtractorConfigProvider spanKeyExtractorConfigProvider) {
         this.factory = produceIntoExternalKafkaActionFactory;
         this.timersAndCounters = timersAndCounters;
         COUNTERS_AND_TIMER.compareAndSet(null, timersAndCounters);
@@ -69,6 +75,7 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
         final Map<String, Object> configurationMap = externalKafkaConfigurationProvider.getConfigurationMap();
         this.kafkaProducer = factory.createKafkaProducer(configurationMap);
         this.topic = externalKafkaConfigurationProvider.totopic();
+        this.spanKeyExtractorConfig = spanKeyExtractorConfigProvider.getSpanKeyExtractorConfig();
         logger.info(String.format(TOPIC_MESSAGE, externalKafkaConfigurationProvider.brokers(),
                 externalKafkaConfigurationProvider.port(), topic));
     }
@@ -79,7 +86,15 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
         final Stopwatch stopwatch = timersAndCounters.startTimer();
         String jsonWithFlattenedTags = "";
         try {
-            final String jsonWithOpenTracingTags = printer.print(value);
+            final String jsonWithOpenTracingTags;
+            if(spanKeyExtractorConfig!=null){
+                jsonWithOpenTracingTags = loadExtractorAndApply(value);
+                if(jsonWithFlattenedTags == null){
+                    return;
+                }
+            }else{
+                jsonWithOpenTracingTags= printer.print(value);
+            }
             jsonWithFlattenedTags = tagFlattener.flattenTags(jsonWithOpenTracingTags);
             final ProducerRecord<String, String> producerRecord =
                     factory.createProducerRecord(topic, key, jsonWithFlattenedTags);
@@ -96,6 +111,15 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
         } finally {
             stopwatch.stop();
         }
+    }
+
+    private String loadExtractorAndApply(Span span) {
+        SpanKeyExtractorLoader spanKeyExtractorLoader = SpanKeyExtractorLoader.getInstance(spanKeyExtractorConfig,"kafka");
+        SpanKeyExtractor spanKeyExtractor = spanKeyExtractorLoader.getSpanKeyExtractor();
+        if(spanKeyExtractor == null){
+            return null;
+        }
+        return spanKeyExtractor.extract(span);
     }
 
     static class Factory {

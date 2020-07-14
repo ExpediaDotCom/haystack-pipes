@@ -19,6 +19,7 @@ package com.expedia.www.haystack.pipes.kafkaProducer;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.Timers;
 import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
+import com.expedia.www.haystack.pipes.commons.decorators.keyExtractor.config.SpanKeyExtractorConfigProvider;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
@@ -131,6 +132,11 @@ public class SpringConfig {
     }
 
     @Bean
+    SpanKeyExtractorConfigProvider spanKeyExtractorConfigProvider() {
+        return new SpanKeyExtractorConfigProvider();
+    }
+
+    @Bean
     KafkaProducerIsActiveController.Factory kafkaProducerIsActiveControllerFactory() {
         return new KafkaProducerIsActiveController.Factory();
     }
@@ -168,12 +174,14 @@ public class SpringConfig {
             ProduceIntoExternalKafkaAction.Factory produceIntoExternalKafkaActionFactoryFactory,
             TimersAndCounters timersAndCounters,
             Logger produceIntoExternalKafkaActionLogger,
-            ExternalKafkaConfigurationProvider externalKafkaConfigurationProvider) {
+            ExternalKafkaConfigurationProvider externalKafkaConfigurationProvider,
+            SpanKeyExtractorConfigProvider spanKeyExtractorConfigProvider) {
         return new ProduceIntoExternalKafkaAction(
                 produceIntoExternalKafkaActionFactoryFactory,
                 timersAndCounters,
                 produceIntoExternalKafkaActionLogger,
-                externalKafkaConfigurationProvider);
+                externalKafkaConfigurationProvider,
+                spanKeyExtractorConfigProvider);
     }
 
     @Bean

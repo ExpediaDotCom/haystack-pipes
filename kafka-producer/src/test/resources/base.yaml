@@ -27,3 +27,6 @@ haystack:
     batchsize: 8192
     lingerms: 4
     buffermemory: 1024
+  extractor:
+    directory: 'extractor/'
+    fileConfig: 'SampleExtractor'
