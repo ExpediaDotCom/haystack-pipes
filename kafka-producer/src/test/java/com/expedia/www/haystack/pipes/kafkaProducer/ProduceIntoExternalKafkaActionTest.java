@@ -87,7 +87,7 @@ public class ProduceIntoExternalKafkaActionTest {
     public void setUp() {
         whensForConstructor();
         produceIntoExternalKafkaAction = new ProduceIntoExternalKafkaAction(
-                mockFactory, mockTimersAndCounters, mockLogger, mockExternalKafkaConfigurationProvider,mockSpanKeyExtractorConfigProvider);
+                mockFactory, mockTimersAndCounters, mockLogger, mockExternalKafkaConfigurationProvider, mockSpanKeyExtractorConfigProvider);
         realFactory = new Factory();
     }
 
@@ -103,7 +103,7 @@ public class ProduceIntoExternalKafkaActionTest {
     @After
     public void tearDown() {
         verifiesForConstructor();
-        verifyNoMoreInteractions(mockFactory, mockTimersAndCounters, mockLogger, mockExternalKafkaConfigurationProvider,mockSpanKeyExtractorConfigProvider);
+        verifyNoMoreInteractions(mockFactory, mockTimersAndCounters, mockLogger, mockExternalKafkaConfigurationProvider, mockSpanKeyExtractorConfigProvider);
         verifyNoMoreInteractions(mockStopwatch, mockKafkaProducer, mockProducerRecord, mockObjectPool, mockMap);
     }
 
