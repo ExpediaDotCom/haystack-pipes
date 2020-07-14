@@ -116,7 +116,7 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
     }
 
     private String loadExtractorAndApply(Span span) {
-        SpanKeyExtractorLoader spanKeyExtractorLoader = SpanKeyExtractorLoader.getInstance(spanKeyExtractorConfig, "kafka");
+        SpanKeyExtractorLoader spanKeyExtractorLoader = SpanKeyExtractorLoader.getInstance(spanKeyExtractorConfig);
         SpanKeyExtractor spanKeyExtractor = spanKeyExtractorLoader.getSpanKeyExtractor();
         if (spanKeyExtractor == null) {
             return null;
