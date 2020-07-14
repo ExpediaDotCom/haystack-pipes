@@ -52,7 +52,7 @@ public class SpanKeyExtractorLoader{
 
     public SpanKeyExtractor getSpanKeyExtractor() {
         if(spanKeyExtractor == null){
-            if(keyExtractorConfig!=null && keyExtractorConfig.fileConfig().equals(serviceLoader.iterator().next().name())){
+            if(keyExtractorConfig!=null && keyExtractorConfig.fileName().equals(serviceLoader.iterator().next().name())){
                 spanKeyExtractor = serviceLoader.iterator().next();
             }
         }

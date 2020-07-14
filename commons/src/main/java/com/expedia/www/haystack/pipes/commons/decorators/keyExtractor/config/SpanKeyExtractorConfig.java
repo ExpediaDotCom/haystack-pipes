@@ -4,5 +4,5 @@ public interface SpanKeyExtractorConfig {
 
     public String directory();
 
-    public String fileConfig();
+    public String fileName();
 }
