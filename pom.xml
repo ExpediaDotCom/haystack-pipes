@@ -393,32 +393,32 @@
                                 <goal>report</goal>
                             </goals>
                         </execution>
-<!--                        <execution>-->
-<!--                            <id>jacoco-check</id>-->
-<!--                            <phase>test</phase>-->
-<!--                            <goals>-->
-<!--                                <goal>check</goal>-->
-<!--                            </goals>-->
-<!--                            <configuration>-->
-<!--                                <rules>-->
-<!--                                    <rule>-->
-<!--                                        <element>BUNDLE</element>-->
-<!--                                        <limits>-->
-<!--                                            <limit>-->
-<!--                                                <counter>INSTRUCTION</counter>-->
-<!--                                                <value>COVEREDRATIO</value>-->
-<!--                                                <minimum>${jacoco-percentage}</minimum>-->
-<!--                                            </limit>-->
-<!--                                            <limit>-->
-<!--                                                <counter>BRANCH</counter>-->
-<!--                                                <value>COVEREDRATIO</value>-->
-<!--                                                <minimum>${jacoco-percentage}</minimum>-->
-<!--                                            </limit>-->
-<!--                                        </limits>-->
-<!--                                    </rule>-->
-<!--                                </rules>-->
-<!--                            </configuration>-->
-<!--                        </execution>-->
+                        <execution>
+                            <id>jacoco-check</id>
+                            <phase>test</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <rule>
+                                        <element>BUNDLE</element>
+                                        <limits>
+                                            <limit>
+                                                <counter>INSTRUCTION</counter>
+                                                <value>COVEREDRATIO</value>
+                                                <minimum>${jacoco-percentage}</minimum>
+                                            </limit>
+                                            <limit>
+                                                <counter>BRANCH</counter>
+                                                <value>COVEREDRATIO</value>
+                                                <minimum>${jacoco-percentage}</minimum>
+                                            </limit>
+                                        </limits>
+                                    </rule>
+                                </rules>
+                            </configuration>
+                        </execution>
                     </executions>
                 </plugin>
                 <plugin>
@@ -433,14 +433,14 @@
                         </execution>
                     </executions>
                 </plugin>
-<!--                <plugin>-->
-<!--                    <groupId>org.eluder.coveralls</groupId>-->
-<!--                    <artifactId>coveralls-maven-plugin</artifactId>-->
-<!--                    <version>${coveralls-maven-plugin.version}</version>-->
-<!--                    <configuration>-->
-<!--                        <repoToken>PutRepoTokenHere</repoToken>-->
-<!--                    </configuration>-->
-<!--                </plugin>-->
+                <plugin>
+                    <groupId>org.eluder.coveralls</groupId>
+                    <artifactId>coveralls-maven-plugin</artifactId>
+                    <version>${coveralls-maven-plugin.version}</version>
+                    <configuration>
+                        <repoToken>PutRepoTokenHere</repoToken>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
 

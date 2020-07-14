@@ -63,12 +63,6 @@
             <artifactId>spring-context</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>1.0.6</version>
-        </dependency>
-
         <!-- Test dependencies -->
         <dependency>
             <groupId>junit</groupId>
