@@ -50,8 +50,8 @@ public class SpanKeyExtractorLoader {
 
     public SpanKeyExtractor getSpanKeyExtractor() {
         if (spanKeyExtractor == null) {
-            if (keyExtractorConfig != null && keyExtractorConfig.fileName()!=null &&
-                    serviceLoader.iterator().hasNext() &&
+            if (keyExtractorConfig != null && keyExtractorConfig.fileName() != null &&
+                    serviceLoader != null && serviceLoader.iterator().hasNext() &&
                     keyExtractorConfig.fileName().equals(serviceLoader.iterator().next().name())) {
                 spanKeyExtractor = serviceLoader.iterator().next();
             }

@@ -97,7 +97,7 @@ public class ProduceIntoExternalKafkaActionTest {
         when(mockExternalKafkaConfigurationProvider.totopic()).thenReturn(TOPIC);
         when(mockExternalKafkaConfigurationProvider.brokers()).thenReturn(BROKERS);
         when(mockExternalKafkaConfigurationProvider.port()).thenReturn(PORT);
-        when(mockSpanKeyExtractorConfigProvider.getSpanKeyExtractorConfig()).thenReturn(null);
+        when(mockSpanKeyExtractorConfigProvider.loadAndGetSpanExtractor()).thenReturn(null);
     }
 
     @After
@@ -114,7 +114,8 @@ public class ProduceIntoExternalKafkaActionTest {
         verify(mockExternalKafkaConfigurationProvider).brokers();
         verify(mockExternalKafkaConfigurationProvider).port();
         verify(mockLogger).info(String.format(TOPIC_MESSAGE, BROKERS, PORT, TOPIC));
-        verify(mockSpanKeyExtractorConfigProvider).getSpanKeyExtractorConfig();
+        verify(mockSpanKeyExtractorConfigProvider).loadAndGetSpanExtractor();
+
     }
 
     @Test
