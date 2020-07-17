@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.ServiceLoader;
 
 
@@ -27,19 +30,21 @@ public class SpanKeyExtractorLoader {
     public static synchronized SpanKeyExtractorLoader getInstance(SpanKeyExtractorConfig keyExtractorConfig) {
         if (spanKeyExtractorLoader == null) {
             spanKeyExtractorLoader = new SpanKeyExtractorLoader(keyExtractorConfig);
+            spanKeyExtractorLoader.loadFiles();
         }
-        spanKeyExtractorLoader.loadFiles();
         return spanKeyExtractorLoader;
     }
 
     private void loadFiles() {
         try {
             final File[] extractorFile = new File(keyExtractorConfig.directory()).listFiles();
-            if (extractorFile != null && extractorFile.length > 0) {
-                URL url = extractorFile[0].toURI().toURL();
-                URL[] urls = new URL[]{url};
-                URLClassLoader urlClassLoader = new URLClassLoader(urls, SpanKeyExtractor.class.getClassLoader());
-                serviceLoader = ServiceLoader.load(SpanKeyExtractor.class, urlClassLoader);
+            if (extractorFile != null) {
+                final List<URL> urls = new ArrayList<>();
+                for (final File file : extractorFile) {
+                    urls.add(file.toURI().toURL());
+                }
+                URLClassLoader urlClassLoader = new URLClassLoader(urls.toArray(new URL[0]), SpanKeyExtractor.class.getClassLoader());
+                this.serviceLoader = ServiceLoader.load(SpanKeyExtractor.class, urlClassLoader);
             }
         } catch (Exception ex) {
             logger.error("Could not create the class loader for finding jar ", ex);
@@ -49,12 +54,10 @@ public class SpanKeyExtractorLoader {
     }
 
     public SpanKeyExtractor getSpanKeyExtractor() {
-        if (spanKeyExtractor == null) {
-            if (keyExtractorConfig != null && keyExtractorConfig.fileName() != null &&
-                    serviceLoader != null && serviceLoader.iterator().hasNext() &&
-                    keyExtractorConfig.fileName().equals(serviceLoader.iterator().next().name())) {
-                spanKeyExtractor = serviceLoader.iterator().next();
-            }
+        if (spanKeyExtractor == null && this.serviceLoader!=null) {
+            serviceLoader.forEach(spanKeyExtractor -> {
+                this.spanKeyExtractor = spanKeyExtractor;
+            });
         }
         return spanKeyExtractor;
     }

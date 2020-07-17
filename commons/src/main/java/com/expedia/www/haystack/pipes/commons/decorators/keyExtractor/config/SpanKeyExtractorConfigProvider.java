@@ -15,10 +15,6 @@ public class SpanKeyExtractorConfigProvider implements SpanKeyExtractorConfig {
         spanKeyExtractorConfig = configurationProvider.bind("haystack.extractor", SpanKeyExtractorConfig.class);
     }
 
-    public SpanKeyExtractorConfig getSpanKeyExtractorConfig() {
-        return spanKeyExtractorConfig;
-    }
-
     public SpanKeyExtractor loadAndGetSpanExtractor(){
         if(spanKeyExtractorConfig == null){
             return null;
