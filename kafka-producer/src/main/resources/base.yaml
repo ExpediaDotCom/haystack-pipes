@@ -30,4 +30,4 @@ haystack:
     buffermemory: 1048576 # 1 Megabyte'
   extractor:
     directory: 'extractor/'
-    fileName: 'SampleExtractor'
+    fileName: ''
