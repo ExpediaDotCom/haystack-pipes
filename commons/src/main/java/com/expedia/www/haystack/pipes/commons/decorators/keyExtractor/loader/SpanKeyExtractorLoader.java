@@ -54,9 +54,12 @@ public class SpanKeyExtractorLoader {
     }
 
     public SpanKeyExtractor getSpanKeyExtractor() {
-        if (spanKeyExtractor == null && this.serviceLoader!=null) {
+        if (spanKeyExtractor == null && this.serviceLoader != null) {
             serviceLoader.forEach(spanKeyExtractor -> {
-                this.spanKeyExtractor = spanKeyExtractor;
+                if (spanKeyExtractor.name().equals(keyExtractorConfig.fileName())) {
+                    this.spanKeyExtractor = spanKeyExtractor;
+                    spanKeyExtractor.configure(keyExtractorConfig.config());
+                }
             });
         }
         return spanKeyExtractor;

@@ -6,7 +6,7 @@ public interface SpanKeyExtractor {
 
     String name();
 
-    public void configure();
+    public void configure(String config);
 
     public String extract(Span span);
 

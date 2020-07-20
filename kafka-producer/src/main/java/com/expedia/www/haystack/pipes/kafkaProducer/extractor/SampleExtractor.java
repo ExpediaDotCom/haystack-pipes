@@ -12,7 +12,7 @@ public class SampleExtractor implements SpanKeyExtractor {
     }
 
     @java.lang.Override
-    public void configure() {
+    public void configure(String config) {
     }
 
     @java.lang.Override

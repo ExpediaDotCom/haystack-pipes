@@ -15,8 +15,8 @@ public class SpanKeyExtractorConfigProvider implements SpanKeyExtractorConfig {
         spanKeyExtractorConfig = configurationProvider.bind("haystack.extractor", SpanKeyExtractorConfig.class);
     }
 
-    public SpanKeyExtractor loadAndGetSpanExtractor(){
-        if(spanKeyExtractorConfig == null){
+    public SpanKeyExtractor loadAndGetSpanExtractor() {
+        if (spanKeyExtractorConfig == null) {
             return null;
         }
         SpanKeyExtractorLoader spanKeyExtractorLoader = SpanKeyExtractorLoader.getInstance(spanKeyExtractorConfig);
@@ -32,4 +32,10 @@ public class SpanKeyExtractorConfigProvider implements SpanKeyExtractorConfig {
     public String fileName() {
         return spanKeyExtractorConfig.fileName();
     }
+
+    @Override
+    public String config() {
+        return spanKeyExtractorConfig.config();
+    }
+
 }
