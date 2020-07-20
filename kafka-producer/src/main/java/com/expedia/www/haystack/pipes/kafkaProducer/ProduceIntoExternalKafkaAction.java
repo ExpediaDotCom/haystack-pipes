@@ -91,11 +91,12 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
             final String jsonWithOpenTracingTags;
             if (spanKeyExtractor != null) {
                 jsonWithOpenTracingTags = spanKeyExtractor.extract(value);
+                // to skip null data
                 if (jsonWithOpenTracingTags == null) {
                     return;
                 }
-                kafkaTopic = spanKeyExtractor.getTopic();
-                kafkaKey = spanKeyExtractor.getKey();
+                kafkaTopic = spanKeyExtractor.getTopic() != null ? spanKeyExtractor.getTopic() : kafkaTopic;
+                kafkaKey = spanKeyExtractor.getKey() != null ? spanKeyExtractor.getKey() : kafkaKey;
             } else {
                 jsonWithOpenTracingTags = printer.print(value);
             }
