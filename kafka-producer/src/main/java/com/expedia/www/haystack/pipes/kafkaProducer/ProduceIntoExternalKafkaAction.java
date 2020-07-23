@@ -107,7 +107,7 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
             jsonWithFlattenedTags = tagFlattener.flattenTags(jsonWithOpenTracingTags);
             String finalKafkaKey = kafkaKey;
             String finalJsonWithFlattenedTags = jsonWithFlattenedTags;
-            kafkaTopics.forEach(topic->{
+            kafkaTopics.forEach(topic -> {
                 final ProducerRecord<String, String> producerRecord =
                         factory.createProducerRecord(topic, finalKafkaKey, finalJsonWithFlattenedTags);
 

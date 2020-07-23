@@ -29,7 +29,6 @@ haystack:
     lingerms: 5
     buffermemory: 1048576 # 1 Megabyte'
   extractor:
-    directory: 'extractor/'
-    fileName: ''
+    directory: 'extractors/'
     config: '{key1: value1,
       key2: value2}'

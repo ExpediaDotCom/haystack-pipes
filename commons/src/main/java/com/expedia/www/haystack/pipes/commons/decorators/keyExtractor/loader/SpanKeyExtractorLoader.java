@@ -4,7 +4,6 @@ import com.expedia.www.haystack.pipes.commons.decorators.keyExtractor.SpanKeyExt
 import com.expedia.www.haystack.pipes.commons.decorators.keyExtractor.config.SpanKeyExtractorConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -36,16 +35,15 @@ public class SpanKeyExtractorLoader {
 
     private void loadFiles() {
         try {
-            logger.info("here");
             final File[] extractorFile = new File(keyExtractorConfig.directory()).listFiles();
             if (extractorFile != null) {
                 final List<URL> urls = new ArrayList<>();
                 for (final File file : extractorFile) {
                     urls.add(file.toURI().toURL());
-                    logger.info("File got: "+file.toURI().toURL());
                 }
                 URLClassLoader urlClassLoader = new URLClassLoader(urls.toArray(new URL[0]), SpanKeyExtractor.class.getClassLoader());
-                this.serviceLoader = ServiceLoader.load(SpanKeyExtractor.class, urlClassLoader);
+                serviceLoader = ServiceLoader.load(SpanKeyExtractor.class, urlClassLoader);
+                logger.debug("Service is Loaded: " + serviceLoader);
             }
         } catch (Exception ex) {
             logger.error("Could not create the class loader for finding jar ", ex);
@@ -59,7 +57,7 @@ public class SpanKeyExtractorLoader {
             serviceLoader.forEach(spanKeyExtractor -> {
                 this.spanKeyExtractor = spanKeyExtractor;
                 spanKeyExtractor.configure(keyExtractorConfig.config());
-                logger.debug("Extractor class is loaded: "+spanKeyExtractor.name());
+                logger.debug("Extractor class is loaded: {}, at path: {}", spanKeyExtractor.name(), keyExtractorConfig.directory());
             });
         }
         return spanKeyExtractor;

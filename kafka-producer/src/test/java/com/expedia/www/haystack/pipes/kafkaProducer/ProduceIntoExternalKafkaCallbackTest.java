@@ -146,7 +146,7 @@ public class ProduceIntoExternalKafkaCallbackTest {
 
         try {
             produceIntoExternalKafkaCallback.onCompletion(null, testException);
-        } catch (Throwable e) {
+        } catch(Throwable e) {
             assertSame(runtimeException, e);
             verify(mockLogger).error(String.format(ERROR_MSG_TEMPLATE, testException.getMessage()), testException);
             commonVerifiesForOnCompletion();
