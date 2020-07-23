@@ -2,6 +2,8 @@ package com.expedia.www.haystack.pipes.commons.decorators.keyExtractor;
 
 import com.expedia.open.tracing.Span;
 
+import java.util.List;
+
 public interface SpanKeyExtractor {
 
     String name();
@@ -12,6 +14,6 @@ public interface SpanKeyExtractor {
 
     public String getKey();
 
-    public String getTopic();
+    public List<String> getTopics();
 
 }

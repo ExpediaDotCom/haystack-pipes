@@ -29,11 +29,6 @@ public class SpanKeyExtractorConfigProvider implements SpanKeyExtractorConfig {
     }
 
     @Override
-    public String fileName() {
-        return spanKeyExtractorConfig.fileName();
-    }
-
-    @Override
     public String config() {
         return spanKeyExtractorConfig.config();
     }

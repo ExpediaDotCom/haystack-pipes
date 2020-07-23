@@ -34,6 +34,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -85,6 +87,8 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
         timersAndCounters.incrementRequestCounter();
         final Stopwatch stopwatch = timersAndCounters.startTimer();
         String jsonWithFlattenedTags = "";
+        List<String> kafkaTopics = new ArrayList<>();
+        kafkaTopics.add(topic);
         try {
             String kafkaTopic = topic;
             String kafkaKey = key;
@@ -95,20 +99,31 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
                 if (jsonWithOpenTracingTags == null) {
                     return;
                 }
-                kafkaTopic = spanKeyExtractor.getTopic() != null ? spanKeyExtractor.getTopic() : kafkaTopic;
+                kafkaTopics.addAll(spanKeyExtractor.getTopics());
                 kafkaKey = spanKeyExtractor.getKey() != null ? spanKeyExtractor.getKey() : kafkaKey;
             } else {
                 jsonWithOpenTracingTags = printer.print(value);
             }
             jsonWithFlattenedTags = tagFlattener.flattenTags(jsonWithOpenTracingTags);
-            final ProducerRecord<String, String> producerRecord =
-                    factory.createProducerRecord(kafkaTopic, kafkaKey, jsonWithFlattenedTags);
+            String finalKafkaKey = kafkaKey;
+            String finalJsonWithFlattenedTags = jsonWithFlattenedTags;
+            kafkaTopics.forEach(topic->{
+                final ProducerRecord<String, String> producerRecord =
+                        factory.createProducerRecord(topic, finalKafkaKey, finalJsonWithFlattenedTags);
 
-            final ProduceIntoExternalKafkaCallback callback = OBJECT_POOL.borrowObject(); // callback must returnObject()
-            timersAndCounters.incrementCounter(POSTS_IN_FLIGHT_COUNTER_INDEX);
-            // TODO Put the Span value into the callback so that it can write it to Kafka for retry
+                final ProduceIntoExternalKafkaCallback callback; // callback must returnObject()
+                try {
+                    callback = OBJECT_POOL.borrowObject();
+                    timersAndCounters.incrementCounter(POSTS_IN_FLIGHT_COUNTER_INDEX);
+                    // TODO Put the Span value into the callback so that it can write it to Kafka for retry
+                    kafkaProducer.send(producerRecord, callback);
+                } catch (Exception exception) {
+                    // Must format below because log4j2 underneath slf4j doesn't handle .error(varargs) properly
+                    final String message = String.format(ERROR_MSG, finalJsonWithFlattenedTags, exception.getMessage());
+                    logger.error(message, exception);
+                }
+            });
 
-            kafkaProducer.send(producerRecord, callback);
         } catch (Exception exception) {
             // Must format below because log4j2 underneath slf4j doesn't handle .error(varargs) properly
             final String message = String.format(ERROR_MSG, jsonWithFlattenedTags, exception.getMessage());

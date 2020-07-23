@@ -10,7 +10,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.ServiceLoader;
 
 
@@ -20,7 +19,7 @@ public class SpanKeyExtractorLoader {
     private SpanKeyExtractorConfig keyExtractorConfig;
     private SpanKeyExtractor spanKeyExtractor;
     private ServiceLoader<SpanKeyExtractor> serviceLoader;
-    private static SpanKeyExtractorLoader spanKeyExtractorLoader = null;//why?
+    private static SpanKeyExtractorLoader spanKeyExtractorLoader = null;
 
     private SpanKeyExtractorLoader(SpanKeyExtractorConfig keyExtractorConfig) {
         this.keyExtractorConfig = keyExtractorConfig;
@@ -37,11 +36,13 @@ public class SpanKeyExtractorLoader {
 
     private void loadFiles() {
         try {
+            logger.info("here");
             final File[] extractorFile = new File(keyExtractorConfig.directory()).listFiles();
             if (extractorFile != null) {
                 final List<URL> urls = new ArrayList<>();
                 for (final File file : extractorFile) {
                     urls.add(file.toURI().toURL());
+                    logger.info("File got: "+file.toURI().toURL());
                 }
                 URLClassLoader urlClassLoader = new URLClassLoader(urls.toArray(new URL[0]), SpanKeyExtractor.class.getClassLoader());
                 this.serviceLoader = ServiceLoader.load(SpanKeyExtractor.class, urlClassLoader);
@@ -56,10 +57,9 @@ public class SpanKeyExtractorLoader {
     public SpanKeyExtractor getSpanKeyExtractor() {
         if (spanKeyExtractor == null && this.serviceLoader != null) {
             serviceLoader.forEach(spanKeyExtractor -> {
-                if (spanKeyExtractor.name().equals(keyExtractorConfig.fileName())) {
-                    this.spanKeyExtractor = spanKeyExtractor;
-                    spanKeyExtractor.configure(keyExtractorConfig.config());
-                }
+                this.spanKeyExtractor = spanKeyExtractor;
+                spanKeyExtractor.configure(keyExtractorConfig.config());
+                logger.debug("Extractor class is loaded: "+spanKeyExtractor.name());
             });
         }
         return spanKeyExtractor;
