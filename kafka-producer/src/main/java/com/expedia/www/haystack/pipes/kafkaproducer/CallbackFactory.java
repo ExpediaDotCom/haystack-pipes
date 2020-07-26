@@ -1,4 +1,4 @@
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.kafkaproducer;
 
 import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CallbackFactory extends BasePooledObjectFactory<ProduceIntoExternalKafkaCallback> {
+public class CallbackFactory extends BasePooledObjectFactory<KafkaToExternalKafkaCallback> {
     private final Logger produceIntoExternalKafkaCallbackLogger;
 
     @Autowired
@@ -17,13 +17,13 @@ public class CallbackFactory extends BasePooledObjectFactory<ProduceIntoExternal
     }
 
     @Override
-    public ProduceIntoExternalKafkaCallback create() {
-        return new ProduceIntoExternalKafkaCallback(produceIntoExternalKafkaCallbackLogger);
+    public KafkaToExternalKafkaCallback create() {
+        return new KafkaToExternalKafkaCallback(produceIntoExternalKafkaCallbackLogger);
     }
 
     @Override
-    public PooledObject<ProduceIntoExternalKafkaCallback> wrap(
-            ProduceIntoExternalKafkaCallback produceIntoExternalKafkaCallback) {
+    public PooledObject<KafkaToExternalKafkaCallback> wrap(
+            KafkaToExternalKafkaCallback produceIntoExternalKafkaCallback) {
         return new DefaultPooledObject<>(produceIntoExternalKafkaCallback);
     }
 }

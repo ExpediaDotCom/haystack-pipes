@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.kafkaproducer;
 
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -22,12 +22,12 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.COUNTERS_AND_TIMER;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.OBJECT_POOL;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.POSTS_IN_FLIGHT_COUNTER_INDEX;
+import static com.expedia.www.haystack.pipes.kafkaproducer.KafkaToExternalKafkaAction.COUNTERS_AND_TIMER;
+import static com.expedia.www.haystack.pipes.kafkaproducer.KafkaToExternalKafkaAction.OBJECT_POOL;
+import static com.expedia.www.haystack.pipes.kafkaproducer.KafkaToExternalKafkaAction.POSTS_IN_FLIGHT_COUNTER_INDEX;
 
 @Component
-public class ProduceIntoExternalKafkaCallback implements Callback {
+public class KafkaToExternalKafkaCallback implements Callback {
     static final String DEBUG_MSG = "Successfully posted JSON to Kafka: topic [%s] partition [%d] offset [%d]";
     static final String ERROR_MSG_TEMPLATE = "Callback exception posting JSON to Kafka; received message [%s]";
     static final String POOL_ERROR_MSG_TEMPLATE = "Exception returning callback to pool; received message [%s]";
@@ -35,7 +35,7 @@ public class ProduceIntoExternalKafkaCallback implements Callback {
     private final Logger logger;
 
     @Autowired
-    public ProduceIntoExternalKafkaCallback(Logger produceIntoExternalKafkaCallbackLogger) {
+    public KafkaToExternalKafkaCallback(Logger produceIntoExternalKafkaCallbackLogger) {
         this.logger = produceIntoExternalKafkaCallbackLogger;
     }
 

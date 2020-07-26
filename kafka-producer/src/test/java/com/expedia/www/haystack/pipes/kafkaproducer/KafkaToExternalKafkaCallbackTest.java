@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.kafkaproducer;
 
 import com.expedia.www.haystack.pipes.commons.Timers;
 import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
@@ -34,11 +34,11 @@ import org.slf4j.Logger;
 import java.time.Clock;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.COUNTERS_AND_TIMER;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.OBJECT_POOL;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.DEBUG_MSG;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.ERROR_MSG_TEMPLATE;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.POOL_ERROR_MSG_TEMPLATE;
+import static com.expedia.www.haystack.pipes.kafkaproducer.KafkaToExternalKafkaAction.COUNTERS_AND_TIMER;
+import static com.expedia.www.haystack.pipes.kafkaproducer.KafkaToExternalKafkaAction.OBJECT_POOL;
+import static com.expedia.www.haystack.pipes.kafkaproducer.KafkaToExternalKafkaCallback.DEBUG_MSG;
+import static com.expedia.www.haystack.pipes.kafkaproducer.KafkaToExternalKafkaCallback.ERROR_MSG_TEMPLATE;
+import static com.expedia.www.haystack.pipes.kafkaproducer.KafkaToExternalKafkaCallback.POOL_ERROR_MSG_TEMPLATE;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -48,7 +48,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ProduceIntoExternalKafkaCallbackTest {
+public class KafkaToExternalKafkaCallbackTest {
     private static final String TOPIC = RANDOM.nextLong() + "TOPIC";
     private static final int PARTITION = RANDOM.nextInt();
     private static final TopicPartition TOPIC_PARTITION = new TopicPartition(TOPIC, PARTITION);
@@ -67,8 +67,8 @@ public class ProduceIntoExternalKafkaCallbackTest {
     private Exception mockException;
 
     @Mock
-    private ObjectPool<ProduceIntoExternalKafkaCallback> mockObjectPool;
-    private ObjectPool<ProduceIntoExternalKafkaCallback> realObjectPool;
+    private ObjectPool<KafkaToExternalKafkaCallback> mockObjectPool;
+    private ObjectPool<KafkaToExternalKafkaCallback> realObjectPool;
 
     @Mock
     private Counter mockRequestCounter;
@@ -87,7 +87,7 @@ public class ProduceIntoExternalKafkaCallbackTest {
 
     private TimersAndCounters timersAndCounters;
     private RecordMetadata recordMetadata;
-    private ProduceIntoExternalKafkaCallback produceIntoExternalKafkaCallback;
+    private KafkaToExternalKafkaCallback produceIntoExternalKafkaCallback;
 
     @Before
     public void setUp() {
@@ -97,7 +97,7 @@ public class ProduceIntoExternalKafkaCallbackTest {
         //noinspection deprecation
         recordMetadata = new RecordMetadata(TOPIC_PARTITION, BASE_OFFSET, RELATIVE_OFFSET, TIMESTAMP, CHECKSUM,
                 SERIALIZED_KEY_SIZE, SERIALIZED_VALUE_SIZE);
-        produceIntoExternalKafkaCallback = new ProduceIntoExternalKafkaCallback(mockLogger);
+        produceIntoExternalKafkaCallback = new KafkaToExternalKafkaCallback(mockLogger);
     }
 
     private void injectMockAndSaveRealObjects() {
@@ -131,7 +131,7 @@ public class ProduceIntoExternalKafkaCallbackTest {
     @Test
     public void testOnCompletionBothNullReturnToObjectPoolSuccess() throws Exception {
         final Exception testException = new Exception("Exception Message");
-        doThrow(testException).when(mockObjectPool).returnObject(any(ProduceIntoExternalKafkaCallback.class));
+        doThrow(testException).when(mockObjectPool).returnObject(any(KafkaToExternalKafkaCallback.class));
 
         produceIntoExternalKafkaCallback.onCompletion(null, null);
         verify(mockLogger).error(String.format(POOL_ERROR_MSG_TEMPLATE, testException.getMessage()), testException);
