@@ -16,7 +16,8 @@
         <url>http://github.com/ExpediaDotCom/haystack-pipes</url>
     </scm>
 
-    <description>Packages to send ("pipe") Haystack data to external sinks (like AWS Firehose or another Kafka queue)</description>
+    <description>Packages to send ("pipe") Haystack data to external sinks (like AWS Firehose or another Kafka queue)
+    </description>
     <url>https://github.com/ExpediaDotCom/haystack-pipes/tree/master</url>
 
     <licenses>
@@ -104,6 +105,7 @@
         <module>json-transformer</module>
         <module>kafka-producer</module>
         <module>secret-detector</module>
+        <module>SampleSpanExtractor</module>
     </modules>
 
     <dependencyManagement>
