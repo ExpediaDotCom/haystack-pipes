@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaproducer;
+package com.expedia.www.haystack.pipes.kafka;
 
 import com.expedia.www.haystack.pipes.commons.Timers;
 import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
@@ -34,11 +34,11 @@ import org.slf4j.Logger;
 import java.time.Clock;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
-import static com.expedia.www.haystack.pipes.kafkaproducer.KafkaToExternalKafkaAction.COUNTERS_AND_TIMER;
-import static com.expedia.www.haystack.pipes.kafkaproducer.KafkaToExternalKafkaAction.OBJECT_POOL;
-import static com.expedia.www.haystack.pipes.kafkaproducer.KafkaToExternalKafkaCallback.DEBUG_MSG;
-import static com.expedia.www.haystack.pipes.kafkaproducer.KafkaToExternalKafkaCallback.ERROR_MSG_TEMPLATE;
-import static com.expedia.www.haystack.pipes.kafkaproducer.KafkaToExternalKafkaCallback.POOL_ERROR_MSG_TEMPLATE;
+import static com.expedia.www.haystack.pipes.kafka.KafkaCallback.DEBUG_MSG;
+import static com.expedia.www.haystack.pipes.kafka.KafkaCallback.ERROR_MSG_TEMPLATE;
+import static com.expedia.www.haystack.pipes.kafka.KafkaCallback.POOL_ERROR_MSG_TEMPLATE;
+import static com.expedia.www.haystack.pipes.kafka.KafkaToKafkaPipeline.COUNTERS_AND_TIMER;
+import static com.expedia.www.haystack.pipes.kafka.KafkaToKafkaPipeline.OBJECT_POOL;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -48,7 +48,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class KafkaToExternalKafkaCallbackTest {
+public class KafkaCallbackTest {
     private static final String TOPIC = RANDOM.nextLong() + "TOPIC";
     private static final int PARTITION = RANDOM.nextInt();
     private static final TopicPartition TOPIC_PARTITION = new TopicPartition(TOPIC, PARTITION);
@@ -67,8 +67,8 @@ public class KafkaToExternalKafkaCallbackTest {
     private Exception mockException;
 
     @Mock
-    private ObjectPool<KafkaToExternalKafkaCallback> mockObjectPool;
-    private ObjectPool<KafkaToExternalKafkaCallback> realObjectPool;
+    private ObjectPool<KafkaCallback> mockObjectPool;
+    private ObjectPool<KafkaCallback> realObjectPool;
 
     @Mock
     private Counter mockRequestCounter;
@@ -87,7 +87,7 @@ public class KafkaToExternalKafkaCallbackTest {
 
     private TimersAndCounters timersAndCounters;
     private RecordMetadata recordMetadata;
-    private KafkaToExternalKafkaCallback produceIntoExternalKafkaCallback;
+    private KafkaCallback kafkaCallback;
 
     @Before
     public void setUp() {
@@ -97,7 +97,7 @@ public class KafkaToExternalKafkaCallbackTest {
         //noinspection deprecation
         recordMetadata = new RecordMetadata(TOPIC_PARTITION, BASE_OFFSET, RELATIVE_OFFSET, TIMESTAMP, CHECKSUM,
                 SERIALIZED_KEY_SIZE, SERIALIZED_VALUE_SIZE);
-        produceIntoExternalKafkaCallback = new KafkaToExternalKafkaCallback(mockLogger);
+        kafkaCallback = new KafkaCallback(mockLogger);
     }
 
     private void injectMockAndSaveRealObjects() {
@@ -124,16 +124,16 @@ public class KafkaToExternalKafkaCallbackTest {
 
     @Test
     public void testOnCompletionBothNull() throws Exception {
-        produceIntoExternalKafkaCallback.onCompletion(null, null);
+        kafkaCallback.onCompletion(null, null);
         commonVerifiesForOnCompletion();
     }
 
     @Test
     public void testOnCompletionBothNullReturnToObjectPoolSuccess() throws Exception {
         final Exception testException = new Exception("Exception Message");
-        doThrow(testException).when(mockObjectPool).returnObject(any(KafkaToExternalKafkaCallback.class));
+        doThrow(testException).when(mockObjectPool).returnObject(any(KafkaCallback.class));
 
-        produceIntoExternalKafkaCallback.onCompletion(null, null);
+        kafkaCallback.onCompletion(null, null);
         verify(mockLogger).error(String.format(POOL_ERROR_MSG_TEMPLATE, testException.getMessage()), testException);
         commonVerifiesForOnCompletion();
     }
@@ -145,8 +145,8 @@ public class KafkaToExternalKafkaCallbackTest {
         doThrow(runtimeException).when(mockLogger).error(anyString(), any(Throwable.class));
 
         try {
-            produceIntoExternalKafkaCallback.onCompletion(null, testException);
-        } catch(Throwable e) {
+            kafkaCallback.onCompletion(null, testException);
+        } catch (Throwable e) {
             assertSame(runtimeException, e);
             verify(mockLogger).error(String.format(ERROR_MSG_TEMPLATE, testException.getMessage()), testException);
             commonVerifiesForOnCompletion();
@@ -157,7 +157,7 @@ public class KafkaToExternalKafkaCallbackTest {
     public void testOnCompletionNonNullMetadataDebugDisabled() throws Exception {
         when(mockLogger.isDebugEnabled()).thenReturn(false);
 
-        produceIntoExternalKafkaCallback.onCompletion(recordMetadata, null);
+        kafkaCallback.onCompletion(recordMetadata, null);
 
         verify(mockLogger).isDebugEnabled();
         commonVerifiesForOnCompletion();
@@ -167,7 +167,7 @@ public class KafkaToExternalKafkaCallbackTest {
     public void testOnCompletionNonNullMetadataDebugEnabled() throws Exception {
         when(mockLogger.isDebugEnabled()).thenReturn(true);
 
-        produceIntoExternalKafkaCallback.onCompletion(recordMetadata, null);
+        kafkaCallback.onCompletion(recordMetadata, null);
 
         verify(mockLogger).isDebugEnabled();
         verify(mockLogger).debug(String.format(DEBUG_MSG, TOPIC, PARTITION, BASE_OFFSET));
@@ -178,7 +178,7 @@ public class KafkaToExternalKafkaCallbackTest {
     public void testOneCompletionNonNullException() throws Exception {
         when(mockException.getMessage()).thenReturn(MESSAGE);
 
-        produceIntoExternalKafkaCallback.onCompletion(null, mockException);
+        kafkaCallback.onCompletion(null, mockException);
 
         verify(mockException).getMessage();
         verify(mockLogger).error(String.format(ERROR_MSG_TEMPLATE, MESSAGE), mockException);
@@ -186,7 +186,7 @@ public class KafkaToExternalKafkaCallbackTest {
     }
 
     private void commonVerifiesForOnCompletion() throws Exception {
-        verify(mockObjectPool).returnObject(produceIntoExternalKafkaCallback);
+        verify(mockObjectPool).returnObject(kafkaCallback);
         verify(mockPostsInFlightCounter).increment(-1);
     }
 

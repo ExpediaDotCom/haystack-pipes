@@ -14,13 +14,13 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaproducer;
+package com.expedia.www.haystack.pipes.kafka;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
-import com.expedia.www.haystack.pipes.commons.decorators.keyExtractor.SpanKeyExtractor;
-import com.expedia.www.haystack.pipes.commons.decorators.keyExtractor.config.SpanKeyExtractorConfigProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.TagFlattener;
+import com.expedia.www.haystack.pipes.commons.key.extractor.SpanKeyExtractor;
+import com.expedia.www.haystack.pipes.commons.key.extractor.config.SpanKeyExtractorConfigProvider;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.netflix.servo.monitor.Stopwatch;
@@ -41,14 +41,14 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Component
-public class KafkaToExternalKafkaAction implements ForeachAction<String, Span> {
+public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
     private static final JsonFormat.Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
     @VisibleForTesting
     static final String TOPIC_MESSAGE =
             "Loading ProduceIntoExternalKafkaAction with brokers [%s] port [%d] topic [%s]";
     static AtomicReference<TimersAndCounters> COUNTERS_AND_TIMER = new AtomicReference<>(null);
-    static ObjectPool<KafkaToExternalKafkaCallback> OBJECT_POOL = new GenericObjectPool<>(
-            new CallbackFactory(LoggerFactory.getLogger(KafkaToExternalKafkaCallback.class)));
+    static ObjectPool<KafkaCallback> OBJECT_POOL = new GenericObjectPool<>(
+            new CallbackFactory(LoggerFactory.getLogger(KafkaCallback.class)));
 
     @VisibleForTesting
     static final String ERROR_MSG =
@@ -65,22 +65,22 @@ public class KafkaToExternalKafkaAction implements ForeachAction<String, Span> {
     private SpanKeyExtractor spanKeyExtractor;
 
     @Autowired
-    public KafkaToExternalKafkaAction(Factory produceIntoExternalKafkaActionFactory,
-                                      TimersAndCounters timersAndCounters,
-                                      Logger produceIntoExternalKafkaActionLogger,
-                                      ExternalKafkaConfigurationProvider externalKafkaConfigurationProvider,
-                                      SpanKeyExtractorConfigProvider spanKeyExtractorConfigProvider) {
+    public KafkaToKafkaPipeline(Factory produceIntoExternalKafkaActionFactory,
+                                TimersAndCounters timersAndCounters,
+                                Logger kafkaToExternalKafkaActionLogger,
+                                ExternalKafkaConfigurationProvider kafkaConfigurationProvider,
+                                SpanKeyExtractorConfigProvider spanKeyExtractorConfigProvider) {
         this.factory = produceIntoExternalKafkaActionFactory;
         this.timersAndCounters = timersAndCounters;
         COUNTERS_AND_TIMER.compareAndSet(null, timersAndCounters);
-        this.logger = produceIntoExternalKafkaActionLogger;
+        this.logger = kafkaToExternalKafkaActionLogger;
 
-        final Map<String, Object> configurationMap = externalKafkaConfigurationProvider.getConfigurationMap();
+        final Map<String, Object> configurationMap = kafkaConfigurationProvider.getConfigurationMap();
         this.kafkaProducer = factory.createKafkaProducer(configurationMap);
-        this.topic = externalKafkaConfigurationProvider.totopic();
+        this.topic = kafkaConfigurationProvider.totopic();
         this.spanKeyExtractor = spanKeyExtractorConfigProvider.loadAndGetSpanExtractor();
-        logger.info(String.format(TOPIC_MESSAGE, externalKafkaConfigurationProvider.brokers(),
-                externalKafkaConfigurationProvider.port(), topic));
+        logger.info(String.format(TOPIC_MESSAGE, kafkaConfigurationProvider.brokers(),
+                kafkaConfigurationProvider.port(), topic));
     }
 
     @Override
@@ -103,7 +103,7 @@ public class KafkaToExternalKafkaAction implements ForeachAction<String, Span> {
             final ProducerRecord<String, String> producerRecord =
                     factory.createProducerRecord(topic, kafkaKey, jsonWithFlattenedTags);
 
-            final KafkaToExternalKafkaCallback callback; // callback must returnObject()
+            final KafkaCallback callback; // callback must returnObject()
             try {
                 callback = OBJECT_POOL.borrowObject();
                 timersAndCounters.incrementCounter(POSTS_IN_FLIGHT_COUNTER_INDEX);
@@ -124,7 +124,7 @@ public class KafkaToExternalKafkaAction implements ForeachAction<String, Span> {
             return spanKeyExtractor.extract(value);
         String jsonWithFlattenedTags = null;
         try {
-            jsonWithFlattenedTags =  printer.print(value);
+            jsonWithFlattenedTags = printer.print(value);
         } catch (InvalidProtocolBufferException exception) {
             final String message = String.format(ERROR_MSG, value, exception.getMessage());
             logger.error(message, exception);

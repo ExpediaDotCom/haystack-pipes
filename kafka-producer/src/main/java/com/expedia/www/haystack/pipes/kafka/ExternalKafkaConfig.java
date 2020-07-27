@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaproducer;
+package com.expedia.www.haystack.pipes.kafka;
 
 /**
  * Configurations for the KafkaProducer that sends data to an Kafka outside of the Haystack system.

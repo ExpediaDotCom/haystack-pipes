@@ -14,9 +14,9 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaproducer;
+package com.expedia.www.haystack.pipes.kafka;
 
-import com.expedia.www.haystack.pipes.kafkaproducer.KafkaProducerIsActiveController.Factory;
+import com.expedia.www.haystack.pipes.kafka.App.Factory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +28,7 @@ import org.springframework.boot.SpringApplication;
 
 import java.util.Set;
 
-import static com.expedia.www.haystack.pipes.kafkaproducer.KafkaProducerIsActiveController.STARTUP_MSG;
+import static com.expedia.www.haystack.pipes.kafka.App.STARTUP_MSG;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.verify;
@@ -36,7 +36,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class KafkaProducerIsActiveControllerTest {
+public class AppTest {
     @Mock
     private Factory mockFactory;
 
@@ -58,7 +58,7 @@ public class KafkaProducerIsActiveControllerTest {
     }
 
     private void storeKafkaProducerIsActiveControllerWithMocksInStaticInstance() {
-        new KafkaProducerIsActiveController(mockProtobufToKafkaProducer, mockFactory, mockLogger);
+        new App(mockProtobufToKafkaProducer, mockFactory, mockLogger);
     }
 
     @After
@@ -68,7 +68,7 @@ public class KafkaProducerIsActiveControllerTest {
     }
 
     private void clearKafkaProducerIsActiveControllerInStaticInstance() {
-        KafkaProducerIsActiveController.INSTANCE.set(null);
+        App.INSTANCE.set(null);
     }
 
     @Test
@@ -76,7 +76,7 @@ public class KafkaProducerIsActiveControllerTest {
         when(mockFactory.createSpringApplication()).thenReturn(mockSpringApplication);
 
         final String[] args = new String[0];
-        KafkaProducerIsActiveController.main(args);
+        App.main(args);
 
         verify(mockLogger).info(STARTUP_MSG);
         verify(mockFactory).createSpringApplication();
@@ -91,6 +91,6 @@ public class KafkaProducerIsActiveControllerTest {
         final Set<Object> sources = springApplication.getSources();
         assertEquals(1, sources.size());
         final Object[] objects = sources.toArray();
-        assertSame(KafkaProducerIsActiveController.class, objects[0]);
+        assertSame(App.class, objects[0]);
     }
 }

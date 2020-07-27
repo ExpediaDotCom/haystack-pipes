@@ -1,4 +1,4 @@
-package com.expedia.www.haystack.pipes.kafkaproducer;
+package com.expedia.www.haystack.pipes.kafka;
 
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SPAN_ARRIVAL_TIMER_NAME;
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
-import static com.expedia.www.haystack.pipes.kafkaproducer.Constants.APPLICATION;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.Assert.assertEquals;
@@ -59,8 +58,8 @@ public class SpringConfigTest {
 
         assertNotNull(springConfig.produceIntoExternalKafkaActionRequestCounter());
 
-        verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                KafkaToExternalKafkaAction.class.getSimpleName(), "REQUEST");
+        verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, Constants.APPLICATION,
+                KafkaToKafkaPipeline.class.getSimpleName(), "REQUEST");
     }
 
     @Test
@@ -70,29 +69,29 @@ public class SpringConfigTest {
 
         assertNotNull(springConfig.postsInFlightCounter());
 
-        verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                KafkaToExternalKafkaAction.class.getSimpleName(), "POSTS_IN_FLIGHT");
+        verify(mockMetricObjects).createAndRegisterResettingCounter(SUBSYSTEM, Constants.APPLICATION,
+                KafkaToKafkaPipeline.class.getSimpleName(), "POSTS_IN_FLIGHT");
     }
 
     @Test
     public void testProduceIntoExternalKafkaCallbackLogger() {
-        final Logger logger = springConfig.produceIntoExternalKafkaCallbackLogger();
+        final Logger logger = springConfig.kafkaCallbackLogger();
 
-        assertEquals(KafkaToExternalKafkaCallback.class.getName(), logger.getName());
+        assertEquals(KafkaCallback.class.getName(), logger.getName());
     }
 
     @Test
     public void testProduceIntoExternalKafkaActionLogger() {
-        final Logger logger = springConfig.produceIntoExternalKafkaActionLogger();
+        final Logger logger = springConfig.kafkaToExternalKafkaActionLogger();
 
-        assertEquals(KafkaToExternalKafkaAction.class.getName(), logger.getName());
+        assertEquals(KafkaToKafkaPipeline.class.getName(), logger.getName());
     }
 
     @Test
     public void testKafkaProducerIsActiveControllerLogger() {
-        final Logger logger = springConfig.kafkaProducerIsActiveControllerLogger();
+        final Logger logger = springConfig.appLogger();
 
-        assertEquals(KafkaProducerIsActiveController.class.getName(), logger.getName());
+        assertEquals(App.class.getName(), logger.getName());
     }
 
     @Test
@@ -100,7 +99,7 @@ public class SpringConfigTest {
         final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter(mockHealthController);
 
         assertSame(ProtobufToKafkaProducer.class, kafkaStreamStarter.containingClass);
-        assertSame(APPLICATION, kafkaStreamStarter.clientId);
+        assertSame(Constants.APPLICATION, kafkaStreamStarter.clientId);
     }
 
     @Test
@@ -111,16 +110,16 @@ public class SpringConfigTest {
 
         assertNotNull(springConfig.kafkaProducerPost());
 
-        verify(mockMetricObjects).createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
-                KafkaToExternalKafkaAction.class.getSimpleName(), "KAFKA_PRODUCER_POST", MICROSECONDS);
+        verify(mockMetricObjects).createAndRegisterBasicTimer(SUBSYSTEM, Constants.APPLICATION,
+                KafkaToKafkaPipeline.class.getSimpleName(), "KAFKA_PRODUCER_POST", MICROSECONDS);
     }
 
     @Test
     public void testSpanArrivalTimer() {
         springConfig.spanArrivalTimer();
 
-        verify(mockMetricObjects).createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
-                KafkaToExternalKafkaAction.class.getSimpleName(), SPAN_ARRIVAL_TIMER_NAME, MILLISECONDS);
+        verify(mockMetricObjects).createAndRegisterBasicTimer(SUBSYSTEM, Constants.APPLICATION,
+                KafkaToKafkaPipeline.class.getSimpleName(), SPAN_ARRIVAL_TIMER_NAME, MILLISECONDS);
     }
 
 }

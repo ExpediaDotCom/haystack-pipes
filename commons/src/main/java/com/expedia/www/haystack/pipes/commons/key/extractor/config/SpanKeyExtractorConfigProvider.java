@@ -1,8 +1,8 @@
-package com.expedia.www.haystack.pipes.commons.decorators.keyExtractor.config;
+package com.expedia.www.haystack.pipes.commons.key.extractor.config;
 
 import com.expedia.www.haystack.commons.config.Configuration;
-import com.expedia.www.haystack.pipes.commons.decorators.keyExtractor.SpanKeyExtractor;
-import com.expedia.www.haystack.pipes.commons.decorators.keyExtractor.loader.SpanKeyExtractorLoader;
+import com.expedia.www.haystack.pipes.commons.key.extractor.SpanKeyExtractor;
+import com.expedia.www.haystack.pipes.commons.key.extractor.loader.SpanKeyExtractorLoader;
 import org.cfg4j.provider.ConfigurationProvider;
 
 public class SpanKeyExtractorConfigProvider implements SpanKeyExtractorConfig {
