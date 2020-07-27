@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.kafkaproducer;
 
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.Timers;
@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SPAN_ARRIVAL_TIMER_NAME;
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
-import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
+import static com.expedia.www.haystack.pipes.kafkaproducer.Constants.APPLICATION;
 
 @Configuration
 @ComponentScan(basePackageClasses = SpringConfig.class)
@@ -60,23 +60,23 @@ public class SpringConfig {
     @Bean
     Counter produceIntoExternalKafkaActionRequestCounter() {
         return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                ProduceIntoExternalKafkaAction.class.getSimpleName(), "REQUEST");
+                KafkaToExternalKafkaAction.class.getSimpleName(), "REQUEST");
     }
 
     @Bean
     Counter postsInFlightCounter() {
         return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
-                ProduceIntoExternalKafkaAction.class.getSimpleName(), "POSTS_IN_FLIGHT");
+                KafkaToExternalKafkaAction.class.getSimpleName(), "POSTS_IN_FLIGHT");
     }
 
     @Bean
     Logger produceIntoExternalKafkaCallbackLogger() {
-        return LoggerFactory.getLogger(ProduceIntoExternalKafkaCallback.class);
+        return LoggerFactory.getLogger(KafkaToExternalKafkaCallback.class);
     }
 
     @Bean
     Logger produceIntoExternalKafkaActionLogger() {
-        return LoggerFactory.getLogger(ProduceIntoExternalKafkaAction.class);
+        return LoggerFactory.getLogger(KafkaToExternalKafkaAction.class);
     }
 
     @Bean
@@ -100,13 +100,13 @@ public class SpringConfig {
     @Bean
     Timer kafkaProducerPost() {
         return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
-                ProduceIntoExternalKafkaAction.class.getSimpleName(), "KAFKA_PRODUCER_POST", TimeUnit.MICROSECONDS);
+                KafkaToExternalKafkaAction.class.getSimpleName(), "KAFKA_PRODUCER_POST", TimeUnit.MICROSECONDS);
     }
 
     @Bean
     Timer spanArrivalTimer() {
         return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
-                ProduceIntoExternalKafkaAction.class.getSimpleName(), SPAN_ARRIVAL_TIMER_NAME, TimeUnit.MILLISECONDS);
+                KafkaToExternalKafkaAction.class.getSimpleName(), SPAN_ARRIVAL_TIMER_NAME, TimeUnit.MILLISECONDS);
     }
 
     // Beans without unit tests ////////////////////////////////////////////////////////////////////////////////////////
@@ -142,8 +142,8 @@ public class SpringConfig {
     }
 
     @Bean
-    ProduceIntoExternalKafkaAction.Factory produceIntoExternalKafkaActionFactory() {
-        return new ProduceIntoExternalKafkaAction.Factory();
+    KafkaToExternalKafkaAction.Factory produceIntoExternalKafkaActionFactory() {
+        return new KafkaToExternalKafkaAction.Factory();
     }
 
     @Bean
@@ -170,13 +170,13 @@ public class SpringConfig {
 
     @Bean
     @Autowired
-    ProduceIntoExternalKafkaAction produceIntoExternalKafkaAction(
-            ProduceIntoExternalKafkaAction.Factory produceIntoExternalKafkaActionFactoryFactory,
+    KafkaToExternalKafkaAction produceIntoExternalKafkaAction(
+            KafkaToExternalKafkaAction.Factory produceIntoExternalKafkaActionFactoryFactory,
             TimersAndCounters timersAndCounters,
             Logger produceIntoExternalKafkaActionLogger,
             ExternalKafkaConfigurationProvider externalKafkaConfigurationProvider,
             SpanKeyExtractorConfigProvider spanKeyExtractorConfigProvider) {
-        return new ProduceIntoExternalKafkaAction(
+        return new KafkaToExternalKafkaAction(
                 produceIntoExternalKafkaActionFactoryFactory,
                 timersAndCounters,
                 produceIntoExternalKafkaActionLogger,
@@ -188,7 +188,7 @@ public class SpringConfig {
     @Autowired
     ProtobufToKafkaProducer protobufToKafkaProducer(KafkaStreamStarter kafkaStreamStarter,
                                                     SerdeFactory serdeFactory,
-                                                    ProduceIntoExternalKafkaAction produceIntoExternalKafkaAction,
+                                                    KafkaToExternalKafkaAction produceIntoExternalKafkaAction,
                                                     KafkaConfigurationProvider kafkaConfigurationProvider) {
         return new ProtobufToKafkaProducer(
                 kafkaStreamStarter, serdeFactory, produceIntoExternalKafkaAction, kafkaConfigurationProvider);

@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.kafkaproducer;
 
 import com.expedia.www.haystack.commons.config.Configuration;
 import org.apache.kafka.clients.CommonClientConfigs;

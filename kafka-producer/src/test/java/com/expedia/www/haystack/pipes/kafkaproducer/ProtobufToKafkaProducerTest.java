@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.kafkaproducer;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
@@ -33,7 +33,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
-import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
+import static com.expedia.www.haystack.pipes.kafkaproducer.Constants.APPLICATION;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -50,7 +50,7 @@ public class ProtobufToKafkaProducerTest {
     @Mock
     private SerdeFactory mockSerdeFactory;
     @Mock
-    private ProduceIntoExternalKafkaAction mockProduceIntoExternalKafkaAction;
+    private KafkaToExternalKafkaAction mockProduceIntoExternalKafkaAction;
     @Mock
     private KafkaConfigurationProvider mockKafkaConfigurationProvider;
     @Mock
