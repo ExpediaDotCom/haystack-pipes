@@ -1,4 +1,4 @@
-package com.expedia.www.haystack.pipes.commons.decorators.keyExtractor;
+package com.expedia.www.haystack.pipes.commons.key.extractor;
 
 import com.expedia.open.tracing.Span;
 import java.util.List;

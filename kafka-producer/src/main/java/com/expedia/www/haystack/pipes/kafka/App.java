@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaproducer;
+package com.expedia.www.haystack.pipes.kafka;
 
 import com.netflix.servo.util.VisibleForTesting;
 import org.slf4j.Logger;
@@ -33,11 +33,11 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @SpringBootApplication
 @Component
-public class KafkaProducerIsActiveController extends SpringBootServletInitializer {
+public class App extends SpringBootServletInitializer {
     // Singleton, initialized on first constructor call, so that future instances created by Spring during unit tests
     // will not overwrite the initial INSTANCE (with mocks) created by the unit tests.
     @VisibleForTesting
-    static final AtomicReference<KafkaProducerIsActiveController> INSTANCE = new AtomicReference<>();
+    static final AtomicReference<App> INSTANCE = new AtomicReference<>();
     @VisibleForTesting static final String STARTUP_MSG = "Starting FirehoseIsActiveController";
 
     private final ProtobufToKafkaProducer protobufToKafkaProducer;
@@ -45,12 +45,12 @@ public class KafkaProducerIsActiveController extends SpringBootServletInitialize
     private final Logger logger;
 
     @Autowired
-    KafkaProducerIsActiveController(ProtobufToKafkaProducer protobufToKafkaProducer,
-                               Factory kafkaProducerIsActiveControllerFactory,
-                               Logger kafkaProducerIsActiveControllerLogger) {
+    App(ProtobufToKafkaProducer protobufToKafkaProducer,
+        Factory kafkaProducerIsActiveControllerFactory,
+        Logger appLogger) {
         this.protobufToKafkaProducer = protobufToKafkaProducer;
         this.factory = kafkaProducerIsActiveControllerFactory;
-        this.logger = kafkaProducerIsActiveControllerLogger;
+        this.logger = appLogger;
         INSTANCE.compareAndSet(null, this);
     }
 
@@ -63,7 +63,7 @@ public class KafkaProducerIsActiveController extends SpringBootServletInitialize
 
     static class Factory {
         SpringApplication createSpringApplication() {
-            return new SpringApplication(KafkaProducerIsActiveController.class);
+            return new SpringApplication(App.class);
         }
     }
 }

@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaproducer;
+package com.expedia.www.haystack.pipes.kafka;
 
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -22,12 +22,8 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import static com.expedia.www.haystack.pipes.kafkaproducer.KafkaToExternalKafkaAction.COUNTERS_AND_TIMER;
-import static com.expedia.www.haystack.pipes.kafkaproducer.KafkaToExternalKafkaAction.OBJECT_POOL;
-import static com.expedia.www.haystack.pipes.kafkaproducer.KafkaToExternalKafkaAction.POSTS_IN_FLIGHT_COUNTER_INDEX;
-
 @Component
-public class KafkaToExternalKafkaCallback implements Callback {
+public class KafkaCallback implements Callback {
     static final String DEBUG_MSG = "Successfully posted JSON to Kafka: topic [%s] partition [%d] offset [%d]";
     static final String ERROR_MSG_TEMPLATE = "Callback exception posting JSON to Kafka; received message [%s]";
     static final String POOL_ERROR_MSG_TEMPLATE = "Exception returning callback to pool; received message [%s]";
@@ -35,8 +31,8 @@ public class KafkaToExternalKafkaCallback implements Callback {
     private final Logger logger;
 
     @Autowired
-    public KafkaToExternalKafkaCallback(Logger produceIntoExternalKafkaCallbackLogger) {
-        this.logger = produceIntoExternalKafkaCallbackLogger;
+    public KafkaCallback(Logger kafkaCallbackLogger) {
+        this.logger = kafkaCallbackLogger;
     }
 
     @Override
@@ -59,8 +55,8 @@ public class KafkaToExternalKafkaCallback implements Callback {
 
     private void returnObjectToPoolButLogExceptionIfReturnFails() {
         try {
-            COUNTERS_AND_TIMER.get().incrementCounter(POSTS_IN_FLIGHT_COUNTER_INDEX, -1);
-            OBJECT_POOL.returnObject(this);
+            KafkaToKafkaPipeline.COUNTERS_AND_TIMER.get().incrementCounter(KafkaToKafkaPipeline.POSTS_IN_FLIGHT_COUNTER_INDEX, -1);
+            KafkaToKafkaPipeline.OBJECT_POOL.returnObject(this);
         } catch (Exception exception) {
             logError(exception, POOL_ERROR_MSG_TEMPLATE);
         }

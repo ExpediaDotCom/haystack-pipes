@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaproducer;
+package com.expedia.www.haystack.pipes.kafka;
 
 import org.junit.Before;
 import org.junit.Test;

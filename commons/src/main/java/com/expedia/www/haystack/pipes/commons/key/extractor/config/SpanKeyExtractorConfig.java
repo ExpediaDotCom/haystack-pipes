@@ -1,4 +1,4 @@
-package com.expedia.www.haystack.pipes.commons.decorators.keyExtractor.config;
+package com.expedia.www.haystack.pipes.commons.key.extractor.config;
 
 
 public interface SpanKeyExtractorConfig {

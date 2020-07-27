@@ -1,7 +1,7 @@
-package com.expedia.www.haystack.pipes.commons.decorators.keyExtractor.loader;
+package com.expedia.www.haystack.pipes.commons.key.extractor.loader;
 
-import com.expedia.www.haystack.pipes.commons.decorators.keyExtractor.SpanKeyExtractor;
-import com.expedia.www.haystack.pipes.commons.decorators.keyExtractor.config.SpanKeyExtractorConfig;
+import com.expedia.www.haystack.pipes.commons.key.extractor.SpanKeyExtractor;
+import com.expedia.www.haystack.pipes.commons.key.extractor.config.SpanKeyExtractorConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
