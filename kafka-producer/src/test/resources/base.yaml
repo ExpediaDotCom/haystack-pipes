@@ -28,16 +28,7 @@ haystack:
     port: 2003
     pollintervalseconds: 300
     queuesize: 10
-  externalkafka:
-    brokers: "localhost:9092"
-    port: 9093
-    totopic: "externalKafkaTopic"
-    acks: "0"
-    batchsize: 8192
-    lingerms: 4
-    buffermemory: 1024
   extractor:
-    directory: 'extractors/'
-    config: '{key1: value1,
-      key2: value2}'
+    directory: ''
+    config: ''
 

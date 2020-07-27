@@ -38,7 +38,8 @@ public class App extends SpringBootServletInitializer {
     // will not overwrite the initial INSTANCE (with mocks) created by the unit tests.
     @VisibleForTesting
     static final AtomicReference<App> INSTANCE = new AtomicReference<>();
-    @VisibleForTesting static final String STARTUP_MSG = "Starting FirehoseIsActiveController";
+    @VisibleForTesting
+    static final String STARTUP_MSG = "Starting FirehoseIsActiveController";
 
     private final ProtobufToKafkaProducer protobufToKafkaProducer;
     private final Factory factory;

@@ -22,4 +22,5 @@ public interface Configuration {
     String HAYSTACK_KAFKA_CONFIG_PREFIX = "haystack.kafka.consumer";
     String HAYSTACK_KAFKA_PRODUCER_CONFIG_PREFIX = "haystack.kafka.producer";
     String HAYSTACK_FIREHOSE_CONFIG_PREFIX = "haystack.firehose";
+    String HAYSTACK_EXTRACTOR_CONFIG_PREFIX = "haystack.extractor";
 }

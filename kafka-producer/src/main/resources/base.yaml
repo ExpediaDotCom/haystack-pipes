@@ -29,15 +29,6 @@ haystack:
     pollintervalseconds: 300
     queuesize: 10
     sendasrate: false
-  externalkafka:
-    brokers: "haystack.local:9092" # will point to external Kafka in typical usage
-    port: 9092
-    totopic: "externalKafkaTopic"
-    acks: "0"
-    batchsize: 16384
-    lingerms: 5
-    buffermemory: 1048576 # 1 Megabyte'
   extractor:
-    directory: 'extractors/'
-    config: '{key1: value1,
-      key2: value2}'
+    directory: ''
+    config: ''

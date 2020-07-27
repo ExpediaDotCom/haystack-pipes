@@ -100,9 +100,7 @@ public class KafkaToKafkaPipelineTest {
 
     @After
     public void tearDown() {
-//        verifiesForConstructor();
-//        verifyNoMoreInteractions(mockFactory, mockTimersAndCounters, mockLogger, mockKafkaConfigurationProvider, mockSpanKeyExtractorConfigProvider);
-//        verifyNoMoreInteractions(mockStopwatch, mockKafkaProducer, mockProducerRecord, mockObjectPool, mockMap);
+        verifiesForConstructor();
     }
 
     private void verifiesForConstructor() {
@@ -134,20 +132,6 @@ public class KafkaToKafkaPipelineTest {
         verify(mockTimersAndCounters).incrementRequestCounter();
         verifiesForTestApply(jsonSpanString);
     }
-
-//    @Test(expected = OutOfMemoryError.class)
-//    public void testApplyOutOfMemoryError() {
-//        whensForTestApply();
-//        when(mockKafkaProducer.send(any(), any())).thenThrow(new OutOfMemoryError());
-//
-//        try {
-//            produceIntoExternalKafkaAction.apply(KEY, FULLY_POPULATED_SPAN);
-//        } finally {
-//            verify(mockTimersAndCounters).incrementRequestCounter();
-//            verifiesForTestApply(JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
-//        }
-//
-//    }
 
     private void whensForTestApply() {
         when(mockTimersAndCounters.startTimer()).thenReturn(mockStopwatch);
