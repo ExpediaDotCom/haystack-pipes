@@ -53,21 +53,21 @@ public class AppTest {
 
     @Before
     public void setUp() {
-        storeKafkaProducerIsActiveControllerWithMocksInStaticInstance();
+        storeAppWithMocksInStaticInstance();
         factory = new Factory();
     }
 
-    private void storeKafkaProducerIsActiveControllerWithMocksInStaticInstance() {
+    private void storeAppWithMocksInStaticInstance() {
         new App(mockProtobufToKafkaProducer, mockFactory, mockLogger);
     }
 
     @After
     public void tearDown() {
         verifyNoMoreInteractions(mockProtobufToKafkaProducer, mockFactory, mockSpringApplication, mockLogger);
-        clearKafkaProducerIsActiveControllerInStaticInstance();
+        clearAppInStaticInstance();
     }
 
-    private void clearKafkaProducerIsActiveControllerInStaticInstance() {
+    private void clearAppInStaticInstance() {
         App.INSTANCE.set(null);
     }
 

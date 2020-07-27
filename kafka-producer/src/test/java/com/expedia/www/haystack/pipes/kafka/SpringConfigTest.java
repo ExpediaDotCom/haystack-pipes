@@ -88,7 +88,7 @@ public class SpringConfigTest {
     }
 
     @Test
-    public void testKafkaProducerIsActiveControllerLogger() {
+    public void testAppLogger() {
         final Logger logger = springConfig.appLogger();
 
         assertEquals(App.class.getName(), logger.getName());

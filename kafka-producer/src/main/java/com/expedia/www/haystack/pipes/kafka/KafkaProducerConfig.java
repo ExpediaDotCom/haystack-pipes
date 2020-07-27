@@ -25,7 +25,7 @@ package com.expedia.www.haystack.pipes.kafka;
  * configuration changes configurations specified by environment variables from upper to lower case and replaces
  * underscores by periods.
  */
-public interface ExternalKafkaConfig {
+public interface KafkaProducerConfig {
     String brokers();
 
     int port();

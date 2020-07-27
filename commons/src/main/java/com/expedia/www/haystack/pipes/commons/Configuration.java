@@ -19,7 +19,7 @@ package com.expedia.www.haystack.pipes.commons;
 public interface Configuration {
     String HAYSTACK_GRAPHITE_CONFIG_PREFIX = "haystack.graphite";
     String HAYSTACK_PIPE_STREAMS = "haystack.pipe.streams";
-    String HAYSTACK_KAFKA_CONFIG_PREFIX = "haystack.kafka";
-    String HAYSTACK_EXTERNAL_KAFKA_CONFIG_PREFIX = "haystack.externalkafka";
+    String HAYSTACK_KAFKA_CONFIG_PREFIX = "haystack.kafka.consumer";
+    String HAYSTACK_KAFKA_PRODUCER_CONFIG_PREFIX = "haystack.kafka.producer";
     String HAYSTACK_FIREHOSE_CONFIG_PREFIX = "haystack.firehose";
 }

@@ -21,12 +21,12 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class ExternalKafkaConfigurationProviderTest {
-    private ExternalKafkaConfigurationProvider externalKafkaConfigurationProvider;
+public class KafkaProducerConfigurationProviderTest {
+    private KafkaProducerConfigurationProvider externalKafkaConfigurationProvider;
 
     @Before
     public void setUp() {
-        externalKafkaConfigurationProvider = new ExternalKafkaConfigurationProvider();
+        externalKafkaConfigurationProvider = new KafkaProducerConfigurationProvider();
     }
 
     @Test

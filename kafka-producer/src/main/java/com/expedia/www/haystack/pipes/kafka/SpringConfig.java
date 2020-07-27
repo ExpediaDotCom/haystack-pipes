@@ -127,8 +127,8 @@ public class SpringConfig {
     }
 
     @Bean
-    ExternalKafkaConfigurationProvider externalKafkaConfigurationProvider() {
-        return new ExternalKafkaConfigurationProvider();
+    KafkaProducerConfigurationProvider externalKafkaConfigurationProvider() {
+        return new KafkaProducerConfigurationProvider();
     }
 
     @Bean
@@ -137,7 +137,7 @@ public class SpringConfig {
     }
 
     @Bean
-    App.Factory kafkaProducerIsActiveControllerFactory() {
+    App.Factory appFactory() {
         return new App.Factory();
     }
 
@@ -174,7 +174,7 @@ public class SpringConfig {
             KafkaToKafkaPipeline.Factory kafkaToExternalKafkaActionFactoryFactory,
             TimersAndCounters timersAndCounters,
             Logger kafkaToExternalKafkaActionLogger,
-            ExternalKafkaConfigurationProvider kafkaConfigurationProvider,
+            KafkaProducerConfigurationProvider kafkaConfigurationProvider,
             SpanKeyExtractorConfigProvider spanKeyExtractorConfigProvider) {
         return new KafkaToKafkaPipeline(
                 kafkaToExternalKafkaActionFactoryFactory,

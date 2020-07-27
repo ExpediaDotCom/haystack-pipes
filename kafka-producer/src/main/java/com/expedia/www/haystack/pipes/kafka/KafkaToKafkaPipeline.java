@@ -68,7 +68,7 @@ public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
     public KafkaToKafkaPipeline(Factory produceIntoExternalKafkaActionFactory,
                                 TimersAndCounters timersAndCounters,
                                 Logger kafkaToExternalKafkaActionLogger,
-                                ExternalKafkaConfigurationProvider kafkaConfigurationProvider,
+                                KafkaProducerConfigurationProvider kafkaConfigurationProvider,
                                 SpanKeyExtractorConfigProvider spanKeyExtractorConfigProvider) {
         this.factory = produceIntoExternalKafkaActionFactory;
         this.timersAndCounters = timersAndCounters;

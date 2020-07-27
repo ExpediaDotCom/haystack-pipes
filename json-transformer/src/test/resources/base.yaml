@@ -1,22 +1,23 @@
 haystack:
   kafka:
-     brokers: "localhost"
-     port: 9092 # default Kafka port, rarely overridden, but can be overridden by env variable
-     fromtopic: "proto-spans"
-     totopic: "json-spans"
-     threadcount: 1
-     sessiontimeout: 15000
-     maxwakeups: 10
-     wakeuptimeoutms: 3000
-     polltimeoutms: 250
-     commitms: 3000
+    consumer:
+      brokers: "localhost"
+      port: 9092 # default Kafka port, rarely overridden, but can be overridden by env variable
+      fromtopic: "proto-spans"
+      totopic: "json-spans"
+      threadcount: 1
+      sessiontimeout: 15000
+      maxwakeups: 10
+      wakeuptimeoutms: 3000
+      polltimeoutms: 250
+      commitms: 3000
   pipe:
     streams:
       replicationfactor: 1
   graphite:
-     prefix: "haystack"
-     host: "localhost"
-     port: 2003 # default Graphite port, rarely overridden, but can be overridden by env variable
-     pollintervalseconds: 300
-     queuesize: 10
-     sendasrate: true
+    prefix: "haystack"
+    host: "localhost"
+    port: 2003 # default Graphite port, rarely overridden, but can be overridden by env variable
+    pollintervalseconds: 300
+    queuesize: 10
+    sendasrate: true

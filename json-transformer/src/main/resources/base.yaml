@@ -1,15 +1,16 @@
 haystack:
   kafka:
-     brokers: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
-     port: 9092 # default Kafka port, rarely overridden, but can be overridden by env variable
-     fromtopic: "proto-spans"
-     totopic: "json-spans"
-     threadcount: 1
-     sessiontimeout: 15000
-     maxwakeups: 10
-     wakeuptimeoutms: 3000
-     polltimeoutms: 250
-     commitms: 3000
+     consumer:
+       brokers: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
+       port: 9092 # default Kafka port, rarely overridden, but can be overridden by env variable
+       fromtopic: "proto-spans"
+       totopic: "json-spans"
+       threadcount: 1
+       sessiontimeout: 15000
+       maxwakeups: 10
+       wakeuptimeoutms: 3000
+       polltimeoutms: 250
+       commitms: 3000
   pipe:
     streams:
       replicationfactor: 1

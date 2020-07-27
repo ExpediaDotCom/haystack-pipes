@@ -46,10 +46,10 @@ public class App extends SpringBootServletInitializer {
 
     @Autowired
     App(ProtobufToKafkaProducer protobufToKafkaProducer,
-        Factory kafkaProducerIsActiveControllerFactory,
+        Factory appFactory,
         Logger appLogger) {
         this.protobufToKafkaProducer = protobufToKafkaProducer;
-        this.factory = kafkaProducerIsActiveControllerFactory;
+        this.factory = appFactory;
         this.logger = appLogger;
         INSTANCE.compareAndSet(null, this);
     }

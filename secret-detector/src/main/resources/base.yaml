@@ -1,15 +1,16 @@
 haystack:
   kafka:
-    brokers: "haystack.local"
-    port: 9092
-    fromtopic: "proto-spans"
-    totopic: "proto-spans-scrubbed"
-    threadcount: 2
-    sessiontimeout: 15000
-    maxwakeups: -1
-    wakeuptimeoutms: -1
-    polltimeoutms: -1
-    commitms: -1
+    consumer:
+      brokers: "haystack.local"
+      port: 9092
+      fromtopic: "proto-spans"
+      totopic: "proto-spans-scrubbed"
+      threadcount: 2
+      sessiontimeout: 15000
+      maxwakeups: -1
+      wakeuptimeoutms: -1
+      polltimeoutms: -1
+      commitms: -1
   pipe:
     streams:
       replicationfactor: 1

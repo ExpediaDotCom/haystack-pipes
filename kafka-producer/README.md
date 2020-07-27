@@ -6,7 +6,7 @@ external) Kafka queue and topic. The code is simple and self-explanatory and con
 1. A [Kafka producer](https://github.com/ExpediaDotCom/haystack-pipes/blob/master/kafka-producer/src/main/java/com/expedia/www/haystack/pipes/kafkaProducer/ProtobufToKafkaProducer.java)
 that wires serializers and deserializers into a
 [Kafka Streams](https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Streams) pipeline.
-2. A simple Spring Boot [application](https://github.com/ExpediaDotCom/haystack-pipes/blob/master/kafka-producer/src/main/java/com/expedia/www/haystack/pipes/kafkaProducer/KafkaProducerIsActiveController.java)
+2. A simple Spring Boot [application](https://github.com/ExpediaDotCom/haystack-pipes/blob/master/kafka-producer/src/main/java/com/expedia/www/haystack/pipes/kafkaProducer/App.java)
 that provides an HTTP endpoint, used for health checks.
 3. [Configurations](https://github.com/ExpediaDotCom/haystack-pipes/blob/master/kafka-producer/src/main/java/com/expedia/www/haystack/pipes/kafkaProducer/ExternalKafkaConfig.java)
 for the external (probably) Kafka queue to which the Spans' JSON is written.

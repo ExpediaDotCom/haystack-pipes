@@ -25,54 +25,54 @@ import org.cfg4j.provider.ConfigurationProvider;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.expedia.www.haystack.pipes.commons.Configuration.HAYSTACK_EXTERNAL_KAFKA_CONFIG_PREFIX;
+import static com.expedia.www.haystack.pipes.commons.Configuration.HAYSTACK_KAFKA_PRODUCER_CONFIG_PREFIX;
 
-public class ExternalKafkaConfigurationProvider implements ExternalKafkaConfig {
-    private ExternalKafkaConfig externalKafkaConfig;
+public class KafkaProducerConfigurationProvider implements KafkaProducerConfig {
+    private KafkaProducerConfig kafkaProducerConfig;
 
-    ExternalKafkaConfigurationProvider() {
+    KafkaProducerConfigurationProvider() {
         reload();
     }
 
     @Override
     public String brokers() {
-        return externalKafkaConfig.brokers();
+        return kafkaProducerConfig.brokers();
     }
 
     @Override
     public int port() {
-        return externalKafkaConfig.port();
+        return kafkaProducerConfig.port();
     }
 
     @Override
     public String totopic() {
-        return externalKafkaConfig.totopic();
+        return kafkaProducerConfig.totopic();
     }
 
     @Override
     public String acks() {
-        return externalKafkaConfig.acks();
+        return kafkaProducerConfig.acks();
     }
 
     @Override
     public int batchsize() {
-        return externalKafkaConfig.batchsize();
+        return kafkaProducerConfig.batchsize();
     }
 
     @Override
     public int lingerms() {
-        return externalKafkaConfig.lingerms();
+        return kafkaProducerConfig.lingerms();
     }
 
     @Override
     public int buffermemory() {
-        return externalKafkaConfig.buffermemory();
+        return kafkaProducerConfig.buffermemory();
     }
 
     void reload() {
         final Configuration configuration = new Configuration();
         final ConfigurationProvider configurationProvider = configuration.createMergeConfigurationProvider();
-        externalKafkaConfig = configurationProvider.bind(HAYSTACK_EXTERNAL_KAFKA_CONFIG_PREFIX, ExternalKafkaConfig.class);
+        kafkaProducerConfig = configurationProvider.bind(HAYSTACK_KAFKA_PRODUCER_CONFIG_PREFIX, KafkaProducerConfig.class);
     }
 
     Map<String, Object> getConfigurationMap() {

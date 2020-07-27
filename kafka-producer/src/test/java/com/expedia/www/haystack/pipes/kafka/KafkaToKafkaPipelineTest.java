@@ -64,7 +64,7 @@ public class KafkaToKafkaPipelineTest {
     @Mock
     private Logger mockLogger;
     @Mock
-    private ExternalKafkaConfigurationProvider mockKafkaConfigurationProvider;
+    private KafkaProducerConfigurationProvider mockKafkaConfigurationProvider;
     @Mock
     private SpanKeyExtractorConfigProvider mockSpanKeyExtractorConfigProvider;
     @Mock

@@ -1,15 +1,24 @@
 haystack:
   kafka:
-    brokers: "localhost"
-    port: 9092
-    fromtopic: "json-spans"
-    totopic: ""
-    threadcount: 1
-    sessiontimeout: 15000
-    maxwakeups: 10
-    wakeuptimeoutms: 3000
-    polltimeoutms: 250
-    commitms: 3000
+    producer:
+      brokers: "localhost:9092"
+      port: 9093
+      totopic: "externalKafkaTopic"
+      acks: "0"
+      batchsize: 8192
+      lingerms: 4
+      buffermemory: 1024
+    consumer:
+      brokers: "localhost"
+      port: 9092
+      fromtopic: "json-spans"
+      totopic: ""
+      threadcount: 1
+      sessiontimeout: 15000
+      maxwakeups: 10
+      wakeuptimeoutms: 3000
+      polltimeoutms: 250
+      commitms: 3000
   pipe:
     streams:
       replicationfactor: 1
