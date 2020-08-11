@@ -35,7 +35,6 @@ public class SpanKeyExtractorLoader {
     private Logger logger;
     private ProjectConfiguration projectConfiguration;
     private List<SpanKeyExtractor> spanKeyExtractorList;
-    //private SpanKeyExtractor spanKeyExtractor;
     private ServiceLoader<SpanKeyExtractor> serviceLoader;
 
     private SpanKeyExtractorLoader() {
@@ -74,11 +73,15 @@ public class SpanKeyExtractorLoader {
     public List<SpanKeyExtractor> getSpanKeyExtractor() {
         if (spanKeyExtractorList.isEmpty() && this.serviceLoader != null) {
             serviceLoader.forEach(spanKeyExtractor -> {
-                //need to add try catch here
-                spanKeyExtractor.configure(projectConfiguration.getSpanExtractorConfigs()
-                        .getOrDefault(spanKeyExtractor.name(), null));
-                spanKeyExtractorList.add(spanKeyExtractor);
-                logger.debug("Extractor class is loaded: {}, at path: {}", spanKeyExtractor.name(), projectConfiguration.getDirectory());
+                try {
+                    spanKeyExtractor.configure(projectConfiguration.getSpanExtractorConfigs()
+                            .getOrDefault(spanKeyExtractor.name(), null));
+                    spanKeyExtractorList.add(spanKeyExtractor);
+                    logger.debug("Extractor class is loaded: {}, at path: {}", spanKeyExtractor.name(), projectConfiguration.getDirectory());
+
+                } catch (Exception e) {
+                    logger.error("Failed to load Span Extractor, Exception: {}", e.getMessage());
+                }
             });
         }
         return spanKeyExtractorList;
