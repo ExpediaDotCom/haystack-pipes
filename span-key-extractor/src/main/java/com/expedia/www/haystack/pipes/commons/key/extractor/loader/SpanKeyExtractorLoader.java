@@ -61,7 +61,7 @@ public class SpanKeyExtractorLoader {
                 }
                 URLClassLoader urlClassLoader = new URLClassLoader(urls.toArray(new URL[0]), SpanKeyExtractor.class.getClassLoader());
                 serviceLoader = ServiceLoader.load(SpanKeyExtractor.class, urlClassLoader);
-                logger.info("Service is Loaded: " + serviceLoader);
+                logger.debug("Service is Loaded: " + serviceLoader);
             }
         } catch (Exception ex) {
             logger.error("Could not create the class loader for finding jar ", ex);
@@ -78,7 +78,6 @@ public class SpanKeyExtractorLoader {
                             .getOrDefault(spanKeyExtractor.name(), null));
                     spanKeyExtractorList.add(spanKeyExtractor);
                     logger.debug("Extractor class is loaded: {}, at path: {}", spanKeyExtractor.name(), projectConfiguration.getDirectory());
-
                 } catch (Exception e) {
                     logger.error("Failed to load Span Extractor, Exception: {}", e.getMessage());
                 }
