@@ -106,6 +106,7 @@
         <module>json-transformer</module>
         <module>kafka-producer</module>
         <module>secret-detector</module>
+        <module>sample-key-extractors</module>
     </modules>
 
     <dependencyManagement>

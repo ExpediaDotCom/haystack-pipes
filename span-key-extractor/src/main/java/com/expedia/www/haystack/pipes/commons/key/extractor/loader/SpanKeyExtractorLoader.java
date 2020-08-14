@@ -38,8 +38,8 @@ public class SpanKeyExtractorLoader {
     private ServiceLoader<SpanKeyExtractor> serviceLoader;
 
     private SpanKeyExtractorLoader() {
-        this.projectConfiguration = new ProjectConfiguration();
         this.logger = LoggerFactory.getLogger("SpanKeyExtractorLoader");
+        this.projectConfiguration = new ProjectConfiguration();
         spanKeyExtractorList = new ArrayList<>();
     }
 
@@ -61,7 +61,6 @@ public class SpanKeyExtractorLoader {
                 }
                 URLClassLoader urlClassLoader = new URLClassLoader(urls.toArray(new URL[0]), SpanKeyExtractor.class.getClassLoader());
                 serviceLoader = ServiceLoader.load(SpanKeyExtractor.class, urlClassLoader);
-                logger.debug("Service is Loaded: " + serviceLoader);
             }
         } catch (Exception ex) {
             logger.error("Could not create the class loader for finding jar ", ex);
