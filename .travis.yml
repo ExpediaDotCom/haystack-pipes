@@ -6,6 +6,10 @@ services:
 jdk:
   - openjdk8
 
+install:
+  - java -XX:+PrintFlagsFinal -version
+  - ./mvnw --version
+
 env:
   global:
     - BRANCH=${TRAVIS_BRANCH}
