@@ -30,7 +30,7 @@ import java.util.List;
 public class SampleExtractor implements SpanKeyExtractor {
 
     private final JsonFormat.Printer jsonPrinter = JsonFormat.printer();
-    private Logger logger = LoggerFactory.getLogger("SampleExtractor");
+    private static final Logger logger = LoggerFactory.getLogger("SampleExtractor");
 
     @Override
     public String name() {

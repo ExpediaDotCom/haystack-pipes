@@ -32,14 +32,13 @@ import java.util.ServiceLoader;
 public class SpanKeyExtractorLoader {
 
     private static SpanKeyExtractorLoader spanKeyExtractorLoader = null;
-    private Logger logger;
+    private static final Logger logger = LoggerFactory.getLogger("SpanKeyExtractorLoader");
     private ProjectConfiguration projectConfiguration;
     private List<SpanKeyExtractor> spanKeyExtractorList;
     private ServiceLoader<SpanKeyExtractor> serviceLoader;
 
     private SpanKeyExtractorLoader() {
-        this.logger = LoggerFactory.getLogger("SpanKeyExtractorLoader");
-        this.projectConfiguration = new ProjectConfiguration();
+        projectConfiguration = new ProjectConfiguration();
         spanKeyExtractorList = new ArrayList<>();
     }
 
