@@ -7,16 +7,10 @@
         <groupId>com.expedia.www</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
+
     <modelVersion>4.0.0</modelVersion>
-
-    <artifactId>span-key-extractor</artifactId>
-    <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-
-    <properties>
-        <finalName>${project.artifactId}-${project.version}</finalName>
-    </properties>
-
+    <artifactId>span-key-extractor</artifactId>
 
     <dependencies>
         <dependency>
@@ -29,15 +23,23 @@
             <artifactId>config</artifactId>
             <version>1.3.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.cfg4j</groupId>
+            <artifactId>cfg4j-core</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
-        <finalName>${finalName}</finalName>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>com.github.os72</groupId>
                 <artifactId>protoc-jar-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
+
 </project>

@@ -36,9 +36,10 @@ public class ProjectConfiguration {
     public ProjectConfiguration() {
         String configFilePath = (null == System.getenv("EXTRACTOR_CONFIG_PATH")) ? "config/extractors.conf" : System.getenv("EXTRACTOR_CONFIG_PATH");
         Config config = ConfigurationLoader.loadConfigFileWithEnvOverrides(configFilePath, Optional.empty().toString());
+        logger.info("loaded config: {}", config);
         haystackConf = config.getConfig(Constants.HAYSTACK_KEY);
         directory = haystackConf.getString(Constants.DIRECTORY_KEY);
-        logger.debug("loaded config: {}", config);
+
     }
 
     public Map<String, Config> getSpanExtractorConfigs() {

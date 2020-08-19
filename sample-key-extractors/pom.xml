@@ -12,8 +12,6 @@
     <artifactId>haystack-sample-key-extractors</artifactId>
     <properties>
         <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
-        <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
-        <project.jdk.version>1.8</project.jdk.version>
         <typesafe-config.version>1.3.1</typesafe-config.version>
     </properties>
 
@@ -24,7 +22,10 @@
             <artifactId>config</artifactId>
             <version>${typesafe-config.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java-util</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.expedia.www</groupId>
             <artifactId>span-key-extractor</artifactId>
@@ -37,7 +38,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>com.github.os72</groupId>
+                <artifactId>protoc-jar-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
