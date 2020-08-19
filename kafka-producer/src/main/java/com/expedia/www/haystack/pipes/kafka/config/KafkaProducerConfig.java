@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.kafka.config;
 
 /**
  * Configurations for the KafkaProducer that sends data to an Kafka outside of the Haystack system.
@@ -25,7 +25,7 @@ package com.expedia.www.haystack.pipes.kafkaProducer;
  * configuration changes configurations specified by environment variables from upper to lower case and replaces
  * underscores by periods.
  */
-public interface ExternalKafkaConfig {
+public interface KafkaProducerConfig {
     String brokers();
 
     int port();

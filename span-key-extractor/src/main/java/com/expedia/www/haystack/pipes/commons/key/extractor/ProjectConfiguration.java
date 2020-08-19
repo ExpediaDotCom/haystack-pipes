@@ -18,29 +18,37 @@ package com.expedia.www.haystack.pipes.commons.key.extractor;
 
 import com.expedia.www.haystack.commons.config.ConfigurationLoader;
 import com.typesafe.config.Config;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class ProjectConfiguration {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProjectConfiguration.class);
 
     private final Config haystackConf;
     private final String directory;
 
     public ProjectConfiguration() {
-        Config config = ConfigurationLoader.loadConfigFileWithEnvOverrides("config/extractors.conf", "HAYSTACK_PROP_");
-        haystackConf = config.getConfig("haystack");
-        directory = haystackConf.getString("directory");
+        String configFilePath = (null == System.getenv("EXTRACTOR_CONFIG_PATH")) ? "config/extractors.conf" : System.getenv("EXTRACTOR_CONFIG_PATH");
+        Config config = ConfigurationLoader.loadConfigFileWithEnvOverrides(configFilePath, Optional.empty().toString());
+        logger.info("loaded config: {}", config);
+        haystackConf = config.getConfig(Constants.HAYSTACK_KEY);
+        directory = haystackConf.getString(Constants.DIRECTORY_KEY);
+
     }
 
     public Map<String, Config> getSpanExtractorConfigs() {
         Map<String, Config> extractorConfigMap = new HashMap<>();
         if (haystackConf != null) {
-            List<Config> extractorConfigs = (List<Config>) haystackConf.getConfigList("extractors");
+            List<Config> extractorConfigs = (List<Config>) haystackConf.getConfigList(Constants.EXTRACTORS_KEY);
             extractorConfigs.forEach(extractorConfig -> {
-                String name = extractorConfig.getString("name");
-                Config config = extractorConfig.getConfig("config");
+                String name = extractorConfig.getString(Constants.EXTRACTOR_NAME_KEY);
+                Config config = extractorConfig.getConfig(Constants.EXTRACTOR_CONFIG_KEY);
                 extractorConfigMap.put(name, config);
             });
         }

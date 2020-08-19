@@ -2,8 +2,7 @@ FROM haystack-pipes-kafka-producer:latest
 MAINTAINER Haystack <haystack@expedia.com>
 
 RUN mkdir -p ${APP_HOME}/extractors/
-COPY target/*.jar ${APP_HOME}/extractors/
-RUN rm ${APP_HOME}/extractors/original-*.jar
+COPY target/haystack-sample-key-extractors.jar ${APP_HOME}/extractors/
 RUN ls ${APP_HOME}/extractors/
 
 WORKDIR ${APP_HOME}
