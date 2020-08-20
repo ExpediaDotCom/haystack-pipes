@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
@@ -14,7 +14,7 @@
     <properties>
         <!-- The commons build sometimes fails on Travis with Coverage checks have not been met; -->
         <!-- I haven't been able to figure out why -->
-        <jacoco-percentage>0.6</jacoco-percentage>
+        <!--        <jacoco-percentage>0.6</jacoco-percentage>-->
     </properties>
 
     <artifactId>haystack-pipes-commons</artifactId>
@@ -44,6 +44,15 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.expedia.www</groupId>
+            <artifactId>haystack-commons</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe</groupId>
+            <artifactId>config</artifactId>
+        </dependency>
+
 
         <!-- Test dependencies -->
         <dependency>

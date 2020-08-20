@@ -21,9 +21,11 @@ import com.expedia.www.haystack.pipes.commons.Timers;
 import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
+import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
+import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaProducerConfig;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
+import com.expedia.www.haystack.pipes.commons.kafka.config.ProjectConfiguration;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
 import org.slf4j.Logger;
@@ -121,13 +123,13 @@ public class SpringConfig {
     }
 
     @Bean
-    KafkaConfigurationProvider kafkaConfigurationProvider() {
-        return new KafkaConfigurationProvider();
+    KafkaConsumerConfig kafkaConfigurationProvider() {
+        return new ProjectConfiguration().getKafkaConsumerConfig();
     }
 
     @Bean
-    ExternalKafkaConfigurationProvider externalKafkaConfigurationProvider() {
-        return new ExternalKafkaConfigurationProvider();
+    KafkaProducerConfig externalKafkaConfigurationProvider() {
+        return new ProjectConfiguration().getKafkaProducerConfig();
     }
 
     @Bean
@@ -168,12 +170,12 @@ public class SpringConfig {
             ProduceIntoExternalKafkaAction.Factory produceIntoExternalKafkaActionFactoryFactory,
             TimersAndCounters timersAndCounters,
             Logger produceIntoExternalKafkaActionLogger,
-            ExternalKafkaConfigurationProvider externalKafkaConfigurationProvider) {
+            KafkaProducerConfig kafkaProducerConfig) {
         return new ProduceIntoExternalKafkaAction(
                 produceIntoExternalKafkaActionFactoryFactory,
                 timersAndCounters,
                 produceIntoExternalKafkaActionLogger,
-                externalKafkaConfigurationProvider);
+                kafkaProducerConfig);
     }
 
     @Bean
@@ -181,7 +183,7 @@ public class SpringConfig {
     ProtobufToKafkaProducer protobufToKafkaProducer(KafkaStreamStarter kafkaStreamStarter,
                                                     SerdeFactory serdeFactory,
                                                     ProduceIntoExternalKafkaAction produceIntoExternalKafkaAction,
-                                                    KafkaConfigurationProvider kafkaConfigurationProvider) {
+                                                    KafkaConsumerConfig kafkaConfigurationProvider) {
         return new ProtobufToKafkaProducer(
                 kafkaStreamStarter, serdeFactory, produceIntoExternalKafkaAction, kafkaConfigurationProvider);
     }

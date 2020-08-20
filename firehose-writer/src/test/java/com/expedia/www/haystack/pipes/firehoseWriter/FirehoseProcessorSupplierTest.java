@@ -16,6 +16,7 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
+import com.expedia.www.haystack.pipes.commons.kafka.config.FirehoseConfig;
 import com.netflix.servo.monitor.Timer;
 import org.junit.After;
 import org.junit.Before;
@@ -28,9 +29,7 @@ import org.slf4j.Logger;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.STARTUP_MESSAGE;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FirehoseProcessorSupplierTest {
@@ -40,7 +39,7 @@ public class FirehoseProcessorSupplierTest {
     @Mock
     private Batch mockBatch;
     @Mock
-    private FirehoseConfigurationProvider mockFirehoseConfigurationProvider;
+    private FirehoseConfig mockFirehoseConfigurationProvider;
     @Mock
     private FirehoseTimersAndCounters mockFirehoseCountersAndTimer;
     @Mock
@@ -74,13 +73,13 @@ public class FirehoseProcessorSupplierTest {
 
     @Test
     public void testGet() {
-        when(mockFirehoseConfigurationProvider.streamname()).thenReturn(STREAM_NAME);
-        when(mockFirehoseConfigurationProvider.maxparallelismpershard()).thenReturn(MAX_PARALLELISM_PER_SHARD);
+        when(mockFirehoseConfigurationProvider.getStreamName()).thenReturn(STREAM_NAME);
+        when(mockFirehoseConfigurationProvider.getMaxParallelISMPerShard()).thenReturn(MAX_PARALLELISM_PER_SHARD);
 
         assertNotNull(firehoseProcessorSupplier.get());
 
-        verify(mockFirehoseConfigurationProvider).streamname();
-        verify(mockFirehoseConfigurationProvider).maxparallelismpershard();
+        verify(mockFirehoseConfigurationProvider).getStreamName();
+        verify(mockFirehoseConfigurationProvider).getMaxParallelISMPerShard();
         verify(mockFirehoseProcessorLogger).info(String.format(STARTUP_MESSAGE, STREAM_NAME));
         verify(mockFirehoseProcessorFactory).createSemaphore(MAX_PARALLELISM_PER_SHARD);
     }

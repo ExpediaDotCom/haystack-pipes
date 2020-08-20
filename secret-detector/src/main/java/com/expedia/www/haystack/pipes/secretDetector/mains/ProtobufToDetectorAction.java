@@ -16,9 +16,9 @@
  */
 package com.expedia.www.haystack.pipes.secretDetector.mains;
 
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilderBase;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
+import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import com.expedia.www.haystack.pipes.secretDetector.DetectorAction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +32,7 @@ public class ProtobufToDetectorAction extends KafkaStreamBuilderBase {
     public ProtobufToDetectorAction(KafkaStreamStarter kafkaStreamStarter,
                                     SerdeFactory serdeFactory,
                                     DetectorAction detectorAction,
-                                    KafkaConfigurationProvider kafkaConfigurationProvider) {
+                                    KafkaConsumerConfig kafkaConfigurationProvider) {
         super(kafkaStreamStarter, serdeFactory, APPLICATION, kafkaConfigurationProvider, detectorAction);
     }
 }

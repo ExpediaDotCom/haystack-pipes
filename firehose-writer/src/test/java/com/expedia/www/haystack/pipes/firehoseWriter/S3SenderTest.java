@@ -21,6 +21,7 @@ import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseAsync;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchRequest;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResult;
 import com.amazonaws.services.kinesisfirehose.model.Record;
+import com.expedia.www.haystack.pipes.commons.kafka.config.FirehoseConfig;
 import com.expedia.www.haystack.pipes.firehoseWriter.S3Sender.Factory;
 import com.netflix.servo.monitor.Stopwatch;
 import org.junit.After;
@@ -39,11 +40,7 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.PUT_RECORD_BATCH_ERROR_MSG;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -65,7 +62,7 @@ public class S3SenderTest {
     @Mock
     private FirehoseAsyncHandler mockFirehoseAsyncHandler;
     @Mock
-    private FirehoseConfigurationProvider mockFirehoseConfigurationProvider;
+    private FirehoseConfig mockFirehoseConfigurationProvider;
     @Mock
     private FirehoseTimersAndCounters mockFirehoseCountersAndTimer;
     @Mock
@@ -143,7 +140,7 @@ public class S3SenderTest {
     }
 
     private void whenForSendRecordsToS3() {
-        when(mockFirehoseConfigurationProvider.streamname()).thenReturn(STREAM_NAME);
+        when(mockFirehoseConfigurationProvider.getStreamName()).thenReturn(STREAM_NAME);
         when(mockFactory.createPutRecordBatchRequest(anyString(), any())).thenReturn(mockPutRecordBatchRequest);
         when(mockFirehoseCountersAndTimer.startTimer()).thenReturn(mockStopwatch);
         when(mockRetryCalculator.calculateSleepMillis()).thenReturn(SLEEP_MILLIS);
@@ -153,7 +150,7 @@ public class S3SenderTest {
     }
 
     private void verifiesForSendRecordsToS3() throws InterruptedException {
-        verify(mockFirehoseConfigurationProvider).streamname();
+        verify(mockFirehoseConfigurationProvider).getStreamName();
         verify(mockFactory).createPutRecordBatchRequest(STREAM_NAME, recordList);
         verify(mockFirehoseCountersAndTimer).startTimer();
         verify(mockRetryCalculator).calculateSleepMillis();
@@ -187,7 +184,7 @@ public class S3SenderTest {
 
     private void testOnFirehoseCallback(int failureCount, int maxRetrySleep, Exception exception) {
         when(mockFirehoseCountersAndTimer.countSuccessesAndFailures(any(), any())).thenReturn(failureCount);
-        when(mockFirehoseConfigurationProvider.maxretrysleep()).thenReturn(MAX_RETRY_SLEEP);
+        when(mockFirehoseConfigurationProvider.getMaxRetrySleep()).thenReturn(MAX_RETRY_SLEEP);
 
         s3Sender.onFirehoseCallback(mockStopwatch, mockPutRecordBatchRequest, mockPutRecordBatchResult, maxRetrySleep,
                 RETRY_COUNT, exception, mockFirehoseCountersAndTimer);
@@ -195,11 +192,11 @@ public class S3SenderTest {
         verify(mockStopwatch).stop();
         verify(mockFirehoseCountersAndTimer)
                 .countSuccessesAndFailures(mockPutRecordBatchRequest, mockPutRecordBatchResult);
-        verify(mockFirehoseConfigurationProvider).maxretrysleep();
+        verify(mockFirehoseConfigurationProvider).getMaxRetrySleep();
 
         verify(mockLogger, times(failureCount)).error(
                 String.format(PUT_RECORD_BATCH_ERROR_MSG, failureCount, RETRY_COUNT));
-        if(exception instanceof SdkClientException && exception.getCause() instanceof SocketTimeoutException) {
+        if (exception instanceof SdkClientException && exception.getCause() instanceof SocketTimeoutException) {
             verify(mockFirehoseCountersAndTimer).incrementSocketTimeoutCounter();
         } else {
             verify(mockUnexpectedExceptionLogger, times(failureCount)).logError(exception);
@@ -236,12 +233,12 @@ public class S3SenderTest {
     @Test
     public void testShouldLogErrorMessage() {
         final Object[][] dataForCall = {
-            { 0, 0, 0, false }, // hasSleepMillisReachedItsLimit()  && !areThereRecordsThatFirehoseHasNotProcessed()
-            { 0, 1, 0, false }, // !hasSleepMillisReachedItsLimit() && !areThereRecordsThatFirehoseHasNotProcessed()
-            { 1, 0, 0, true },  //  hasSleepMillisReachedItsLimit() &&  areThereRecordsThatFirehoseHasNotProcessed()
-            { 1, 0, 1, false }, // !hasSleepMillisReachedItsLimit() &&  areThereRecordsThatFirehoseHasNotProcessed()
+                {0, 0, 0, false}, // hasSleepMillisReachedItsLimit()  && !areThereRecordsThatFirehoseHasNotProcessed()
+                {0, 1, 0, false}, // !hasSleepMillisReachedItsLimit() && !areThereRecordsThatFirehoseHasNotProcessed()
+                {1, 0, 0, true},  //  hasSleepMillisReachedItsLimit() &&  areThereRecordsThatFirehoseHasNotProcessed()
+                {1, 0, 1, false}, // !hasSleepMillisReachedItsLimit() &&  areThereRecordsThatFirehoseHasNotProcessed()
         };
-        for (Object [] datumForCall : dataForCall) {
+        for (Object[] datumForCall : dataForCall) {
             final int failureCount = (Integer) datumForCall[0];
             final int maxRetrySleep = (Integer) datumForCall[1];
             final int sleepMillis = (Integer) datumForCall[2];

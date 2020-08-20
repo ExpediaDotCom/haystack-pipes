@@ -3,7 +3,9 @@
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <!-- encoder default type is ch.qos.logback.classic.encoder.PatternLayoutEncoder-->
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} %level [%thread] %X{requestid} %logger{10} "%msg" %replace(%ex){'[\n]+', '\\n'}%nopex%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} %level [%thread] %X{requestid} %logger{10} "%msg" %replace(%ex){'[\n]+',
+                '\\n'}%nopex%n
+            </pattern>
         </encoder>
     </appender>
     <appender name="EmitToGraphiteLogbackAppender"
@@ -12,19 +14,20 @@
         <subsystem>pipes-json-transformer</subsystem>
     </appender>
     <logger name="com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter" additivity="false" level="INFO">
-        <appender-ref ref="STDOUT" /><!-- Display start up message without flooding logs with other info messages -->
-        <appender-ref ref="EmitToGraphiteLogbackAppender" />
+        <appender-ref ref="STDOUT"/><!-- Display start up message without flooding logs with other info messages -->
+        <appender-ref ref="EmitToGraphiteLogbackAppender"/>
     </logger>
     <logger name="com.netflix.servo.publish.graphite.GraphiteMetricObserver" additivity="false" level="INFO">
-        <appender-ref ref="STDOUT" /><!-- Display start up message without flooding logs with other info messages -->
-        <appender-ref ref="EmitToGraphiteLogbackAppender" />
+        <appender-ref ref="STDOUT"/><!-- Display start up message without flooding logs with other info messages -->
+        <appender-ref ref="EmitToGraphiteLogbackAppender"/>
     </logger>
-    <logger name="com.expedia.www.haystack.pipes.jsonTransformer.JsonTransformerIsActiveController" additivity="false" level="INFO">
-        <appender-ref ref="STDOUT" /><!-- Display start up message without flooding logs with other info messages -->
-        <appender-ref ref="EmitToGraphiteLogbackAppender" />
+    <logger name="com.expedia.www.haystack.pipes.jsonTransformer.JsonTransformerIsActiveController" additivity="false"
+            level="INFO">
+        <appender-ref ref="STDOUT"/><!-- Display start up message without flooding logs with other info messages -->
+        <appender-ref ref="EmitToGraphiteLogbackAppender"/>
     </logger>
     <root level="WARN">
-        <appender-ref ref="STDOUT" />
-        <appender-ref ref="EmitToGraphiteLogbackAppender" />
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="EmitToGraphiteLogbackAppender"/>
     </root>
 </configuration>

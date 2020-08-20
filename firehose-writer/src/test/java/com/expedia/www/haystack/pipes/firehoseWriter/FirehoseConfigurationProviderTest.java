@@ -16,6 +16,8 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
+import com.expedia.www.haystack.pipes.commons.kafka.config.FirehoseConfig;
+import com.expedia.www.haystack.pipes.commons.kafka.config.ProjectConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,40 +25,40 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class FirehoseConfigurationProviderTest {
-    private FirehoseConfigurationProvider firehoseConfigurationProvider;
+    private FirehoseConfig firehoseConfigurationProvider;
 
     @Before
     public void setUp() {
-        firehoseConfigurationProvider = new FirehoseConfigurationProvider();
+        firehoseConfigurationProvider = new ProjectConfiguration().getFirehoseConfig();
     }
 
     @Test
     public void testInitialRetrySleep() {
-        assertEquals(42, firehoseConfigurationProvider.initialretrysleep());
+        assertEquals(42, firehoseConfigurationProvider.getInitialRetrySleep());
     }
 
     @Test
     public void testMaxRetrySleep() {
-        assertEquals(5000, firehoseConfigurationProvider.maxretrysleep());
+        assertEquals(5000, firehoseConfigurationProvider.getMaxRetrySleep());
     }
 
     @Test
     public void testUrl() {
-        assertEquals("https://firehose.us-west-2.amazonaws.com", firehoseConfigurationProvider.url());
+        assertEquals("https://firehose.us-west-2.amazonaws.com", firehoseConfigurationProvider.getUrl());
     }
 
     @Test
     public void testUseStringBuffering() {
-        assertTrue(firehoseConfigurationProvider.usestringbuffering());
+        assertTrue(firehoseConfigurationProvider.isUseStringBuffering());
     }
 
     @Test
     public void testMaxBatchInterval() {
-        assertEquals( 0, firehoseConfigurationProvider.maxbatchinterval());
+        assertEquals(0, firehoseConfigurationProvider.getMaxBatchInterval());
     }
 
     @Test
     public void testStreamName() {
-        assertEquals("haystack-traces-test", firehoseConfigurationProvider.streamname());
+        assertEquals("haystack-traces-test", firehoseConfigurationProvider.getStreamName());
     }
 }

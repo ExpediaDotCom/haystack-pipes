@@ -21,9 +21,10 @@ import com.expedia.www.haystack.pipes.commons.Timers;
 import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
+import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
+import com.expedia.www.haystack.pipes.commons.kafka.config.ProjectConfiguration;
 import com.google.protobuf.util.JsonFormat;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
@@ -152,8 +153,8 @@ public class SpringConfig {
     }
 
     @Bean
-    KafkaConfigurationProvider kafkaConfigurationProvider() {
-        return new KafkaConfigurationProvider();
+    KafkaConsumerConfig kafkaConfigurationProvider() {
+        return new ProjectConfiguration().getKafkaConsumerConfig();
     }
 
     @Bean

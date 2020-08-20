@@ -17,9 +17,10 @@
 package com.expedia.www.haystack.pipes.commons.kafka;
 
 import com.expedia.www.haystack.commons.config.Configuration;
-import com.expedia.www.haystack.pipes.commons.IntermediateStreamsConfig;
 import com.expedia.www.haystack.pipes.commons.SystemExitUncaughtExceptionHandler;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
+import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
+import com.expedia.www.haystack.pipes.commons.kafka.config.ProjectConfiguration;
 import com.netflix.servo.util.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -32,31 +33,25 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
-import static com.expedia.www.haystack.pipes.commons.Configuration.HAYSTACK_KAFKA_CONFIG_PREFIX;
-import static com.expedia.www.haystack.pipes.commons.Configuration.HAYSTACK_PIPE_STREAMS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class KafkaStreamStarter {
-    // move this to configuration later
-    private final long MAX_CLOSE_TIMEOUT_SEC = 30;
-
+    static final String STARTING_MSG_WITH_TO_TOPIC =
+            "Attempting to start stream pointing at Kafka [%s] from topic [%s] to topic [%s]";
+    static final String STARTING_MSG_WITHOUT_TO_TOPIC =
+            "Attempting to start stream pointing at Kafka [%s] from topic [%s]";
+    static final String STARTED_MSG = "Now started Stream %s";
     @VisibleForTesting
     static Factory factory = new Factory();
     @VisibleForTesting
     static Logger logger = LoggerFactory.getLogger(KafkaStreamStarter.class);
     @VisibleForTesting
     static ConfigurationProvider CONFIGURATION_PROVIDER = new Configuration().createMergeConfigurationProvider();
-
-    static final String STARTING_MSG_WITH_TO_TOPIC =
-            "Attempting to start stream pointing at Kafka [%s] from topic [%s] to topic [%s]";
-    static final String STARTING_MSG_WITHOUT_TO_TOPIC =
-            "Attempting to start stream pointing at Kafka [%s] from topic [%s]";
-    static final String STARTED_MSG = "Now started Stream %s";
-
-    private final HealthController healthController;
-
     public final Class<? extends KafkaStreamBuilder> containingClass;
     public final String clientId;
+    // move this to configuration later
+    private final long MAX_CLOSE_TIMEOUT_SEC = 30;
+    private final HealthController healthController;
     private final StreamsConfig streamsConfig;
 
     public KafkaStreamStarter(Class<? extends KafkaStreamBuilder> containingClass,
@@ -66,6 +61,11 @@ public class KafkaStreamStarter {
         this.clientId = clientId;
         this.healthController = healthController;
         this.streamsConfig = new StreamsConfig(getProperties());
+    }
+
+    private static KafkaConsumerConfig getKafkaConfig() {
+        return new ProjectConfiguration().getKafkaConsumerConfig();
+        //CONFIGURATION_PROVIDER.bind(HAYSTACK_KAFKA_CONFIG_PREFIX, KafkaConfig.class);
     }
 
     public void createAndStartStream(KafkaStreamBuilder kafkaStreamBuilder) {
@@ -80,7 +80,7 @@ public class KafkaStreamStarter {
                 = factory.createSystemExitUncaughtExceptionHandler(kafkaStreams, healthController);
         kafkaStreams.setUncaughtExceptionHandler(systemExitUncaughtExceptionHandler);
         final String toTopic = getToTopic();
-        if(StringUtils.isEmpty(toTopic)) {
+        if (StringUtils.isEmpty(toTopic)) {
             logger.info(String.format(STARTING_MSG_WITHOUT_TO_TOPIC, getIpAnPort(), getFromTopic()));
         } else {
             logger.info(String.format(STARTING_MSG_WITH_TO_TOPIC, getIpAnPort(), getFromTopic(), toTopic));
@@ -104,38 +104,32 @@ public class KafkaStreamStarter {
     }
 
     private String getIpAnPort() {
-        final KafkaConfig kafkaConfig = getKafkaConfig();
-        return kafkaConfig.brokers() + ":" + kafkaConfig.port();
+        final KafkaConsumerConfig kafkaConfig = getKafkaConfig();
+        return kafkaConfig.getBrokers() + ":" + kafkaConfig.getPort();
     }
 
     private String getFromTopic() {
-        final KafkaConfig kafkaConfig = getKafkaConfig();
-        return kafkaConfig.fromtopic();
+        final KafkaConsumerConfig kafkaConfig = getKafkaConfig();
+        return kafkaConfig.getFromTopic();
     }
 
     private String getToTopic() {
-        final KafkaConfig kafkaConfig = getKafkaConfig();
-        return kafkaConfig.totopic();
+        final KafkaConsumerConfig kafkaConfig = getKafkaConfig();
+        return kafkaConfig.getToTopic();
     }
 
     private int getThreadCount() {
-        final KafkaConfig kafkaConfig = getKafkaConfig();
-        return kafkaConfig.threadcount();
+        final KafkaConsumerConfig kafkaConfig = getKafkaConfig();
+        return kafkaConfig.getThreadCount();
     }
 
     private int getReplicationFactor() {
-        final IntermediateStreamsConfig intermediateStreamsConfig = CONFIGURATION_PROVIDER.bind(
-                HAYSTACK_PIPE_STREAMS, IntermediateStreamsConfig.class);
-        return intermediateStreamsConfig.replicationfactor();
+        return new ProjectConfiguration().getPipesConfig().getReplicationFactor();
     }
 
     private int getConsumerSessionTimeout() {
-        final KafkaConfig kafkaConfig = getKafkaConfig();
-        return kafkaConfig.sessiontimeout();
-    }
-
-    private static KafkaConfig getKafkaConfig() {
-        return CONFIGURATION_PROVIDER.bind(HAYSTACK_KAFKA_CONFIG_PREFIX, KafkaConfig.class);
+        final KafkaConsumerConfig kafkaConfig = getKafkaConfig();
+        return kafkaConfig.getSessionTimeout();
     }
 
     static class Factory {

@@ -16,8 +16,8 @@
  */
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConsumerStarter;
+import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +26,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProtobufToFirehoseProducerTest {
@@ -38,7 +39,7 @@ public class ProtobufToFirehoseProducerTest {
     @Mock
     private FirehoseProcessorSupplier mockFirehoseProcessorSupplier;
     @Mock
-    private KafkaConfigurationProvider mockKafkaConfigurationProvider;
+    private KafkaConsumerConfig mockKafkaConfigurationProvider;
 
     private ProtobufToFirehoseProducer protobufToFirehoseProducer;
 

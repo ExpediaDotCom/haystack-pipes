@@ -17,8 +17,8 @@
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
+import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -34,12 +34,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProtobufToKafkaProducerTest {
@@ -52,7 +48,7 @@ public class ProtobufToKafkaProducerTest {
     @Mock
     private ProduceIntoExternalKafkaAction mockProduceIntoExternalKafkaAction;
     @Mock
-    private KafkaConfigurationProvider mockKafkaConfigurationProvider;
+    private KafkaConsumerConfig mockKafkaConfigurationProvider;
     @Mock
     private KStreamBuilder mockKStreamBuilder;
     @Mock
@@ -85,14 +81,14 @@ public class ProtobufToKafkaProducerTest {
     @Test
     public void testBuildStreamTopology() {
         when(mockSerdeFactory.createJsonProtoSpanSerde(anyString())).thenReturn(mockSpanSerde);
-        when(mockKafkaConfigurationProvider.fromtopic()).thenReturn(FROM_TOPIC);
+        when(mockKafkaConfigurationProvider.getFromTopic()).thenReturn(FROM_TOPIC);
         when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
                 .thenReturn(mockKStream);
 
         protobufToFirehoseProducer.buildStreamTopology(mockKStreamBuilder);
 
         verify(mockSerdeFactory).createJsonProtoSpanSerde(APPLICATION);
-        verify(mockKafkaConfigurationProvider).fromtopic();
+        verify(mockKafkaConfigurationProvider).getFromTopic();
         verify(mockKStreamBuilder).stream(any(Serdes.StringSerde.class), eq(mockSpanSerde), eq(FROM_TOPIC));
         verify(mockKStream).foreach(mockProduceIntoExternalKafkaAction);
     }

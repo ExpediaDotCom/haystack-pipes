@@ -18,6 +18,7 @@ package com.expedia.www.haystack.pipes.firehoseWriter;
 
 import com.expedia.www.haystack.pipes.commons.kafka.SpanProcessor;
 import com.expedia.www.haystack.pipes.commons.kafka.SpanProcessorSupplier;
+import com.expedia.www.haystack.pipes.commons.kafka.config.FirehoseConfig;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -30,7 +31,7 @@ public class FirehoseProcessorSupplier implements SpanProcessorSupplier {
     private final FirehoseTimersAndCounters firehoseTimersAndCounters;
     private final Supplier<Batch> batch;
     private final FirehoseProcessor.Factory firehoseProcessorFactory;
-    private final FirehoseConfigurationProvider firehoseConfigurationProvider;
+    private final FirehoseConfig firehoseConfigurationProvider;
     private final S3Sender s3Sender;
 
     @Autowired
@@ -38,7 +39,7 @@ public class FirehoseProcessorSupplier implements SpanProcessorSupplier {
                                      FirehoseTimersAndCounters firehoseTimersAndCounters,
                                      Supplier<Batch> batch,
                                      FirehoseProcessor.Factory firehoseProcessorFactory,
-                                     FirehoseConfigurationProvider firehoseConfigurationProvider, S3Sender s3Sender) {
+                                     FirehoseConfig firehoseConfigurationProvider, S3Sender s3Sender) {
         this.firehoseProcessorLogger = firehoseProcessorLogger;
         this.firehoseTimersAndCounters = firehoseTimersAndCounters;
         this.batch = batch;

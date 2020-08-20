@@ -21,6 +21,7 @@ import com.amazonaws.services.kinesisfirehose.AmazonKinesisFirehoseAsync;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchRequest;
 import com.amazonaws.services.kinesisfirehose.model.PutRecordBatchResult;
 import com.amazonaws.services.kinesisfirehose.model.Record;
+import com.expedia.www.haystack.pipes.commons.kafka.config.FirehoseConfig;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.util.VisibleForTesting;
 import org.slf4j.Logger;
@@ -29,14 +30,13 @@ import org.springframework.stereotype.Component;
 
 import java.net.SocketTimeoutException;
 import java.util.List;
-import java.util.concurrent.Semaphore;
 
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.PUT_RECORD_BATCH_ERROR_MSG;
 
 @Component
 public class S3Sender {
     @VisibleForTesting
-    private final FirehoseConfigurationProvider firehoseConfigurationProvider;
+    private final FirehoseConfig firehoseConfigurationProvider;
     private final Factory factory;
     private final FirehoseTimersAndCounters firehoseTimersAndCounters;
     private final AmazonKinesisFirehoseAsync amazonKinesisFirehoseAsync;
@@ -45,7 +45,7 @@ public class S3Sender {
     private final UnexpectedExceptionLogger unexpectedExceptionLogger;
 
     @Autowired
-    public S3Sender(FirehoseConfigurationProvider firehoseConfigurationProvider,
+    public S3Sender(FirehoseConfig firehoseConfigurationProvider,
                     Factory factory,
                     FirehoseTimersAndCounters firehoseTimersAndCounters,
                     AmazonKinesisFirehoseAsync amazonKinesisFirehoseAsync,
@@ -66,7 +66,7 @@ public class S3Sender {
                          final Sleeper sleeper,
                          final int retryCount,
                          final Callback callback) {
-        final String streamName = firehoseConfigurationProvider.streamname();
+        final String streamName = firehoseConfigurationProvider.getStreamName();
         final PutRecordBatchRequest request = factory.createPutRecordBatchRequest(streamName, records);
         final Stopwatch stopwatch = firehoseTimersAndCounters.startTimer();
         final int sleepMillis = retryCalculator.calculateSleepMillis();
@@ -87,7 +87,7 @@ public class S3Sender {
                             failedRecordExtractor,
                             callback));
         }
-        if(isInterrupted) {
+        if (isInterrupted) {
             factory.currentThread().interrupt();
         }
     }
@@ -100,7 +100,7 @@ public class S3Sender {
                             Exception exception,
                             FirehoseTimersAndCounters firehoseTimersAndCounters) {
         stopwatch.stop();
-        if(exception != null) {
+        if (exception != null) {
             if (exception instanceof SdkClientException && exception.getCause() instanceof SocketTimeoutException) {
                 firehoseTimersAndCounters.incrementSocketTimeoutCounter();
             } else {
@@ -109,7 +109,7 @@ public class S3Sender {
         }
         int failureCount = firehoseTimersAndCounters.countSuccessesAndFailures(request, result);
 
-        final int maxRetrySleep = firehoseConfigurationProvider.maxretrysleep();
+        final int maxRetrySleep = firehoseConfigurationProvider.getMaxRetrySleep();
         if (shouldLogErrorMessage(failureCount, maxRetrySleep, sleepMillis)) {
             logger.error(String.format(PUT_RECORD_BATCH_ERROR_MSG, failureCount, retryCount));
         }

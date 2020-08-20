@@ -17,11 +17,12 @@
 package com.expedia.www.haystack.pipes.secretDetector.mains;
 
 import com.expedia.open.tracing.Span;
+import com.expedia.www.haystack.pipes.commons.kafka.config.ProjectConfiguration;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanSecretMasker;
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilder;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.kafka.Main;
+import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
@@ -34,7 +35,7 @@ import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATIO
 public class ProtobufSpanMaskerToKafkaTransformer implements KafkaStreamBuilder, Main {
     private final KafkaStreamStarter kafkaStreamStarter;
     private final SerdeFactory serdeFactory;
-    private final KafkaConfigurationProvider kafkaConfigurationProvider = new KafkaConfigurationProvider();
+    private final KafkaConsumerConfig kafkaConfigurationProvider = new ProjectConfiguration().getKafkaConsumerConfig();
     private final SpanSecretMasker spanSecretMasker;
 
     @Autowired
@@ -55,11 +56,11 @@ public class ProtobufSpanMaskerToKafkaTransformer implements KafkaStreamBuilder,
     public void buildStreamTopology(KStreamBuilder kStreamBuilder) {
         final KStream<String, Span> stream = kStreamBuilder.stream(
                 serdeFactory.createStringSerde(), serdeFactory.createProtoProtoSpanSerde(APPLICATION),
-                kafkaConfigurationProvider.fromtopic());
+                kafkaConfigurationProvider.getFromTopic());
 
         stream.mapValues(spanSecretMasker).to(
                 serdeFactory.createStringSerde(), serdeFactory.createProtoProtoSpanSerde(APPLICATION),
-                kafkaConfigurationProvider.totopic());
+                kafkaConfigurationProvider.getToTopic());
     }
 
 }

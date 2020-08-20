@@ -30,20 +30,17 @@ import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.HealthStatusListener;
 import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
+import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
-import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction;
-import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedActionFactory;
-import com.expedia.www.haystack.pipes.secretDetector.actions.SenderImpl;
+import com.expedia.www.haystack.pipes.commons.kafka.config.ProjectConfiguration;
+import com.expedia.www.haystack.pipes.secretDetector.actions.*;
 import com.expedia.www.haystack.pipes.secretDetector.config.ActionsConfigurationProvider;
 import com.expedia.www.haystack.pipes.secretDetector.config.SecretsEmailConfigurationProvider;
 import com.expedia.www.haystack.pipes.secretDetector.config.SpringWiredWhiteListConfigurationProvider;
 import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufSpanMaskerToKafkaTransformer;
 import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufSpanToEmailInKafkaTransformer;
 import com.expedia.www.haystack.pipes.secretDetector.mains.ProtobufToDetectorAction;
-import com.expedia.www.haystack.pipes.secretDetector.actions.FromAddressExceptionLogger;
-import com.expedia.www.haystack.pipes.secretDetector.actions.ToAddressExceptionLogger;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
 import org.cfg4j.provider.ConfigurationProvider;
@@ -81,7 +78,7 @@ public class SpringConfig {
     ProtobufToDetectorAction detectorProducer(KafkaStreamStarter kafkaStreamStarter,
                                               SerdeFactory serdeFactory,
                                               DetectorAction detectorAction,
-                                              KafkaConfigurationProvider kafkaConfigurationProvider) {
+                                              KafkaConsumerConfig kafkaConfigurationProvider) {
         return new ProtobufToDetectorAction(kafkaStreamStarter, serdeFactory, detectorAction, kafkaConfigurationProvider);
     }
 
@@ -379,8 +376,8 @@ public class SpringConfig {
         }
 
         @Bean
-        KafkaConfigurationProvider kafkaConfigurationProvider() {
-            return new KafkaConfigurationProvider();
+        KafkaConsumerConfig kafkaConfigurationProvider() {
+            return new ProjectConfiguration().getKafkaConsumerConfig();
         }
     }
 }

@@ -21,6 +21,7 @@ import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConsumerStarter;
+import com.expedia.www.haystack.pipes.commons.kafka.config.FirehoseConfig;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
 import org.junit.After;
@@ -51,7 +52,7 @@ public class SpringConfigTest {
     @Mock
     private MetricObjects mockMetricObjects;
     @Mock
-    private FirehoseConfigurationProvider mockFirehoseConfigurationProvider;
+    private FirehoseConfig mockFirehoseConfigurationProvider;
     @Mock
     private Timer mockTimer;
     @Mock
@@ -233,22 +234,22 @@ public class SpringConfigTest {
 
     @Test
     public void testUrl() {
-        when(mockFirehoseConfigurationProvider.url()).thenReturn(URL);
+        when(mockFirehoseConfigurationProvider.getUrl()).thenReturn(URL);
 
         final String url = springConfig.url(mockFirehoseConfigurationProvider);
 
         assertEquals(URL, url);
-        verify(mockFirehoseConfigurationProvider).url();
+        verify(mockFirehoseConfigurationProvider).getUrl();
     }
 
     @Test
     public void testSigningRegion() {
-        when(mockFirehoseConfigurationProvider.signingregion()).thenReturn(SIGNING_REGION);
+        when(mockFirehoseConfigurationProvider.getSigningRegion()).thenReturn(SIGNING_REGION);
 
         final String signingRegion = springConfig.signingregion(mockFirehoseConfigurationProvider);
 
         assertEquals(SIGNING_REGION, signingRegion);
-        verify(mockFirehoseConfigurationProvider).signingregion();
+        verify(mockFirehoseConfigurationProvider).getSigningRegion();
     }
 
     @Test

@@ -24,9 +24,11 @@ import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.Timers;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConsumerStarter;
+import com.expedia.www.haystack.pipes.commons.kafka.config.FirehoseConfig;
+import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
+import com.expedia.www.haystack.pipes.commons.kafka.config.ProjectConfiguration;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.Printer;
 import com.netflix.servo.monitor.Counter;
@@ -55,13 +57,20 @@ import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATIO
 @Configuration
 @ComponentScan(basePackageClasses = SpringConfig.class)
 class SpringConfig {
-    @VisibleForTesting static final String SPAN_COUNTER_NAME = "REQUEST";
-    @VisibleForTesting static final String SUCCESS_COUNTER_NAME = "SUCCESS";
-    @VisibleForTesting static final String FAILURE_COUNTER_NAME = "FAILURE";
-    @VisibleForTesting static final String EXCEPTION_COUNTER_NAME = "EXCEPTION";
-    @VisibleForTesting static final String THROTTLED_COUNTER_NAME = "THROTTLED";
-    @VisibleForTesting static final String SOCKET_TIMEOUT_COUNTER_NAME = "SOCKET_TIMEOUT";
-    @VisibleForTesting static final String PUT_BATCH_REQUEST_TIMER_NAME = "PUT_BATCH_REQUEST";
+    @VisibleForTesting
+    static final String SPAN_COUNTER_NAME = "REQUEST";
+    @VisibleForTesting
+    static final String SUCCESS_COUNTER_NAME = "SUCCESS";
+    @VisibleForTesting
+    static final String FAILURE_COUNTER_NAME = "FAILURE";
+    @VisibleForTesting
+    static final String EXCEPTION_COUNTER_NAME = "EXCEPTION";
+    @VisibleForTesting
+    static final String THROTTLED_COUNTER_NAME = "THROTTLED";
+    @VisibleForTesting
+    static final String SOCKET_TIMEOUT_COUNTER_NAME = "SOCKET_TIMEOUT";
+    @VisibleForTesting
+    static final String PUT_BATCH_REQUEST_TIMER_NAME = "PUT_BATCH_REQUEST";
 
     private final MetricObjects metricObjects;
 
@@ -193,14 +202,14 @@ class SpringConfig {
 
     @Bean
     @Autowired
-    String url(FirehoseConfigurationProvider firehoseConfigurationProvider) {
-        return firehoseConfigurationProvider.url();
+    String url(FirehoseConfig firehoseConfigurationProvider) {
+        return firehoseConfigurationProvider.getUrl();
     }
 
     @Bean
     @Autowired
-    String signingregion(FirehoseConfigurationProvider firehoseConfigurationProvider) {
-        return firehoseConfigurationProvider.signingregion();
+    String signingregion(FirehoseConfig firehoseConfigurationProvider) {
+        return firehoseConfigurationProvider.getSigningRegion();
     }
 
     @Bean
@@ -235,9 +244,9 @@ class SpringConfig {
     }
 
     @Bean
-    Supplier<FirehoseCollector> firehoseCollector(FirehoseConfigurationProvider configurationProvider) {
-        return () -> configurationProvider.usestringbuffering() ?
-                new FirehoseByteArrayCollector(configurationProvider.maxbatchinterval()) : new FirehoseRecordBufferCollector();
+    Supplier<FirehoseCollector> firehoseCollector(FirehoseConfig configurationProvider) {
+        return () -> configurationProvider.isUseStringBuffering() ?
+                new FirehoseByteArrayCollector(configurationProvider.getMaxBatchInterval()) : new FirehoseRecordBufferCollector();
     }
 
     @Bean
@@ -251,8 +260,8 @@ class SpringConfig {
     }
 
     @Bean
-    FirehoseConfigurationProvider firehoseConfigurationProvider() {
-        return new FirehoseConfigurationProvider();
+    FirehoseConfig firehoseConfigurationProvider() {
+        return new ProjectConfiguration().getFirehoseConfig();
     }
 
     @Bean
@@ -266,7 +275,7 @@ class SpringConfig {
     }
 
     @Bean
-    Clock clock()  {
+    Clock clock() {
         return Clock.systemUTC();
     }
 
@@ -280,12 +289,12 @@ class SpringConfig {
     @Bean
     @Autowired
     FirehoseTimersAndCounters counters(Clock clock,
-                                      Timers timers,
-                                      Counter spanCounter,
-                                      Counter successCounter,
-                                      Counter failureCounter,
-                                      Counter exceptionCounter,
-                                      Counter socketTimeoutCounter) {
+                                       Timers timers,
+                                       Counter spanCounter,
+                                       Counter successCounter,
+                                       Counter failureCounter,
+                                       Counter exceptionCounter,
+                                       Counter socketTimeoutCounter) {
         return new FirehoseTimersAndCounters(clock, timers,
                 spanCounter, successCounter, failureCounter, exceptionCounter, socketTimeoutCounter);
     }
@@ -304,15 +313,15 @@ class SpringConfig {
                                                         FirehoseTimersAndCounters firehoseTimersAndCounters,
                                                         Supplier<Batch> batch,
                                                         FirehoseProcessor.Factory firehoseProcessorFactory,
-                                                        FirehoseConfigurationProvider firehoseConfigurationProvider,
+                                                        FirehoseConfig firehoseConfigurationProvider,
                                                         S3Sender s3Sender) {
         return new FirehoseProcessorSupplier(firehoseProcessorLogger, firehoseTimersAndCounters, batch,
                 firehoseProcessorFactory, firehoseConfigurationProvider, s3Sender);
     }
 
     @Bean
-    KafkaConfigurationProvider kafkaConfigurationProvider() {
-        return new KafkaConfigurationProvider();
+    KafkaConsumerConfig kafkaConfigurationProvider() {
+        return new ProjectConfiguration().getKafkaConsumerConfig();
     }
 
     @Bean

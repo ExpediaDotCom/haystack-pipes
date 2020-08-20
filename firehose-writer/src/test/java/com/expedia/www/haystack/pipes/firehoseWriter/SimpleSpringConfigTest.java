@@ -17,14 +17,14 @@
 package com.expedia.www.haystack.pipes.firehoseWriter;
 
 
-import java.util.function.Supplier;
-
 import com.expedia.www.haystack.metrics.MetricObjects;
-
+import com.expedia.www.haystack.pipes.commons.kafka.config.FirehoseConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
@@ -34,27 +34,27 @@ import static org.mockito.Mockito.when;
 public class SimpleSpringConfigTest {
     @Test
     public void testFirehoseCollectorSupplierWithStringsCollector() {
-        final FirehoseConfigurationProvider mockConfigration = Mockito.mock(FirehoseConfigurationProvider.class);
+        final FirehoseConfig mockConfigration = Mockito.mock(FirehoseConfig.class);
         final MetricObjects mockMetricObjects = Mockito.mock(MetricObjects.class);
         final SpringConfig springConfig = new SpringConfig(mockMetricObjects);
-        when(mockConfigration.usestringbuffering()).thenReturn(true);
+        when(mockConfigration.isUseStringBuffering()).thenReturn(true);
 
         final Supplier<FirehoseCollector> supplier = springConfig.firehoseCollector(mockConfigration);
 
         assertEquals(FirehoseByteArrayCollector.class, supplier.get().getClass());
-        verify(mockConfigration).usestringbuffering();
+        verify(mockConfigration).isUseStringBuffering();
     }
 
     @Test
     public void testFirehoseCollectorSupplierWithRecordCollector() {
-        final FirehoseConfigurationProvider mockConfigration = Mockito.mock(FirehoseConfigurationProvider.class);
+        final FirehoseConfig mockConfigration = Mockito.mock(FirehoseConfig.class);
         final MetricObjects mockMetricObjects = Mockito.mock(MetricObjects.class);
         final SpringConfig springConfig = new SpringConfig(mockMetricObjects);
-        when(mockConfigration.usestringbuffering()).thenReturn(false);
+        when(mockConfigration.isUseStringBuffering()).thenReturn(false);
 
         final Supplier<FirehoseCollector> supplier = springConfig.firehoseCollector(mockConfigration);
 
         assertEquals(FirehoseRecordBufferCollector.class, supplier.get().getClass());
-        verify(mockConfigration).usestringbuffering();
+        verify(mockConfigration).isUseStringBuffering();
     }
 }
