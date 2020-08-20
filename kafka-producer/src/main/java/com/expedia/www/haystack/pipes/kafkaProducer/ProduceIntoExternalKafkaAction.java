@@ -19,6 +19,7 @@ package com.expedia.www.haystack.pipes.kafkaProducer;
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
 import com.expedia.www.haystack.pipes.commons.kafka.TagFlattener;
+import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaProducerConfig;
 import com.google.protobuf.util.JsonFormat;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.util.VisibleForTesting;
@@ -37,17 +38,18 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Span> {
-    private static final JsonFormat.Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
     @VisibleForTesting
     static final String TOPIC_MESSAGE =
             "Loading ProduceIntoExternalKafkaAction with brokers [%s] port [%d] topic [%s]";
+    @VisibleForTesting
+    static final String ERROR_MSG =
+            "Exception posting JSON [%s] to Kafka; received message [%s]";
+    @VisibleForTesting
+    static final int POSTS_IN_FLIGHT_COUNTER_INDEX = 0;
+    private static final JsonFormat.Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
     static AtomicReference<TimersAndCounters> COUNTERS_AND_TIMER = new AtomicReference<>(null);
     static ObjectPool<ProduceIntoExternalKafkaCallback> OBJECT_POOL = new GenericObjectPool<>(
             new CallbackFactory(LoggerFactory.getLogger(ProduceIntoExternalKafkaCallback.class)));
-
-    @VisibleForTesting static final String ERROR_MSG =
-            "Exception posting JSON [%s] to Kafka; received message [%s]";
-    @VisibleForTesting static final int POSTS_IN_FLIGHT_COUNTER_INDEX = 0;
     private final Factory factory;
     private final TimersAndCounters timersAndCounters;
     private final Logger logger;
@@ -60,17 +62,17 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
     public ProduceIntoExternalKafkaAction(Factory produceIntoExternalKafkaActionFactory,
                                           TimersAndCounters timersAndCounters,
                                           Logger produceIntoExternalKafkaActionLogger,
-                                          ExternalKafkaConfigurationProvider externalKafkaConfigurationProvider) {
+                                          KafkaProducerConfig kafkaProducerConfig) {
         this.factory = produceIntoExternalKafkaActionFactory;
         this.timersAndCounters = timersAndCounters;
         COUNTERS_AND_TIMER.compareAndSet(null, timersAndCounters);
         this.logger = produceIntoExternalKafkaActionLogger;
 
-        final Map<String, Object> configurationMap = externalKafkaConfigurationProvider.getConfigurationMap();
+        final Map<String, Object> configurationMap = kafkaProducerConfig.getConfigurationMap();
         this.kafkaProducer = factory.createKafkaProducer(configurationMap);
-        this.topic = externalKafkaConfigurationProvider.totopic();
-        logger.info(String.format(TOPIC_MESSAGE, externalKafkaConfigurationProvider.brokers(),
-                externalKafkaConfigurationProvider.port(), topic));
+        this.topic = kafkaProducerConfig.getToTopic();
+        logger.info(String.format(TOPIC_MESSAGE, kafkaProducerConfig.getBrokers(),
+                kafkaProducerConfig.getPort(), topic));
     }
 
     @Override
@@ -103,7 +105,7 @@ public class ProduceIntoExternalKafkaAction implements ForeachAction<String, Spa
             return new ProducerRecord<>(topic, key, value);
         }
 
-        KafkaProducer<String,String> createKafkaProducer(Map<String, Object> configurationMap) {
+        KafkaProducer<String, String> createKafkaProducer(Map<String, Object> configurationMap) {
             return new KafkaProducer<>(configurationMap);
         }
     }

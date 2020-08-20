@@ -19,6 +19,7 @@ package com.expedia.www.haystack.pipes.commons.kafka;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
+import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
 import com.expedia.www.haystack.pipes.commons.serialization.SpanProtobufDeserializer;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.TopicPartition;
@@ -37,18 +38,18 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ConsumerTask implements Runnable, Closeable{
+public class ConsumerTask implements Runnable, Closeable {
     private static Logger logger = LoggerFactory.getLogger(ConsumerTask.class);
     private final ScheduledExecutorService wakeupScheduler;
-    private final KafkaConfig config;
+    private final KafkaConsumerConfig config;
     private final HealthController healthController;
-    private int wakeups = 0;
     private final KafkaConsumer<String, Span> consumer;
     private final AtomicBoolean shutdownRequested = new AtomicBoolean(false);
     private final Map<Integer, SpanProcessor> processors = new HashMap<>();
+    private int wakeups = 0;
     private Instant lastCommitTimestamp = Instant.now();
 
-    public ConsumerTask(final KafkaConfig config,
+    public ConsumerTask(final KafkaConsumerConfig config,
                         final Class<?> containingClass,
                         final SpanProcessorSupplier processorSupplier,
                         final HealthController healthController) {
@@ -57,7 +58,7 @@ public class ConsumerTask implements Runnable, Closeable{
         this.wakeupScheduler = Executors.newScheduledThreadPool(1);
         this.healthController = healthController;
 
-        consumer.subscribe(Collections.singletonList(config.fromtopic()), new ConsumerRebalanceListener() {
+        consumer.subscribe(Collections.singletonList(config.getFromTopic()), new ConsumerRebalanceListener() {
             @Override
             public void onPartitionsRevoked(Collection<TopicPartition> topicPartitions) {
                 synchronized (this) {
@@ -75,7 +76,7 @@ public class ConsumerTask implements Runnable, Closeable{
                 synchronized (this) {
                     topicPartitions.forEach(topicPartition -> {
                         SpanProcessor processor = processors.get(topicPartition.partition());
-                        if(processor == null) {
+                        if (processor == null) {
                             processor = processorSupplier.get();
                             processors.put(topicPartition.partition(), processor);
                             processor.init(topicPartition);
@@ -98,7 +99,7 @@ public class ConsumerTask implements Runnable, Closeable{
                     if (processor != null) {
                         final Optional<Long> commitableOffset = processor.process(record);
                         if (commitableOffset.isPresent()) {
-                            offsets.put(new TopicPartition(config.fromtopic(), partition),
+                            offsets.put(new TopicPartition(config.getFromTopic(), partition),
                                     new OffsetAndMetadata(commitableOffset.get()));
                         }
                     } else {
@@ -106,7 +107,7 @@ public class ConsumerTask implements Runnable, Closeable{
                     }
                 });
 
-                if (!offsets.isEmpty() && Instant.now().minusMillis(config.commitms()).isAfter(lastCommitTimestamp)) {
+                if (!offsets.isEmpty() && Instant.now().minusMillis(config.getCommitMs()).isAfter(lastCommitTimestamp)) {
                     lastCommitTimestamp = Instant.now();
                     commitSync(offsets);
                 }
@@ -125,10 +126,10 @@ public class ConsumerTask implements Runnable, Closeable{
 
     private ConsumerRecords<String, Span> poll(final KafkaConsumer<String, Span> consumer) {
         final ScheduledFuture<?> wakeupCall = wakeupScheduler.schedule(consumer::wakeup,
-                this.config.wakeuptimeoutms(),
+                this.config.getWakeUpTimeoutMs(),
                 TimeUnit.MILLISECONDS);
         try {
-            final ConsumerRecords<String, Span> records = consumer.poll(this.config.polltimeoutms());
+            final ConsumerRecords<String, Span> records = consumer.poll(this.config.getPollTimeoutMs());
             wakeups = 0;
             return records;
         } catch (WakeupException we) {
@@ -136,13 +137,13 @@ public class ConsumerTask implements Runnable, Closeable{
                 throw we;
             }
             wakeups = wakeups + 1;
-            if (wakeups >= this.config.maxwakeups()) {
+            if (wakeups >= this.config.getMaxWakeUps()) {
                 logger.error("WakeupException limit exceeded, set app in unhealthy state", we);
                 healthController.setUnhealthy();
                 throw we;
             } else {
                 logger.error("Consumer poll took more than {} ms for consumer, wakeup attempt={}!. Will try poll again!",
-                        this.config.wakeuptimeoutms(), wakeups);
+                        this.config.getWakeUpTimeoutMs(), wakeups);
             }
         } finally {
             wakeupCall.cancel(true);
@@ -155,8 +156,8 @@ public class ConsumerTask implements Runnable, Closeable{
         props.put(ConsumerConfig.CLIENT_ID_CONFIG, UUID.randomUUID().toString());
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
         props.put(ConsumerConfig.GROUP_ID_CONFIG, containingClass.getName());
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, this.config.brokers() + ":" + this.config.port());
-        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, this.config.sessiontimeout());
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, this.config.getBrokers() + ":" + this.config.getPort());
+        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, this.config.getSessionTimeout());
         return props;
     }
 
