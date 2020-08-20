@@ -3,6 +3,9 @@ package com.expedia.www.haystack.pipes.commons.kafka.config;
 import com.expedia.www.haystack.commons.config.ConfigurationLoader;
 import com.typesafe.config.Config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ProjectConfiguration {
 
     private final Config haystackConfig;
@@ -35,12 +38,24 @@ public class ProjectConfiguration {
         Config firehoseConfig = haystackConfig.getConfig("firehose");
         return new FirehoseConfig(firehoseConfig.getString("url"), firehoseConfig.getString("streamname"),
                 firehoseConfig.getString("signingregion"), firehoseConfig.getInt("initialretrysleep"),
-                firehoseConfig.getInt("maxretrysleep"),firehoseConfig.getBoolean("usestringbuffering"),
+                firehoseConfig.getInt("maxretrysleep"), firehoseConfig.getBoolean("usestringbuffering"),
                 firehoseConfig.getInt("maxbatchinterval"), firehoseConfig.getInt("maxparallelismpershard"));
     }
 
-    public PipesConfig getPipesConfig(){
+    public PipesConfig getPipesConfig() {
         Config pipesConfig = haystackConfig.getConfig("pipe");
         return new PipesConfig(pipesConfig.getConfig("streams").getInt("replicationfactor"));
+    }
+
+    public HttpPostConfig getHttpPostConfig() {
+        Config httpPostConfig = haystackConfig.getConfig("httppost");
+        Map<String, String> headers = new HashMap<>();
+        for (Config header : httpPostConfig.getConfigList("headers")) {
+            headers.put(header.getString("name"), header.getString("value"));
+        }
+        return new HttpPostConfig(httpPostConfig.getString("maxbytes"),
+                httpPostConfig.getString("url"), httpPostConfig.getString("bodyprefix"),
+                httpPostConfig.getString("bodysuffix"), httpPostConfig.getString("separator"),
+                headers, httpPostConfig.getString("pollpercent"));
     }
 }

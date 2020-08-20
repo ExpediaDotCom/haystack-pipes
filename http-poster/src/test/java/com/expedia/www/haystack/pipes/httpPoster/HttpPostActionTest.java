@@ -18,6 +18,7 @@ package com.expedia.www.haystack.pipes.httpPoster;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
+import com.expedia.www.haystack.pipes.commons.kafka.config.HttpPostConfig;
 import com.expedia.www.haystack.pipes.httpPoster.HttpPostAction.Factory;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
@@ -41,7 +42,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-import static com.expedia.www.haystack.pipes.commons.CommonConstants.PROTOBUF_ERROR_MSG;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.EXCEPTION_MESSAGE;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.JSON_SPAN_STRING_WITH_FLATTENED_TAGS;
@@ -90,7 +90,7 @@ public class HttpPostActionTest {
     @Mock
     private Logger mockLogger;
     @Mock
-    private HttpPostConfigurationProvider mockHttpPostConfigurationProvider;
+    private HttpPostConfig mockHttpPostConfigurationProvider;
     @Mock
     private Factory mockFactory;
     @Mock
@@ -113,8 +113,8 @@ public class HttpPostActionTest {
 
     @Before
     public void setUp() {
-        when(mockHttpPostConfigurationProvider.url()).thenReturn(HTTP_LOCALHOST);
-        when(mockHttpPostConfigurationProvider.pollpercent()).thenReturn(Integer.toString(ONE_HUNDRED_PERCENT));
+        when(mockHttpPostConfigurationProvider.getUrl()).thenReturn(HTTP_LOCALHOST);
+        when(mockHttpPostConfigurationProvider.getPollPercent()).thenReturn(Integer.toString(ONE_HUNDRED_PERCENT));
         final Printer realPrinter = JsonFormat.printer().omittingInsignificantWhitespace();
         httpPostExternalAction = new HttpPostAction(realPrinter, mockContentCollector, mockTimersAndCounters,
                 mockLogger, mockHttpPostConfigurationProvider, mockFactory, mockRandom, mockInvalidProtocolBufferExceptionLogger);
@@ -125,8 +125,8 @@ public class HttpPostActionTest {
     @After
     public void tearDown() {
         mockServer.stop();
-        verify(mockHttpPostConfigurationProvider, times(wantedNumberOfInvocationsUrl)).url();
-        verify(mockHttpPostConfigurationProvider, times(wantedNumberOfInvocationsPollPercent)).pollpercent();
+        verify(mockHttpPostConfigurationProvider, times(wantedNumberOfInvocationsUrl)).getUrl();
+        verify(mockHttpPostConfigurationProvider, times(wantedNumberOfInvocationsPollPercent)).getPollPercent();
         String msg = String.format(STARTUP_MESSAGE, HTTP_LOCALHOST, ONE_HUNDRED_PERCENT);
         verify(mockLogger, times(wantedNumberOfInvocationsInfo)).info(msg);
         verifyNoMoreInteractions(mockPrinter, mockContentCollector, mockTimersAndCounters,
@@ -154,7 +154,7 @@ public class HttpPostActionTest {
     public void testApplyFilteredOut() {
         wantedNumberOfInvocationsUrl = 1;
         wantedNumberOfInvocationsPollPercent = 2;
-        when(mockHttpPostConfigurationProvider.pollpercent()).thenReturn("0");
+        when(mockHttpPostConfigurationProvider.getPollPercent()).thenReturn("0");
 
         httpPostExternalAction.apply(KEY, FULLY_POPULATED_SPAN);
 
@@ -218,7 +218,7 @@ public class HttpPostActionTest {
         when(mockTimersAndCounters.startTimer()).thenReturn(mockStopwatch);
         when(mockFactory.createURL(anyString())).thenReturn(URL_);
         when(mockFactory.createConnection(any(URL.class))).thenReturn(mockHttpURLConnection);
-        when(mockHttpPostConfigurationProvider.headers()).thenReturn(HEADERS);
+        when(mockHttpPostConfigurationProvider.getHeaders()).thenReturn(HEADERS);
 
         httpPostExternalAction.apply(KEY, FULLY_POPULATED_SPAN);
         httpPostExternalAction.apply(KEY, FULLY_POPULATED_SPAN);
@@ -236,7 +236,7 @@ public class HttpPostActionTest {
         verify(mockHttpURLConnection).setRequestProperty(
                 "Content-Length", Integer.toString(JSON_SPAN_STRING_WITH_FLATTENED_TAGS.length()));
         verify(mockHttpURLConnection).setDoOutput(true);
-        verify(mockHttpPostConfigurationProvider).headers();
+        verify(mockHttpPostConfigurationProvider).getHeaders();
         for (Map.Entry<String, String> header : HEADERS.entrySet()) {
             verify(mockHttpURLConnection).setRequestProperty(header.getKey(), header.getValue());
         }

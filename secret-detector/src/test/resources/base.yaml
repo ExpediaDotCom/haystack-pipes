@@ -1,0 +1,15 @@
+haystack:
+  secretsnotifications:
+    mainbean: "protobufToDetectorAction"  # (method) name of the bean in SpringConfig.java
+    actionfactories:
+      - "emailerDetectedActionFactory" # (method) name of the bean in SpringConfig.java
+    whitelist:
+      bucket: "haystack-config"
+      key: "secret-detector/whiteListItems.txt"
+    email:
+      from: "haystack@expedia.com"
+      tos:
+        - "haystack@expedia.com"
+        - "test@expedia.com"
+      host: "localhost"
+      subject: "[Action Required] Security alert in haystack spans!"

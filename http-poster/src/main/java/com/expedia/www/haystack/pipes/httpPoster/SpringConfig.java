@@ -22,6 +22,7 @@ import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
+import com.expedia.www.haystack.pipes.commons.kafka.config.HttpPostConfig;
 import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import com.expedia.www.haystack.pipes.commons.kafka.config.ProjectConfiguration;
@@ -127,13 +128,13 @@ public class SpringConfig {
     }
 
     @Bean
-    HttpPostConfigurationProvider httpPostConfigurationProvider() {
-        return new HttpPostConfigurationProvider();
+    HttpPostConfig httpPostConfigurationProvider() {
+        return new ProjectConfiguration().getHttpPostConfig();
     }
 
     @Autowired
     @Bean
-    ContentCollector contentCollector(HttpPostConfigurationProvider httpPostConfigurationProvider) {
+    ContentCollector contentCollector(HttpPostConfig httpPostConfigurationProvider) {
         return new ContentCollector(httpPostConfigurationProvider);
     }
 
