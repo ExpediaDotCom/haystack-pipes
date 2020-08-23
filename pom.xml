@@ -74,7 +74,7 @@
         <guava.version>19.0</guava.version>
         <jacoco-maven-plugin.version>0.8.0</jacoco-maven-plugin.version>
         <jacoco-percentage>1.0</jacoco-percentage>
-        <jackson.version>2.9.9</jackson.version>
+        <jackson.version>2.11.0</jackson.version>
         <java.version>1.8</java.version>
         <javax-mail.version>1.4.7</javax-mail.version>
         <javax-activation.version>1.1.1</javax-activation.version>
@@ -102,11 +102,13 @@
 
     <modules>
         <module>commons</module>
+        <module>span-key-extractor</module>
         <module>firehose-writer</module>
         <module>http-poster</module>
         <module>json-transformer</module>
         <module>kafka-producer</module>
         <module>secret-detector</module>
+        <module>sample-key-extractors</module>
     </modules>
 
     <dependencyManagement>
