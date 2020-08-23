@@ -124,12 +124,12 @@ public class SpringConfig {
 
     @Bean
     KafkaConsumerConfig kafkaConfigurationProvider() {
-        return new ProjectConfiguration().getKafkaConsumerConfig();
+        return ProjectConfiguration.getInstance().getKafkaConsumerConfig();
     }
 
     @Bean
     KafkaProducerConfig externalKafkaConfigurationProvider() {
-        return new ProjectConfiguration().getKafkaProducerConfig();
+        return ProjectConfiguration.getInstance().getKafkaProducerConfig();
     }
 
     @Bean

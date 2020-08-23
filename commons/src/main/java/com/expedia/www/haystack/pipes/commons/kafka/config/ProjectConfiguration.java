@@ -9,11 +9,19 @@ import java.util.Map;
 public class ProjectConfiguration {
 
     private final Config haystackConfig;
+    private static ProjectConfiguration projectConfiguration = null;
 
-    public ProjectConfiguration() {
+    private ProjectConfiguration() {
         String resourceName = System.getenv("configFilePath") == null ? "config/base.conf" : System.getenv("configFilePath");
         Config config = ConfigurationLoader.loadConfigFileWithEnvOverrides(resourceName, "HAYSTACK_PROP_");
         haystackConfig = config.getConfig("haystack");
+    }
+
+    public static ProjectConfiguration getInstance(){
+        if(null == projectConfiguration){
+            projectConfiguration = new ProjectConfiguration();
+        }
+        return projectConfiguration;
     }
 
     public KafkaConsumerConfig getKafkaConsumerConfig() {

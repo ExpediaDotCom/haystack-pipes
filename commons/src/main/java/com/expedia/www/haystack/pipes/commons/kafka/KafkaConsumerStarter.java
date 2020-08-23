@@ -50,8 +50,7 @@ public class KafkaConsumerStarter {
     }
 
     private static KafkaConsumerConfig getKafkaConfig() {
-        return new ProjectConfiguration().getKafkaConsumerConfig();
-        //CONFIGURATION_PROVIDER.bind(HAYSTACK_KAFKA_CONFIG_PREFIX, KafkaConfig.class);
+        return ProjectConfiguration.getInstance().getKafkaConsumerConfig();
     }
 
     public void createAndStartConsumer(SpanProcessorSupplier processorSupplier) {

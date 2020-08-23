@@ -64,8 +64,7 @@ public class KafkaStreamStarter {
     }
 
     private static KafkaConsumerConfig getKafkaConfig() {
-        return new ProjectConfiguration().getKafkaConsumerConfig();
-        //CONFIGURATION_PROVIDER.bind(HAYSTACK_KAFKA_CONFIG_PREFIX, KafkaConfig.class);
+        return ProjectConfiguration.getInstance().getKafkaConsumerConfig();
     }
 
     public void createAndStartStream(KafkaStreamBuilder kafkaStreamBuilder) {
@@ -124,7 +123,7 @@ public class KafkaStreamStarter {
     }
 
     private int getReplicationFactor() {
-        return new ProjectConfiguration().getPipesConfig().getReplicationFactor();
+        return ProjectConfiguration.getInstance().getPipesConfig().getReplicationFactor();
     }
 
     private int getConsumerSessionTimeout() {

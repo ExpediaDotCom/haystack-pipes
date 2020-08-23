@@ -16,7 +16,7 @@ public class HttpPostConfigurationProviderTest {
 
     @Before
     public void setUp() {
-        httpPostConfigurationProvider = new ProjectConfiguration().getHttpPostConfig();
+        httpPostConfigurationProvider = ProjectConfiguration.getInstance().getHttpPostConfig();
     }
 
     @Test

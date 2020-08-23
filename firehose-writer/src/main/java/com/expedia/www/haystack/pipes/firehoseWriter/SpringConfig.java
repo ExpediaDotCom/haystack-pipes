@@ -261,7 +261,7 @@ class SpringConfig {
 
     @Bean
     FirehoseConfig firehoseConfigurationProvider() {
-        return new ProjectConfiguration().getFirehoseConfig();
+        return ProjectConfiguration.getInstance().getFirehoseConfig();
     }
 
     @Bean
@@ -321,7 +321,7 @@ class SpringConfig {
 
     @Bean
     KafkaConsumerConfig kafkaConfigurationProvider() {
-        return new ProjectConfiguration().getKafkaConsumerConfig();
+        return ProjectConfiguration.getInstance().getKafkaConsumerConfig();
     }
 
     @Bean

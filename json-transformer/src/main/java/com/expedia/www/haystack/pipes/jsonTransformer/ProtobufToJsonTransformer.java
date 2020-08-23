@@ -35,7 +35,7 @@ import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.APPLICATI
 public class ProtobufToJsonTransformer implements KafkaStreamBuilder {
     private final KafkaStreamStarter kafkaStreamStarter;
     private final SerdeFactory serdeFactory;
-    private final KafkaConsumerConfig kafkaConfigurationProvider = new ProjectConfiguration().getKafkaConsumerConfig();
+    private final KafkaConsumerConfig kafkaConfigurationProvider = ProjectConfiguration.getInstance().getKafkaConsumerConfig();
 
     @Autowired
     ProtobufToJsonTransformer(KafkaStreamStarter kafkaStreamStarter,

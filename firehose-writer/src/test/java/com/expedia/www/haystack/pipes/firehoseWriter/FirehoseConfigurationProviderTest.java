@@ -29,7 +29,7 @@ public class FirehoseConfigurationProviderTest {
 
     @Before
     public void setUp() {
-        firehoseConfigurationProvider = new ProjectConfiguration().getFirehoseConfig();
+        firehoseConfigurationProvider = ProjectConfiguration.getInstance().getFirehoseConfig();
     }
 
     @Test

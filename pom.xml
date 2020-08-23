@@ -73,7 +73,7 @@
         <haystack-pipes-commons.version>1.0-SNAPSHOT</haystack-pipes-commons.version>
         <guava.version>19.0</guava.version>
         <jacoco-maven-plugin.version>0.8.0</jacoco-maven-plugin.version>
-        <jacoco-percentage>0.0</jacoco-percentage>
+        <jacoco-percentage>1.0</jacoco-percentage>
         <jackson.version>2.9.9</jackson.version>
         <java.version>1.8</java.version>
         <javax-mail.version>1.4.7</javax-mail.version>
