@@ -14,12 +14,13 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.commons.key.extractor;
+package com.expedia.www.haystack.pipes.key.extractor;
 
 import com.expedia.open.tracing.Span;
 import com.typesafe.config.Config;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SpanKeyExtractor {
 
@@ -27,7 +28,7 @@ public interface SpanKeyExtractor {
 
     public void configure(Config config);
 
-    public String extract(Span span);
+    public Optional<String> extract(Span span);
 
     public String getKey();
 
