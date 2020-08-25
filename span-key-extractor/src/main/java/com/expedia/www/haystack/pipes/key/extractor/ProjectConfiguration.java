@@ -34,7 +34,7 @@ public class ProjectConfiguration {
     private final String directory;
 
     public ProjectConfiguration() {
-        Config config = ConfigurationLoader.loadConfigFileWithEnvOverrides("config/extractors.conf", Optional.empty().toString());
+        Config config = ConfigurationLoader.loadConfigFileWithEnvOverrides("config/base.conf", Optional.empty().toString());
         logger.debug("loaded config: {}", config);
         haystackConf = config.getConfig(Constants.HAYSTACK_KEY);
         directory = haystackConf.getString(Constants.DIRECTORY_KEY);
