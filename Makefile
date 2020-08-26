@@ -29,7 +29,7 @@ span-key-extractor:
 	mvn package -DfinalName=span-key-extractor -pl span-key-extractor -am
 
 # build all and release
-release: clean json-transformer kafka-producer http-poster firehose-writer secret-detector span-key-extractor
+release: clean span-key-extractor json-transformer kafka-producer http-poster firehose-writer secret-detector
 	cd json-transformer && $(MAKE) release
 	cd kafka-producer && $(MAKE) release
 	cd http-poster && $(MAKE) release
