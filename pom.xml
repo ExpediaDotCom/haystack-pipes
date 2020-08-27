@@ -93,7 +93,7 @@
         <slf4j.version>1.7.25</slf4j.version>
         <spring-boot-plugins.version>1.5.9.RELEASE</spring-boot-plugins.version>
         <spring-context.version>5.2.6.RELEASE</spring-context.version>
-        <zookeeper.version>3.4.9</zookeeper.version>
+        <zookeeper.version>3.4.14</zookeeper.version>
         <skipGpg>true</skipGpg>
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
     </properties>
