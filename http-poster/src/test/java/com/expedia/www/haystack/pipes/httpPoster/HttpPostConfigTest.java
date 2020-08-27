@@ -10,60 +10,60 @@ import java.util.Map;
 import static com.expedia.www.haystack.pipes.httpPoster.HttpPostActionTest.HEADERS;
 import static org.junit.Assert.assertEquals;
 
-public class HttpPostConfigurationProviderTest {
+public class HttpPostConfigTest {
     static final String LARGEST_POSSIBLE_MAX_BYTES = Integer.toString((1024 + 512) * 1024); // 1.5 MB
-    private HttpPostConfig httpPostConfigurationProvider;
+    private HttpPostConfig httpPostConfig;
 
     @Before
     public void setUp() {
-        httpPostConfigurationProvider = ProjectConfiguration.getInstance().getHttpPostConfig();
+        httpPostConfig = ProjectConfiguration.getInstance().getHttpPostConfig();
     }
 
     @Test
     public void testMaxBytes() {
-        final String maxBytes = httpPostConfigurationProvider.getMaxBytes();
+        final String maxBytes = httpPostConfig.getMaxBytes();
 
         assertEquals(LARGEST_POSSIBLE_MAX_BYTES, maxBytes);
     }
 
     @Test
     public void testUrl() {
-        final String url = httpPostConfigurationProvider.getUrl();
+        final String url = httpPostConfig.getUrl();
 
         assertEquals("http://localhost", url);
     }
 
     @Test
     public void testBodyPrefix() {
-        final String bodyPrefix = httpPostConfigurationProvider.getBodyPrefix();
+        final String bodyPrefix = httpPostConfig.getBodyPrefix();
 
         assertEquals("[", bodyPrefix);
     }
 
     @Test
     public void testBodySuffix() {
-        final String bodySuffix = httpPostConfigurationProvider.getBodySuffix();
+        final String bodySuffix = httpPostConfig.getBodySuffix();
 
         assertEquals("]", bodySuffix);
     }
 
     @Test
     public void testSeparator() {
-        final String separator = httpPostConfigurationProvider.getSeparator();
+        final String separator = httpPostConfig.getSeparator();
 
         assertEquals(",", separator);
     }
 
     @Test
     public void testHeaders() {
-        final Map<String, String> headers = httpPostConfigurationProvider.getHeaders();
+        final Map<String, String> headers = httpPostConfig.getHeaders();
 
         assertEquals(HEADERS, headers);
     }
 
     @Test
     public void testPollPercent() {
-        final int pollPercent = Integer.parseInt(httpPostConfigurationProvider.getPollPercent());
+        final int pollPercent = Integer.parseInt(httpPostConfig.getPollPercent());
 
         assertEquals(42, pollPercent);
     }

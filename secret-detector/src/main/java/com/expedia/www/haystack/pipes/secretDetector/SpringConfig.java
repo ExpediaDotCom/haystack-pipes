@@ -78,8 +78,8 @@ public class SpringConfig {
     ProtobufToDetectorAction detectorProducer(KafkaStreamStarter kafkaStreamStarter,
                                               SerdeFactory serdeFactory,
                                               DetectorAction detectorAction,
-                                              KafkaConsumerConfig kafkaConfigurationProvider) {
-        return new ProtobufToDetectorAction(kafkaStreamStarter, serdeFactory, detectorAction, kafkaConfigurationProvider);
+                                              KafkaConsumerConfig kafkaConsumerConfig) {
+        return new ProtobufToDetectorAction(kafkaStreamStarter, serdeFactory, detectorAction, kafkaConsumerConfig);
     }
 
     @Bean
@@ -376,7 +376,7 @@ public class SpringConfig {
         }
 
         @Bean
-        KafkaConsumerConfig kafkaConfigurationProvider() {
+        KafkaConsumerConfig kafkaConsumerConfig() {
             return ProjectConfiguration.getInstance().getKafkaConsumerConfig();
         }
     }

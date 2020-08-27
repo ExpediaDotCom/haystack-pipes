@@ -32,7 +32,7 @@ public class ProtobufToDetectorAction extends KafkaStreamBuilderBase {
     public ProtobufToDetectorAction(KafkaStreamStarter kafkaStreamStarter,
                                     SerdeFactory serdeFactory,
                                     DetectorAction detectorAction,
-                                    KafkaConsumerConfig kafkaConfigurationProvider) {
-        super(kafkaStreamStarter, serdeFactory, APPLICATION, kafkaConfigurationProvider, detectorAction);
+                                    KafkaConsumerConfig kafkaConsumerConfig) {
+        super(kafkaStreamStarter, serdeFactory, APPLICATION, kafkaConsumerConfig, detectorAction);
     }
 }

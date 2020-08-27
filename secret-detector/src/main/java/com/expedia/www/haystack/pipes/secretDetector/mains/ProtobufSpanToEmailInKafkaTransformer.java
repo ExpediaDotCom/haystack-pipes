@@ -37,7 +37,7 @@ import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATIO
 public class ProtobufSpanToEmailInKafkaTransformer implements KafkaStreamBuilder, Main {
     private final KafkaStreamStarter kafkaStreamStarter;
     private final SerdeFactory serdeFactory;
-    private final KafkaConsumerConfig kafkaConfigurationProvider = ProjectConfiguration.getInstance().getKafkaConsumerConfig();
+    private final KafkaConsumerConfig kafkaConsumerConfig = ProjectConfiguration.getInstance().getKafkaConsumerConfig();
     private final SpanDetector spanDetector;
 
     @Autowired
@@ -59,7 +59,7 @@ public class ProtobufSpanToEmailInKafkaTransformer implements KafkaStreamBuilder
         final Serde<Span> spanSerde = serdeFactory.createJsonProtoSpanSerde(APPLICATION);
         final Serde<String> stringSerde = Serdes.String();
         final KStream<String, Span> stream = kStreamBuilder.stream(
-                stringSerde, spanSerde, kafkaConfigurationProvider.getFromTopic());
-        stream.flatMapValues(spanDetector::apply).to(stringSerde, stringSerde, kafkaConfigurationProvider.getToTopic());
+                stringSerde, spanSerde, kafkaConsumerConfig.getFromTopic());
+        stream.flatMapValues(spanDetector::apply).to(stringSerde, stringSerde, kafkaConsumerConfig.getToTopic());
     }
 }

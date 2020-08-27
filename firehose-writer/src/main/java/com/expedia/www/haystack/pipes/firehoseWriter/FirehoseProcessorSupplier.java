@@ -31,7 +31,7 @@ public class FirehoseProcessorSupplier implements SpanProcessorSupplier {
     private final FirehoseTimersAndCounters firehoseTimersAndCounters;
     private final Supplier<Batch> batch;
     private final FirehoseProcessor.Factory firehoseProcessorFactory;
-    private final FirehoseConfig firehoseConfigurationProvider;
+    private final FirehoseConfig firehoseConfig;
     private final S3Sender s3Sender;
 
     @Autowired
@@ -39,18 +39,18 @@ public class FirehoseProcessorSupplier implements SpanProcessorSupplier {
                                      FirehoseTimersAndCounters firehoseTimersAndCounters,
                                      Supplier<Batch> batch,
                                      FirehoseProcessor.Factory firehoseProcessorFactory,
-                                     FirehoseConfig firehoseConfigurationProvider, S3Sender s3Sender) {
+                                     FirehoseConfig firehoseConfig, S3Sender s3Sender) {
         this.firehoseProcessorLogger = firehoseProcessorLogger;
         this.firehoseTimersAndCounters = firehoseTimersAndCounters;
         this.batch = batch;
         this.firehoseProcessorFactory = firehoseProcessorFactory;
-        this.firehoseConfigurationProvider = firehoseConfigurationProvider;
+        this.firehoseConfig = firehoseConfig;
         this.s3Sender = s3Sender;
     }
 
     @Override
     public SpanProcessor get() {
         return new FirehoseProcessor(firehoseProcessorLogger, firehoseTimersAndCounters, batch,
-                firehoseProcessorFactory, firehoseConfigurationProvider, s3Sender);
+                firehoseProcessorFactory, firehoseConfig, s3Sender);
     }
 }

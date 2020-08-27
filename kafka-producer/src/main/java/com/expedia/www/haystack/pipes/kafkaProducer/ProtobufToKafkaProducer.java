@@ -31,7 +31,7 @@ public class ProtobufToKafkaProducer extends KafkaStreamBuilderBase {
     ProtobufToKafkaProducer(KafkaStreamStarter kafkaStreamStarter,
                             SerdeFactory serdeFactory,
                             ProduceIntoExternalKafkaAction produceIntoExternalKafkaAction,
-                            KafkaConsumerConfig kafkaConfigurationProvider) {
-        super(kafkaStreamStarter, serdeFactory, APPLICATION, kafkaConfigurationProvider, produceIntoExternalKafkaAction);
+                            KafkaConsumerConfig kafkaConsumerConfig) {
+        super(kafkaStreamStarter, serdeFactory, APPLICATION, kafkaConsumerConfig, produceIntoExternalKafkaAction);
     }
 }

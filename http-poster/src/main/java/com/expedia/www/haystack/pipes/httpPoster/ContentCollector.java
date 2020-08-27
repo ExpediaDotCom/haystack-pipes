@@ -30,12 +30,12 @@ class ContentCollector {
     private final String bodySuffix;
 
     @Autowired
-    ContentCollector(HttpPostConfig httpPostConfigurationProvider) {
-        this.maxBytesInPost = Integer.parseInt(httpPostConfigurationProvider.getMaxBytes());
+    ContentCollector(HttpPostConfig httpPostConfig) {
+        this.maxBytesInPost = Integer.parseInt(httpPostConfig.getMaxBytes());
         postPayload = new StringBuilder(maxBytesInPost);
-        separator = httpPostConfigurationProvider.getSeparator();
-        bodyPrefix = httpPostConfigurationProvider.getBodyPrefix();
-        bodySuffix = httpPostConfigurationProvider.getBodySuffix();
+        separator = httpPostConfig.getSeparator();
+        bodyPrefix = httpPostConfig.getBodyPrefix();
+        bodySuffix = httpPostConfig.getBodySuffix();
         initialize();
     }
 

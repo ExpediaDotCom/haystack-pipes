@@ -52,7 +52,7 @@ public class SpringConfigTest {
     @Mock
     private MetricObjects mockMetricObjects;
     @Mock
-    private FirehoseConfig mockFirehoseConfigurationProvider;
+    private FirehoseConfig mockFirehoseConfig;
     @Mock
     private Timer mockTimer;
     @Mock
@@ -69,7 +69,7 @@ public class SpringConfigTest {
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockMetricObjects, mockFirehoseConfigurationProvider, mockTimer, mockCounter,
+        verifyNoMoreInteractions(mockMetricObjects, mockFirehoseConfig, mockTimer, mockCounter,
                 mockHealthController);
     }
 
@@ -234,22 +234,22 @@ public class SpringConfigTest {
 
     @Test
     public void testUrl() {
-        when(mockFirehoseConfigurationProvider.getUrl()).thenReturn(URL);
+        when(mockFirehoseConfig.getUrl()).thenReturn(URL);
 
-        final String url = springConfig.url(mockFirehoseConfigurationProvider);
+        final String url = springConfig.url(mockFirehoseConfig);
 
         assertEquals(URL, url);
-        verify(mockFirehoseConfigurationProvider).getUrl();
+        verify(mockFirehoseConfig).getUrl();
     }
 
     @Test
     public void testSigningRegion() {
-        when(mockFirehoseConfigurationProvider.getSigningRegion()).thenReturn(SIGNING_REGION);
+        when(mockFirehoseConfig.getSigningRegion()).thenReturn(SIGNING_REGION);
 
-        final String signingRegion = springConfig.signingregion(mockFirehoseConfigurationProvider);
+        final String signingRegion = springConfig.signingregion(mockFirehoseConfig);
 
         assertEquals(SIGNING_REGION, signingRegion);
-        verify(mockFirehoseConfigurationProvider).getSigningRegion();
+        verify(mockFirehoseConfig).getSigningRegion();
     }
 
     @Test

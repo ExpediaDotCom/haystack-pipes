@@ -128,14 +128,14 @@ public class SpringConfig {
     }
 
     @Bean
-    HttpPostConfig httpPostConfigurationProvider() {
+    HttpPostConfig httpPostConfig() {
         return ProjectConfiguration.getInstance().getHttpPostConfig();
     }
 
     @Autowired
     @Bean
-    ContentCollector contentCollector(HttpPostConfig httpPostConfigurationProvider) {
-        return new ContentCollector(httpPostConfigurationProvider);
+    ContentCollector contentCollector(HttpPostConfig httpPostConfig) {
+        return new ContentCollector(httpPostConfig);
     }
 
     @Bean
@@ -154,7 +154,7 @@ public class SpringConfig {
     }
 
     @Bean
-    KafkaConsumerConfig kafkaConfigurationProvider() {
+    KafkaConsumerConfig kafkaConsumerConfig() {
         return ProjectConfiguration.getInstance().getKafkaConsumerConfig();
     }
 

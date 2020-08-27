@@ -57,7 +57,7 @@ class HttpPostAction implements ForeachAction<String, Span> {
     private final ContentCollector contentCollector;
     private final TimersAndCounters timersAndCounters;
     private final Logger httpPostActionLogger;
-    private final HttpPostConfig httpPostConfigurationProvider;
+    private final HttpPostConfig httpPostConfig;
     private final Factory factory;
     private final Random random;
     private final InvalidProtocolBufferExceptionLogger invalidProtocolBufferExceptionLogger;
@@ -67,7 +67,7 @@ class HttpPostAction implements ForeachAction<String, Span> {
                    ContentCollector contentCollector,
                    TimersAndCounters timersAndCounters,
                    Logger httpPostActionLogger,
-                   HttpPostConfig httpPostConfigurationProvider,
+                   HttpPostConfig httpPostConfig,
                    Factory httpPostActionFactory,
                    Random random,
                    InvalidProtocolBufferExceptionLogger invalidProtocolBufferExceptionLogger) {
@@ -75,13 +75,13 @@ class HttpPostAction implements ForeachAction<String, Span> {
         this.contentCollector = contentCollector;
         this.timersAndCounters = timersAndCounters;
         this.httpPostActionLogger = httpPostActionLogger;
-        this.httpPostConfigurationProvider = httpPostConfigurationProvider;
+        this.httpPostConfig = httpPostConfig;
         this.factory = httpPostActionFactory;
         this.random = random;
         this.invalidProtocolBufferExceptionLogger = invalidProtocolBufferExceptionLogger;
 
         String msg = String.format(STARTUP_MESSAGE,
-                this.httpPostConfigurationProvider.getUrl(), this.httpPostConfigurationProvider.getPollPercent());
+                this.httpPostConfig.getUrl(), this.httpPostConfig.getPollPercent());
         this.httpPostActionLogger.info(msg);
     }
 
@@ -89,7 +89,7 @@ class HttpPostAction implements ForeachAction<String, Span> {
     public void apply(String key, Span span) {
         timersAndCounters.incrementRequestCounter();
         timersAndCounters.recordSpanArrivalDelta(span);
-        if(random.nextInt(ONE_HUNDRED_PERCENT) < Integer.parseInt(httpPostConfigurationProvider.getPollPercent())) {
+        if(random.nextInt(ONE_HUNDRED_PERCENT) < Integer.parseInt(httpPostConfig.getPollPercent())) {
             timersAndCounters.incrementCounter(FILTERED_IN_COUNTER_INDEX);
             final String batch = getBatch(span);
             if (!StringUtils.isEmpty(batch)) {
@@ -124,7 +124,7 @@ class HttpPostAction implements ForeachAction<String, Span> {
     }
 
     private HttpURLConnection getUrlConnection() throws IOException {
-        final String url = httpPostConfigurationProvider.getUrl();
+        final String url = httpPostConfig.getUrl();
         final URL factoryURL = factory.createURL(url);
         return factory.createConnection(factoryURL);
     }
@@ -139,7 +139,7 @@ class HttpPostAction implements ForeachAction<String, Span> {
 
     private void setHeaders(String batch, HttpURLConnection httpURLConnection) {
         httpURLConnection.setRequestProperty("Content-Length", Integer.toString(batch.length()));
-        for (Map.Entry<String, String> header : httpPostConfigurationProvider.getHeaders().entrySet()) {
+        for (Map.Entry<String, String> header : httpPostConfig.getHeaders().entrySet()) {
             httpURLConnection.setRequestProperty(header.getKey(), header.getValue());
         }
     }

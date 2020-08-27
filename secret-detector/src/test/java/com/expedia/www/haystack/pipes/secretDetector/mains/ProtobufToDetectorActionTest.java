@@ -49,7 +49,7 @@ public class ProtobufToDetectorActionTest {
     @Mock
     private DetectorAction mockDetectorAction;
     @Mock
-    private KafkaConsumerConfig mockKafkaConfigurationProvider;
+    private KafkaConsumerConfig mockKafkaConsumerConfig;
     @Mock
     private KStreamBuilder mockKStreamBuilder;
     @Mock
@@ -62,13 +62,13 @@ public class ProtobufToDetectorActionTest {
     @Before
     public void setUp() {
         protobufToDetectorAction = new ProtobufToDetectorAction(
-                mockKafkaStreamStarter, mockSerdeFactory, mockDetectorAction, mockKafkaConfigurationProvider);
+                mockKafkaStreamStarter, mockSerdeFactory, mockDetectorAction, mockKafkaConsumerConfig);
     }
 
     @After
     public void tearDown() {
         verifyNoMoreInteractions(mockKafkaStreamStarter, mockSerdeFactory, mockDetectorAction,
-                mockKafkaConfigurationProvider, mockKStreamBuilder, mockKStream, mockSpanSerde);
+                mockKafkaConsumerConfig, mockKStreamBuilder, mockKStream, mockSpanSerde);
     }
 
     @Test
@@ -82,14 +82,14 @@ public class ProtobufToDetectorActionTest {
     @Test
     public void testBuildStreamTopology() {
         when(mockSerdeFactory.createJsonProtoSpanSerde(anyString())).thenReturn(mockSpanSerde);
-        when(mockKafkaConfigurationProvider.getFromTopic()).thenReturn(FROM_TOPIC);
+        when(mockKafkaConsumerConfig.getFromTopic()).thenReturn(FROM_TOPIC);
         when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
                 .thenReturn(mockKStream);
 
         protobufToDetectorAction.buildStreamTopology(mockKStreamBuilder);
 
         verify(mockSerdeFactory).createJsonProtoSpanSerde(APPLICATION);
-        verify(mockKafkaConfigurationProvider).getFromTopic();
+        verify(mockKafkaConsumerConfig).getFromTopic();
         verify(mockKStreamBuilder).stream(any(Serdes.StringSerde.class), eq(mockSpanSerde), eq(FROM_TOPIC));
         verify(mockKStream).foreach(mockDetectorAction);
     }

@@ -20,6 +20,7 @@ import com.expedia.www.haystack.commons.config.Configuration;
 import com.expedia.www.haystack.pipes.commons.SystemExitUncaughtExceptionHandler;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
+import com.expedia.www.haystack.pipes.commons.kafka.config.PipesConfig;
 import com.expedia.www.haystack.pipes.commons.kafka.config.ProjectConfiguration;
 import com.netflix.servo.util.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
@@ -45,14 +46,15 @@ public class KafkaStreamStarter {
     static Factory factory = new Factory();
     @VisibleForTesting
     static Logger logger = LoggerFactory.getLogger(KafkaStreamStarter.class);
-    @VisibleForTesting
-    static ConfigurationProvider CONFIGURATION_PROVIDER = new Configuration().createMergeConfigurationProvider();
     public final Class<? extends KafkaStreamBuilder> containingClass;
     public final String clientId;
-    // move this to configuration later
     private final long MAX_CLOSE_TIMEOUT_SEC = 30;
     private final HealthController healthController;
     private final StreamsConfig streamsConfig;
+    @VisibleForTesting
+    static KafkaConsumerConfig kafkaConsumerconfig = ProjectConfiguration.getInstance().getKafkaConsumerConfig();
+    @VisibleForTesting
+    static final PipesConfig pipesConfig = ProjectConfiguration.getInstance().getPipesConfig();
 
     public KafkaStreamStarter(Class<? extends KafkaStreamBuilder> containingClass,
                               String clientId,
@@ -61,10 +63,6 @@ public class KafkaStreamStarter {
         this.clientId = clientId;
         this.healthController = healthController;
         this.streamsConfig = new StreamsConfig(getProperties());
-    }
-
-    private static KafkaConsumerConfig getKafkaConfig() {
-        return ProjectConfiguration.getInstance().getKafkaConsumerConfig();
     }
 
     public void createAndStartStream(KafkaStreamBuilder kafkaStreamBuilder) {
@@ -103,32 +101,27 @@ public class KafkaStreamStarter {
     }
 
     private String getIpAnPort() {
-        final KafkaConsumerConfig kafkaConfig = getKafkaConfig();
-        return kafkaConfig.getBrokers() + ":" + kafkaConfig.getPort();
+        return kafkaConsumerconfig.getBrokers() + ":" + kafkaConsumerconfig.getPort();
     }
 
     private String getFromTopic() {
-        final KafkaConsumerConfig kafkaConfig = getKafkaConfig();
-        return kafkaConfig.getFromTopic();
+        return kafkaConsumerconfig.getFromTopic();
     }
 
     private String getToTopic() {
-        final KafkaConsumerConfig kafkaConfig = getKafkaConfig();
-        return kafkaConfig.getToTopic();
+        return kafkaConsumerconfig.getToTopic();
     }
 
     private int getThreadCount() {
-        final KafkaConsumerConfig kafkaConfig = getKafkaConfig();
-        return kafkaConfig.getThreadCount();
+        return kafkaConsumerconfig.getThreadCount();
     }
 
     private int getReplicationFactor() {
-        return ProjectConfiguration.getInstance().getPipesConfig().getReplicationFactor();
+        return pipesConfig.getReplicationFactor();
     }
 
     private int getConsumerSessionTimeout() {
-        final KafkaConsumerConfig kafkaConfig = getKafkaConfig();
-        return kafkaConfig.getSessionTimeout();
+        return kafkaConsumerconfig.getSessionTimeout();
     }
 
     static class Factory {

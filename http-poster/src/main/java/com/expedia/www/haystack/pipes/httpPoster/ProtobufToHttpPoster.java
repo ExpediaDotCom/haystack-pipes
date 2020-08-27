@@ -29,7 +29,7 @@ public class ProtobufToHttpPoster extends KafkaStreamBuilderBase {
     ProtobufToHttpPoster(KafkaStreamStarter kafkaStreamStarter,
                          SerdeFactory serdeFactory,
                          HttpPostAction httpPostAction,
-                         KafkaConsumerConfig kafkaConfigurationProvider) {
-        super(kafkaStreamStarter, serdeFactory, Constants.APPLICATION, kafkaConfigurationProvider, httpPostAction);
+                         KafkaConsumerConfig kafkaConsumerConfig) {
+        super(kafkaStreamStarter, serdeFactory, Constants.APPLICATION, kafkaConsumerConfig, httpPostAction);
     }
 }

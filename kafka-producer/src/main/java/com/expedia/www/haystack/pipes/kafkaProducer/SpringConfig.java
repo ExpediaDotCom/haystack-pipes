@@ -123,12 +123,12 @@ public class SpringConfig {
     }
 
     @Bean
-    KafkaConsumerConfig kafkaConfigurationProvider() {
+    KafkaConsumerConfig kafkaConsumerConfig() {
         return ProjectConfiguration.getInstance().getKafkaConsumerConfig();
     }
 
     @Bean
-    KafkaProducerConfig externalKafkaConfigurationProvider() {
+    KafkaProducerConfig kafkaProducerConfig() {
         return ProjectConfiguration.getInstance().getKafkaProducerConfig();
     }
 
@@ -183,9 +183,9 @@ public class SpringConfig {
     ProtobufToKafkaProducer protobufToKafkaProducer(KafkaStreamStarter kafkaStreamStarter,
                                                     SerdeFactory serdeFactory,
                                                     ProduceIntoExternalKafkaAction produceIntoExternalKafkaAction,
-                                                    KafkaConsumerConfig kafkaConfigurationProvider) {
+                                                    KafkaConsumerConfig kafkaConsumerConfig) {
         return new ProtobufToKafkaProducer(
-                kafkaStreamStarter, serdeFactory, produceIntoExternalKafkaAction, kafkaConfigurationProvider);
+                kafkaStreamStarter, serdeFactory, produceIntoExternalKafkaAction, kafkaConsumerConfig);
     }
 
     /*

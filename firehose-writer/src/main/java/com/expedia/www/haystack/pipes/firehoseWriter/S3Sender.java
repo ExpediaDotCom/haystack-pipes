@@ -36,7 +36,7 @@ import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.PU
 @Component
 public class S3Sender {
     @VisibleForTesting
-    private final FirehoseConfig firehoseConfigurationProvider;
+    private final FirehoseConfig firehoseConfig;
     private final Factory factory;
     private final FirehoseTimersAndCounters firehoseTimersAndCounters;
     private final AmazonKinesisFirehoseAsync amazonKinesisFirehoseAsync;
@@ -45,14 +45,14 @@ public class S3Sender {
     private final UnexpectedExceptionLogger unexpectedExceptionLogger;
 
     @Autowired
-    public S3Sender(FirehoseConfig firehoseConfigurationProvider,
+    public S3Sender(FirehoseConfig firehoseConfig,
                     Factory factory,
                     FirehoseTimersAndCounters firehoseTimersAndCounters,
                     AmazonKinesisFirehoseAsync amazonKinesisFirehoseAsync,
                     Logger s3SenderLogger,
                     FailedRecordExtractor failedRecordExtractor,
                     UnexpectedExceptionLogger unexpectedExceptionLogger) {
-        this.firehoseConfigurationProvider = firehoseConfigurationProvider;
+        this.firehoseConfig = firehoseConfig;
         this.factory = factory;
         this.firehoseTimersAndCounters = firehoseTimersAndCounters;
         this.amazonKinesisFirehoseAsync = amazonKinesisFirehoseAsync;
@@ -66,7 +66,7 @@ public class S3Sender {
                          final Sleeper sleeper,
                          final int retryCount,
                          final Callback callback) {
-        final String streamName = firehoseConfigurationProvider.getStreamName();
+        final String streamName = firehoseConfig.getStreamName();
         final PutRecordBatchRequest request = factory.createPutRecordBatchRequest(streamName, records);
         final Stopwatch stopwatch = firehoseTimersAndCounters.startTimer();
         final int sleepMillis = retryCalculator.calculateSleepMillis();
@@ -109,7 +109,7 @@ public class S3Sender {
         }
         int failureCount = firehoseTimersAndCounters.countSuccessesAndFailures(request, result);
 
-        final int maxRetrySleep = firehoseConfigurationProvider.getMaxRetrySleep();
+        final int maxRetrySleep = firehoseConfig.getMaxRetrySleep();
         if (shouldLogErrorMessage(failureCount, maxRetrySleep, sleepMillis)) {
             logger.error(String.format(PUT_RECORD_BATCH_ERROR_MSG, failureCount, retryCount));
         }

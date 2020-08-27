@@ -90,7 +90,7 @@ public class HttpPostActionTest {
     @Mock
     private Logger mockLogger;
     @Mock
-    private HttpPostConfig mockHttpPostConfigurationProvider;
+    private HttpPostConfig mockHttpPostConfig;
     @Mock
     private Factory mockFactory;
     @Mock
@@ -113,11 +113,11 @@ public class HttpPostActionTest {
 
     @Before
     public void setUp() {
-        when(mockHttpPostConfigurationProvider.getUrl()).thenReturn(HTTP_LOCALHOST);
-        when(mockHttpPostConfigurationProvider.getPollPercent()).thenReturn(Integer.toString(ONE_HUNDRED_PERCENT));
+        when(mockHttpPostConfig.getUrl()).thenReturn(HTTP_LOCALHOST);
+        when(mockHttpPostConfig.getPollPercent()).thenReturn(Integer.toString(ONE_HUNDRED_PERCENT));
         final Printer realPrinter = JsonFormat.printer().omittingInsignificantWhitespace();
         httpPostExternalAction = new HttpPostAction(realPrinter, mockContentCollector, mockTimersAndCounters,
-                mockLogger, mockHttpPostConfigurationProvider, mockFactory, mockRandom, mockInvalidProtocolBufferExceptionLogger);
+                mockLogger, mockHttpPostConfig, mockFactory, mockRandom, mockInvalidProtocolBufferExceptionLogger);
         factory = new Factory();
         mockServer = ClientAndServer.startClientAndServer(1080);
     }
@@ -125,12 +125,12 @@ public class HttpPostActionTest {
     @After
     public void tearDown() {
         mockServer.stop();
-        verify(mockHttpPostConfigurationProvider, times(wantedNumberOfInvocationsUrl)).getUrl();
-        verify(mockHttpPostConfigurationProvider, times(wantedNumberOfInvocationsPollPercent)).getPollPercent();
+        verify(mockHttpPostConfig, times(wantedNumberOfInvocationsUrl)).getUrl();
+        verify(mockHttpPostConfig, times(wantedNumberOfInvocationsPollPercent)).getPollPercent();
         String msg = String.format(STARTUP_MESSAGE, HTTP_LOCALHOST, ONE_HUNDRED_PERCENT);
         verify(mockLogger, times(wantedNumberOfInvocationsInfo)).info(msg);
         verifyNoMoreInteractions(mockPrinter, mockContentCollector, mockTimersAndCounters,
-                mockLogger, mockHttpPostConfigurationProvider, mockFactory, mockRandom,
+                mockLogger, mockHttpPostConfig, mockFactory, mockRandom,
                 mockInvalidProtocolBufferExceptionLogger);
         verifyNoMoreInteractions(mockStopwatch, mockHttpURLConnection, mockOutputStream);
     }
@@ -154,7 +154,7 @@ public class HttpPostActionTest {
     public void testApplyFilteredOut() {
         wantedNumberOfInvocationsUrl = 1;
         wantedNumberOfInvocationsPollPercent = 2;
-        when(mockHttpPostConfigurationProvider.getPollPercent()).thenReturn("0");
+        when(mockHttpPostConfig.getPollPercent()).thenReturn("0");
 
         httpPostExternalAction.apply(KEY, FULLY_POPULATED_SPAN);
 
@@ -218,7 +218,7 @@ public class HttpPostActionTest {
         when(mockTimersAndCounters.startTimer()).thenReturn(mockStopwatch);
         when(mockFactory.createURL(anyString())).thenReturn(URL_);
         when(mockFactory.createConnection(any(URL.class))).thenReturn(mockHttpURLConnection);
-        when(mockHttpPostConfigurationProvider.getHeaders()).thenReturn(HEADERS);
+        when(mockHttpPostConfig.getHeaders()).thenReturn(HEADERS);
 
         httpPostExternalAction.apply(KEY, FULLY_POPULATED_SPAN);
         httpPostExternalAction.apply(KEY, FULLY_POPULATED_SPAN);
@@ -236,7 +236,7 @@ public class HttpPostActionTest {
         verify(mockHttpURLConnection).setRequestProperty(
                 "Content-Length", Integer.toString(JSON_SPAN_STRING_WITH_FLATTENED_TAGS.length()));
         verify(mockHttpURLConnection).setDoOutput(true);
-        verify(mockHttpPostConfigurationProvider).getHeaders();
+        verify(mockHttpPostConfig).getHeaders();
         for (Map.Entry<String, String> header : HEADERS.entrySet()) {
             verify(mockHttpURLConnection).setRequestProperty(header.getKey(), header.getValue());
         }
@@ -249,7 +249,7 @@ public class HttpPostActionTest {
         wantedNumberOfInvocationsPollPercent = 2;
         wantedNumberOfInvocationsInfo = 2;
         httpPostExternalAction = new HttpPostAction(mockPrinter, mockContentCollector, mockTimersAndCounters,
-                mockLogger, mockHttpPostConfigurationProvider, mockFactory, mockRandom,
+                mockLogger, mockHttpPostConfig, mockFactory, mockRandom,
                 mockInvalidProtocolBufferExceptionLogger);
         final InvalidProtocolBufferException exception = new InvalidProtocolBufferException(EXCEPTION_MESSAGE);
         when(mockPrinter.print(any(Span.class))).thenThrow(exception);

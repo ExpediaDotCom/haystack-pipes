@@ -202,14 +202,14 @@ class SpringConfig {
 
     @Bean
     @Autowired
-    String url(FirehoseConfig firehoseConfigurationProvider) {
-        return firehoseConfigurationProvider.getUrl();
+    String url(FirehoseConfig firehoseConfig) {
+        return firehoseConfig.getUrl();
     }
 
     @Bean
     @Autowired
-    String signingregion(FirehoseConfig firehoseConfigurationProvider) {
-        return firehoseConfigurationProvider.getSigningRegion();
+    String signingregion(FirehoseConfig firehoseConfig) {
+        return firehoseConfig.getSigningRegion();
     }
 
     @Bean
@@ -260,7 +260,7 @@ class SpringConfig {
     }
 
     @Bean
-    FirehoseConfig firehoseConfigurationProvider() {
+    FirehoseConfig firehoseConfig() {
         return ProjectConfiguration.getInstance().getFirehoseConfig();
     }
 
@@ -313,14 +313,14 @@ class SpringConfig {
                                                         FirehoseTimersAndCounters firehoseTimersAndCounters,
                                                         Supplier<Batch> batch,
                                                         FirehoseProcessor.Factory firehoseProcessorFactory,
-                                                        FirehoseConfig firehoseConfigurationProvider,
+                                                        FirehoseConfig firehoseConfig,
                                                         S3Sender s3Sender) {
         return new FirehoseProcessorSupplier(firehoseProcessorLogger, firehoseTimersAndCounters, batch,
-                firehoseProcessorFactory, firehoseConfigurationProvider, s3Sender);
+                firehoseProcessorFactory, firehoseConfig, s3Sender);
     }
 
     @Bean
-    KafkaConsumerConfig kafkaConfigurationProvider() {
+    KafkaConsumerConfig kafkaConsumerConfig() {
         return ProjectConfiguration.getInstance().getKafkaConsumerConfig();
     }
 

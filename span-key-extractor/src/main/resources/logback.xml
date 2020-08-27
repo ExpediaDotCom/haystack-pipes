@@ -13,7 +13,7 @@
         <host>${HAYSTACK_GRAPHITE_HOST}</host>
         <subsystem>span-key-extractors</subsystem>
     </appender>
-    <logger name="com.expedia.www.haystack.pipes.commons.key.extractor.loader.SpanKeyExtractorLoader" additivity="false"
+    <logger name="com.expedia.www.haystack.pipes.key.extractor.loader.SpanKeyExtractorLoader" additivity="false"
             level="INFO">
         <appender-ref ref="STDOUT"/><!-- Display start up message without flooding logs with other info messages -->
     </logger>

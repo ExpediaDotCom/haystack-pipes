@@ -48,7 +48,7 @@ public class FirehoseProcessor implements SpanProcessor {
     private final FirehoseTimersAndCounters firehoseTimersAndCounters;
     private final Batch batch;
     private final Factory factory;
-    private final FirehoseConfig firehoseConfigurationProvider;
+    private final FirehoseConfig firehoseConfig;
     private final S3Sender s3Sender;
     private final List<BatchRecords> batchRecords;
     private final Semaphore semaphore;
@@ -59,16 +59,16 @@ public class FirehoseProcessor implements SpanProcessor {
                       FirehoseTimersAndCounters firehoseTimersAndCounters,
                       Supplier<Batch> batch,
                       Factory firehoseProcessorFactory,
-                      FirehoseConfig firehoseConfigurationProvider,
+                      FirehoseConfig firehoseConfig,
                       S3Sender s3Sender) {
         this.firehoseTimersAndCounters = firehoseTimersAndCounters;
         this.batch = batch.get();
         this.factory = firehoseProcessorFactory;
-        this.firehoseConfigurationProvider = firehoseConfigurationProvider;
+        this.firehoseConfig = firehoseConfig;
         this.s3Sender = s3Sender;
-        firehoseProcessorLogger.info(String.format(STARTUP_MESSAGE, firehoseConfigurationProvider.getStreamName()));
+        firehoseProcessorLogger.info(String.format(STARTUP_MESSAGE, firehoseConfig.getStreamName()));
 
-        final int maxParallelism = firehoseConfigurationProvider.getMaxParallelISMPerShard();
+        final int maxParallelism = firehoseConfig.getMaxParallelISMPerShard();
         this.semaphore = factory.createSemaphore(maxParallelism);
         this.batchRecords = new ArrayList<>(maxParallelism);
     }
@@ -94,8 +94,8 @@ public class FirehoseProcessor implements SpanProcessor {
 
         final RetryCalculator retryCalculator =
                 factory.createRetryCalculator(
-                        firehoseConfigurationProvider.getInitialRetrySleep(),
-                        firehoseConfigurationProvider.getMaxRetrySleep());
+                        firehoseConfig.getInitialRetrySleep(),
+                        firehoseConfig.getMaxRetrySleep());
 
         final Sleeper sleeper = factory.createSleeper();
         final Callback callback = factory.createCallback(batch, semaphore);

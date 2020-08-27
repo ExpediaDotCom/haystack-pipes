@@ -24,41 +24,41 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class FirehoseConfigurationProviderTest {
-    private FirehoseConfig firehoseConfigurationProvider;
+public class FirehoseConfigTest {
+    private FirehoseConfig firehoseConfig;
 
     @Before
     public void setUp() {
-        firehoseConfigurationProvider = ProjectConfiguration.getInstance().getFirehoseConfig();
+        firehoseConfig = ProjectConfiguration.getInstance().getFirehoseConfig();
     }
 
     @Test
     public void testInitialRetrySleep() {
-        assertEquals(42, firehoseConfigurationProvider.getInitialRetrySleep());
+        assertEquals(42, firehoseConfig.getInitialRetrySleep());
     }
 
     @Test
     public void testMaxRetrySleep() {
-        assertEquals(5000, firehoseConfigurationProvider.getMaxRetrySleep());
+        assertEquals(5000, firehoseConfig.getMaxRetrySleep());
     }
 
     @Test
     public void testUrl() {
-        assertEquals("https://firehose.us-west-2.amazonaws.com", firehoseConfigurationProvider.getUrl());
+        assertEquals("https://firehose.us-west-2.amazonaws.com", firehoseConfig.getUrl());
     }
 
     @Test
     public void testUseStringBuffering() {
-        assertTrue(firehoseConfigurationProvider.isUseStringBuffering());
+        assertTrue(firehoseConfig.isUseStringBuffering());
     }
 
     @Test
     public void testMaxBatchInterval() {
-        assertEquals(0, firehoseConfigurationProvider.getMaxBatchInterval());
+        assertEquals(0, firehoseConfig.getMaxBatchInterval());
     }
 
     @Test
     public void testStreamName() {
-        assertEquals("haystack-traces-test", firehoseConfigurationProvider.getStreamName());
+        assertEquals("haystack-traces-test", firehoseConfig.getStreamName());
     }
 }

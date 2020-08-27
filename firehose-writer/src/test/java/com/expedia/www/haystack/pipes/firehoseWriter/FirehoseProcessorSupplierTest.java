@@ -39,7 +39,7 @@ public class FirehoseProcessorSupplierTest {
     @Mock
     private Batch mockBatch;
     @Mock
-    private FirehoseConfig mockFirehoseConfigurationProvider;
+    private FirehoseConfig mockFirehoseConfig;
     @Mock
     private FirehoseTimersAndCounters mockFirehoseCountersAndTimer;
     @Mock
@@ -57,13 +57,13 @@ public class FirehoseProcessorSupplierTest {
     public void setUp() {
         firehoseProcessorSupplier = new FirehoseProcessorSupplier(mockFirehoseProcessorLogger,
                 mockFirehoseCountersAndTimer, () -> mockBatch, mockFirehoseProcessorFactory,
-                mockFirehoseConfigurationProvider, mockS3Sender);
+                mockFirehoseConfig, mockS3Sender);
     }
 
     @After
     public void tearDown() {
         verifyNoMoreInteractions(mockBatch);
-        verifyNoMoreInteractions(mockFirehoseConfigurationProvider);
+        verifyNoMoreInteractions(mockFirehoseConfig);
         verifyNoMoreInteractions(mockFirehoseCountersAndTimer);
         verifyNoMoreInteractions(mockFirehoseProcessorFactory);
         verifyNoMoreInteractions(mockFirehoseProcessorLogger);
@@ -73,13 +73,13 @@ public class FirehoseProcessorSupplierTest {
 
     @Test
     public void testGet() {
-        when(mockFirehoseConfigurationProvider.getStreamName()).thenReturn(STREAM_NAME);
-        when(mockFirehoseConfigurationProvider.getMaxParallelISMPerShard()).thenReturn(MAX_PARALLELISM_PER_SHARD);
+        when(mockFirehoseConfig.getStreamName()).thenReturn(STREAM_NAME);
+        when(mockFirehoseConfig.getMaxParallelISMPerShard()).thenReturn(MAX_PARALLELISM_PER_SHARD);
 
         assertNotNull(firehoseProcessorSupplier.get());
 
-        verify(mockFirehoseConfigurationProvider).getStreamName();
-        verify(mockFirehoseConfigurationProvider).getMaxParallelISMPerShard();
+        verify(mockFirehoseConfig).getStreamName();
+        verify(mockFirehoseConfig).getMaxParallelISMPerShard();
         verify(mockFirehoseProcessorLogger).info(String.format(STARTUP_MESSAGE, STREAM_NAME));
         verify(mockFirehoseProcessorFactory).createSemaphore(MAX_PARALLELISM_PER_SHARD);
     }

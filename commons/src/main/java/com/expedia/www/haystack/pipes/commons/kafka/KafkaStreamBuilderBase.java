@@ -14,37 +14,37 @@ public abstract class KafkaStreamBuilderBase implements KafkaStreamBuilder, Main
     private final KafkaStreamStarter kafkaStreamStarter;
     private final SerdeFactory serdeFactory;
     private final String application;
-    private final KafkaConsumerConfig kafkaConfigurationProvider;
+    private final KafkaConsumerConfig kafkaConsumerConfig;
     private final ForeachAction<String, Span> foreachAction;
     private final ProcessorSupplier<String, Span> processorSupplier;
 
     public KafkaStreamBuilderBase(KafkaStreamStarter kafkaStreamStarter,
                                   SerdeFactory serdeFactory,
                                   String application,
-                                  KafkaConsumerConfig kafkaConfigurationProvider,
+                                  KafkaConsumerConfig kafkaConsumerConfig,
                                   ForeachAction<String, Span> foreachAction) {
-        this(kafkaStreamStarter, serdeFactory, application, kafkaConfigurationProvider, foreachAction, null);
+        this(kafkaStreamStarter, serdeFactory, application, kafkaConsumerConfig, foreachAction, null);
 
     }
 
     public KafkaStreamBuilderBase(KafkaStreamStarter kafkaStreamStarter,
                                   SerdeFactory serdeFactory,
                                   String application,
-                                  KafkaConsumerConfig kafkaConfigurationProvider,
+                                  KafkaConsumerConfig kafkaConsumerConfig,
                                   ProcessorSupplier<String, Span> processorSupplier) {
-        this(kafkaStreamStarter, serdeFactory, application, kafkaConfigurationProvider, null, processorSupplier);
+        this(kafkaStreamStarter, serdeFactory, application, kafkaConsumerConfig, null, processorSupplier);
     }
 
     private KafkaStreamBuilderBase(KafkaStreamStarter kafkaStreamStarter,
                                    SerdeFactory serdeFactory,
                                    String application,
-                                   KafkaConsumerConfig kafkaConfigurationProvider,
+                                   KafkaConsumerConfig kafkaConsumerConfig,
                                    ForeachAction<String, Span> foreachAction,
                                    ProcessorSupplier<String, Span> processorSupplier) {
         this.kafkaStreamStarter = kafkaStreamStarter;
         this.serdeFactory = serdeFactory;
         this.application = application;
-        this.kafkaConfigurationProvider = kafkaConfigurationProvider;
+        this.kafkaConsumerConfig = kafkaConsumerConfig;
         this.foreachAction = foreachAction;
         this.processorSupplier = processorSupplier;
     }
@@ -53,7 +53,7 @@ public abstract class KafkaStreamBuilderBase implements KafkaStreamBuilder, Main
     public void buildStreamTopology(KStreamBuilder kStreamBuilder) {
         final Serde<String> stringSerde = Serdes.String();
         final Serde<Span> spanSerde = serdeFactory.createJsonProtoSpanSerde(application);
-        final String fromTopic = kafkaConfigurationProvider.getFromTopic();
+        final String fromTopic = kafkaConsumerConfig.getFromTopic();
         final KStream<String, Span> stream = kStreamBuilder.stream(stringSerde, spanSerde, fromTopic);
         if (foreachAction != null) {
             stream.foreach(foreachAction);

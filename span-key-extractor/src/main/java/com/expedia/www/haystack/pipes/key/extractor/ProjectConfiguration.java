@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.commons.key.extractor;
+package com.expedia.www.haystack.pipes.key.extractor;
 
 import com.expedia.www.haystack.commons.config.ConfigurationLoader;
 import com.typesafe.config.Config;
@@ -34,9 +34,8 @@ public class ProjectConfiguration {
     private final String directory;
 
     public ProjectConfiguration() {
-        String configFilePath = (null == System.getenv("EXTRACTOR_CONFIG_PATH")) ? "config/extractors.conf" : System.getenv("EXTRACTOR_CONFIG_PATH");
-        Config config = ConfigurationLoader.loadConfigFileWithEnvOverrides(configFilePath, Optional.empty().toString());
-        logger.info("loaded config: {}", config);
+        Config config = ConfigurationLoader.loadConfigFileWithEnvOverrides("config/base.conf", Optional.empty().toString());
+        logger.debug("loaded config: {}", config);
         haystackConf = config.getConfig(Constants.HAYSTACK_KEY);
         directory = haystackConf.getString(Constants.DIRECTORY_KEY);
 

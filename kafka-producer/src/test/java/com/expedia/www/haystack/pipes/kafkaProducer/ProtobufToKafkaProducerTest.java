@@ -48,7 +48,7 @@ public class ProtobufToKafkaProducerTest {
     @Mock
     private ProduceIntoExternalKafkaAction mockProduceIntoExternalKafkaAction;
     @Mock
-    private KafkaConsumerConfig mockKafkaConfigurationProvider;
+    private KafkaConsumerConfig mockKafkaConsumerConfig;
     @Mock
     private KStreamBuilder mockKStreamBuilder;
     @Mock
@@ -61,13 +61,13 @@ public class ProtobufToKafkaProducerTest {
     @Before
     public void setUp() {
         protobufToFirehoseProducer = new ProtobufToKafkaProducer(
-                mockKafkaStreamStarter, mockSerdeFactory, mockProduceIntoExternalKafkaAction, mockKafkaConfigurationProvider);
+                mockKafkaStreamStarter, mockSerdeFactory, mockProduceIntoExternalKafkaAction, mockKafkaConsumerConfig);
     }
 
     @After
     public void tearDown() {
         verifyNoMoreInteractions(mockKafkaStreamStarter, mockSerdeFactory, mockProduceIntoExternalKafkaAction,
-                mockKafkaConfigurationProvider, mockKStreamBuilder, mockKStream, mockSpanSerde);
+                mockKafkaConsumerConfig, mockKStreamBuilder, mockKStream, mockSpanSerde);
     }
 
     @Test
@@ -81,14 +81,14 @@ public class ProtobufToKafkaProducerTest {
     @Test
     public void testBuildStreamTopology() {
         when(mockSerdeFactory.createJsonProtoSpanSerde(anyString())).thenReturn(mockSpanSerde);
-        when(mockKafkaConfigurationProvider.getFromTopic()).thenReturn(FROM_TOPIC);
+        when(mockKafkaConsumerConfig.getFromTopic()).thenReturn(FROM_TOPIC);
         when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
                 .thenReturn(mockKStream);
 
         protobufToFirehoseProducer.buildStreamTopology(mockKStreamBuilder);
 
         verify(mockSerdeFactory).createJsonProtoSpanSerde(APPLICATION);
-        verify(mockKafkaConfigurationProvider).getFromTopic();
+        verify(mockKafkaConsumerConfig).getFromTopic();
         verify(mockKStreamBuilder).stream(any(Serdes.StringSerde.class), eq(mockSpanSerde), eq(FROM_TOPIC));
         verify(mockKStream).foreach(mockProduceIntoExternalKafkaAction);
     }

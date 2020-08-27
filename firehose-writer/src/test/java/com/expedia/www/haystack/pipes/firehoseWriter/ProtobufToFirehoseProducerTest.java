@@ -39,7 +39,7 @@ public class ProtobufToFirehoseProducerTest {
     @Mock
     private FirehoseProcessorSupplier mockFirehoseProcessorSupplier;
     @Mock
-    private KafkaConsumerConfig mockKafkaConfigurationProvider;
+    private KafkaConsumerConfig mockKafkaConsumerConfig;
 
     private ProtobufToFirehoseProducer protobufToFirehoseProducer;
 
@@ -52,7 +52,7 @@ public class ProtobufToFirehoseProducerTest {
     @After
     public void tearDown() {
         verifyNoMoreInteractions(mockKafkaConsumerStarter, mockFirehoseProcessorSupplier,
-                mockKafkaConfigurationProvider);
+                mockKafkaConsumerConfig);
     }
 
     @Test

@@ -14,10 +14,10 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.commons.key.extractor.loader;
+package com.expedia.www.haystack.pipes.key.extractor.loader;
 
-import com.expedia.www.haystack.pipes.commons.key.extractor.ProjectConfiguration;
-import com.expedia.www.haystack.pipes.commons.key.extractor.SpanKeyExtractor;
+import com.expedia.www.haystack.pipes.key.extractor.ProjectConfiguration;
+import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

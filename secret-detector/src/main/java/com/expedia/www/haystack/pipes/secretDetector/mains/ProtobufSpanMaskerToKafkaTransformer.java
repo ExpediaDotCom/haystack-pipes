@@ -35,7 +35,7 @@ import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATIO
 public class ProtobufSpanMaskerToKafkaTransformer implements KafkaStreamBuilder, Main {
     private final KafkaStreamStarter kafkaStreamStarter;
     private final SerdeFactory serdeFactory;
-    private final KafkaConsumerConfig kafkaConfigurationProvider = ProjectConfiguration.getInstance().getKafkaConsumerConfig();
+    private final KafkaConsumerConfig kafkaConsumerConfig = ProjectConfiguration.getInstance().getKafkaConsumerConfig();
     private final SpanSecretMasker spanSecretMasker;
 
     @Autowired
@@ -56,11 +56,11 @@ public class ProtobufSpanMaskerToKafkaTransformer implements KafkaStreamBuilder,
     public void buildStreamTopology(KStreamBuilder kStreamBuilder) {
         final KStream<String, Span> stream = kStreamBuilder.stream(
                 serdeFactory.createStringSerde(), serdeFactory.createProtoProtoSpanSerde(APPLICATION),
-                kafkaConfigurationProvider.getFromTopic());
+                kafkaConsumerConfig.getFromTopic());
 
         stream.mapValues(spanSecretMasker).to(
                 serdeFactory.createStringSerde(), serdeFactory.createProtoProtoSpanSerde(APPLICATION),
-                kafkaConfigurationProvider.getToTopic());
+                kafkaConsumerConfig.getToTopic());
     }
 
 }

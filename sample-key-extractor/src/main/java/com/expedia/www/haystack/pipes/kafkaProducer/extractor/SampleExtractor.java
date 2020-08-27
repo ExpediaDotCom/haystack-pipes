@@ -17,7 +17,7 @@
 package com.expedia.www.haystack.pipes.kafkaProducer.extractor;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.pipes.commons.key.extractor.SpanKeyExtractor;
+import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.typesafe.config.Config;
@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class SampleExtractor implements SpanKeyExtractor {
 
@@ -43,13 +44,13 @@ public class SampleExtractor implements SpanKeyExtractor {
     }
 
     @Override
-    public String extract(Span span) {
+    public Optional<String> extract(Span span) {
         try {
-            return jsonPrinter.print(span);
+            return Optional.of(jsonPrinter.print(span));
         } catch (InvalidProtocolBufferException e) {
             logger.error("Exception occurred while extracting span: " + e.getMessage());
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override

@@ -35,7 +35,7 @@ import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.APPLICATI
 public class ProtobufToJsonTransformer implements KafkaStreamBuilder {
     private final KafkaStreamStarter kafkaStreamStarter;
     private final SerdeFactory serdeFactory;
-    private final KafkaConsumerConfig kafkaConfigurationProvider = ProjectConfiguration.getInstance().getKafkaConsumerConfig();
+    private final KafkaConsumerConfig kafkaConsumerConfig = ProjectConfiguration.getInstance().getKafkaConsumerConfig();
 
     @Autowired
     ProtobufToJsonTransformer(KafkaStreamStarter kafkaStreamStarter,
@@ -57,8 +57,8 @@ public class ProtobufToJsonTransformer implements KafkaStreamBuilder {
         final Serde<Span> spanSerde = serdeFactory.createJsonProtoSpanSerde(APPLICATION);
         final Serde<String> stringSerde = Serdes.String();
         final KStream<String, Span> stream = kStreamBuilder.stream(
-                stringSerde, spanSerde, kafkaConfigurationProvider.getFromTopic());
-        stream.mapValues(span -> span).to(stringSerde, spanSerde, kafkaConfigurationProvider.getToTopic());
+                stringSerde, spanSerde, kafkaConsumerConfig.getFromTopic());
+        stream.mapValues(span -> span).to(stringSerde, spanSerde, kafkaConsumerConfig.getToTopic());
     }
 
 }
