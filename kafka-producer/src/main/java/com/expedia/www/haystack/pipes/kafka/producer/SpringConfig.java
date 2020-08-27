@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.kafka.producer;
 
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.Timers;
@@ -40,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SPAN_ARRIVAL_TIMER_NAME;
 import static com.expedia.www.haystack.pipes.commons.CommonConstants.SUBSYSTEM;
-import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
 
 @Configuration
 @ComponentScan(basePackageClasses = SpringConfig.class)
@@ -60,13 +59,13 @@ public class SpringConfig {
     // Beans with unit tests ///////////////////////////////////////////////////////////////////////////////////////////
     @Bean
     Counter produceIntoExternalKafkaActionRequestCounter() {
-        return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
+        return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, Constants.APPLICATION,
                 ProduceIntoExternalKafkaAction.class.getSimpleName(), "REQUEST");
     }
 
     @Bean
     Counter postsInFlightCounter() {
-        return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, APPLICATION,
+        return metricObjects.createAndRegisterResettingCounter(SUBSYSTEM, Constants.APPLICATION,
                 ProduceIntoExternalKafkaAction.class.getSimpleName(), "POSTS_IN_FLIGHT");
     }
 
@@ -88,7 +87,7 @@ public class SpringConfig {
     @Bean
     @Autowired
     KafkaStreamStarter kafkaStreamStarter(final HealthController healthController) {
-        return new KafkaStreamStarter(ProtobufToKafkaProducer.class, APPLICATION, healthController);
+        return new KafkaStreamStarter(ProtobufToKafkaProducer.class, Constants.APPLICATION, healthController);
     }
 
     @Bean
@@ -100,13 +99,13 @@ public class SpringConfig {
 
     @Bean
     Timer kafkaProducerPost() {
-        return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
+        return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, Constants.APPLICATION,
                 ProduceIntoExternalKafkaAction.class.getSimpleName(), "KAFKA_PRODUCER_POST", TimeUnit.MICROSECONDS);
     }
 
     @Bean
     Timer spanArrivalTimer() {
-        return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, APPLICATION,
+        return metricObjects.createAndRegisterBasicTimer(SUBSYSTEM, Constants.APPLICATION,
                 ProduceIntoExternalKafkaAction.class.getSimpleName(), SPAN_ARRIVAL_TIMER_NAME, TimeUnit.MILLISECONDS);
     }
 

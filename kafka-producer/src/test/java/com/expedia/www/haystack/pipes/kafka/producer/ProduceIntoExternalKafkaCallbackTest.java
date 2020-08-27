@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.kafka.producer;
 
 import com.expedia.www.haystack.pipes.commons.Timers;
 import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
@@ -34,11 +34,8 @@ import org.slf4j.Logger;
 import java.time.Clock;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.COUNTERS_AND_TIMER;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.OBJECT_POOL;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.DEBUG_MSG;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.ERROR_MSG_TEMPLATE;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaCallback.POOL_ERROR_MSG_TEMPLATE;
+import static com.expedia.www.haystack.pipes.kafka.producer.ProduceIntoExternalKafkaAction.COUNTERS_AND_TIMER;
+import static com.expedia.www.haystack.pipes.kafka.producer.ProduceIntoExternalKafkaAction.OBJECT_POOL;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -134,7 +131,7 @@ public class ProduceIntoExternalKafkaCallbackTest {
         doThrow(testException).when(mockObjectPool).returnObject(any(ProduceIntoExternalKafkaCallback.class));
 
         produceIntoExternalKafkaCallback.onCompletion(null, null);
-        verify(mockLogger).error(String.format(POOL_ERROR_MSG_TEMPLATE, testException.getMessage()), testException);
+        verify(mockLogger).error(String.format(ProduceIntoExternalKafkaCallback.POOL_ERROR_MSG_TEMPLATE, testException.getMessage()), testException);
         commonVerifiesForOnCompletion();
     }
 
@@ -148,7 +145,7 @@ public class ProduceIntoExternalKafkaCallbackTest {
             produceIntoExternalKafkaCallback.onCompletion(null, testException);
         } catch(Throwable e) {
             assertSame(runtimeException, e);
-            verify(mockLogger).error(String.format(ERROR_MSG_TEMPLATE, testException.getMessage()), testException);
+            verify(mockLogger).error(String.format(ProduceIntoExternalKafkaCallback.ERROR_MSG_TEMPLATE, testException.getMessage()), testException);
             commonVerifiesForOnCompletion();
         }
     }
@@ -170,7 +167,7 @@ public class ProduceIntoExternalKafkaCallbackTest {
         produceIntoExternalKafkaCallback.onCompletion(recordMetadata, null);
 
         verify(mockLogger).isDebugEnabled();
-        verify(mockLogger).debug(String.format(DEBUG_MSG, TOPIC, PARTITION, BASE_OFFSET));
+        verify(mockLogger).debug(String.format(ProduceIntoExternalKafkaCallback.DEBUG_MSG, TOPIC, PARTITION, BASE_OFFSET));
         commonVerifiesForOnCompletion();
     }
 
@@ -181,7 +178,7 @@ public class ProduceIntoExternalKafkaCallbackTest {
         produceIntoExternalKafkaCallback.onCompletion(null, mockException);
 
         verify(mockException).getMessage();
-        verify(mockLogger).error(String.format(ERROR_MSG_TEMPLATE, MESSAGE), mockException);
+        verify(mockLogger).error(String.format(ProduceIntoExternalKafkaCallback.ERROR_MSG_TEMPLATE, MESSAGE), mockException);
         commonVerifiesForOnCompletion();
     }
 

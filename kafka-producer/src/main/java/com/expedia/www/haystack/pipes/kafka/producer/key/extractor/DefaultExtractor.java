@@ -14,12 +14,13 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaProducer.extractor;
+package com.expedia.www.haystack.pipes.kafka.producer.key.extractor;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import com.netflix.servo.util.VisibleForTesting;
 import com.typesafe.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,23 +29,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class SampleExtractor implements SpanKeyExtractor {
+public class DefaultExtractor implements SpanKeyExtractor {
 
-    private final JsonFormat.Printer jsonPrinter = JsonFormat.printer();
-    private static final Logger logger = LoggerFactory.getLogger("SampleExtractor");
+    @VisibleForTesting
+    static Logger logger = LoggerFactory.getLogger(DefaultExtractor.class);
+    private String key;
+    private List<String> topics = new ArrayList<>();
+    @VisibleForTesting
+    static JsonFormat.Printer jsonPrinter = JsonFormat.printer().omittingInsignificantWhitespace();
 
     @Override
     public String name() {
-        return "SampleExtractor";
+        return "DefaultExtractor";
     }
 
     @Override
     public void configure(Config config) {
         logger.debug("{} got config: {}", name(), config);
+        topics.addAll(config.getStringList("topics"));
     }
 
     @Override
     public Optional<String> extract(Span span) {
+        key = span.getTraceId();
         try {
             return Optional.of(jsonPrinter.print(span));
         } catch (InvalidProtocolBufferException e) {
@@ -55,12 +62,12 @@ public class SampleExtractor implements SpanKeyExtractor {
 
     @Override
     public String getKey() {
-        return "dummy-key";
+        return key;
     }
 
     @Override
     public List<String> getTopics() {
-        return new ArrayList<>();
+        return topics;
     }
 
 }

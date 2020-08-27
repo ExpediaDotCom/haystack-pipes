@@ -14,9 +14,9 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.kafka.producer;
 
-import com.expedia.www.haystack.pipes.kafkaProducer.KafkaProducerIsActiveController.Factory;
+import com.expedia.www.haystack.pipes.kafka.producer.KafkaProducerIsActiveController.Factory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +28,7 @@ import org.springframework.boot.SpringApplication;
 
 import java.util.Set;
 
-import static com.expedia.www.haystack.pipes.kafkaProducer.KafkaProducerIsActiveController.STARTUP_MSG;
+import static com.expedia.www.haystack.pipes.kafka.producer.KafkaProducerIsActiveController.STARTUP_MSG;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.verify;

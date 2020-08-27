@@ -28,6 +28,9 @@ secret-detector:
 span-key-extractor:
 	mvn package -DfinalName=span-key-extractor -pl span-key-extractor -am
 
+sample-key-extractor:
+	mvn package -DfinalName=sample-key-extractor -pl sample-key-extractor -am
+
 # build all and release
 release: clean span-key-extractor json-transformer kafka-producer http-poster firehose-writer secret-detector
 	cd json-transformer && $(MAKE) release

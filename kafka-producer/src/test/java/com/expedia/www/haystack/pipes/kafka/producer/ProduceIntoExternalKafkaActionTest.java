@@ -14,12 +14,12 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.kafka.producer;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
 import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaProducerConfig;
-import com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.*;
+import com.expedia.www.haystack.pipes.kafka.producer.ProduceIntoExternalKafkaAction.*;
 import com.netflix.servo.monitor.Stopwatch;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 import java.util.Map;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.*;
-import static com.expedia.www.haystack.pipes.kafkaProducer.ProduceIntoExternalKafkaAction.*;
+import static com.expedia.www.haystack.pipes.kafka.producer.ProduceIntoExternalKafkaAction.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;

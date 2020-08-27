@@ -16,7 +16,8 @@
  */
 package com.expedia.www.haystack.pipes.key.extractor.loader;
 
-import com.expedia.www.haystack.pipes.key.extractor.ProjectConfiguration;
+import com.expedia.www.haystack.pipes.commons.kafka.config.ProjectConfiguration;
+import com.expedia.www.haystack.pipes.commons.kafka.config.SpanKeyExtractorConfig;
 import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,12 +34,12 @@ public class SpanKeyExtractorLoader {
 
     private static SpanKeyExtractorLoader spanKeyExtractorLoader = null;
     private static final Logger logger = LoggerFactory.getLogger("SpanKeyExtractorLoader");
-    private ProjectConfiguration projectConfiguration;
+    private final SpanKeyExtractorConfig spanKeyExtractorConfig;
     private List<SpanKeyExtractor> spanKeyExtractorList;
     private ServiceLoader<SpanKeyExtractor> serviceLoader;
 
     private SpanKeyExtractorLoader() {
-        projectConfiguration = new ProjectConfiguration();
+        spanKeyExtractorConfig = ProjectConfiguration.getInstance().getKafkaProducerConfig().getSpanKeyExtractorConfig();
         spanKeyExtractorList = new ArrayList<>();
     }
 
@@ -51,8 +52,9 @@ public class SpanKeyExtractorLoader {
     }
 
     private void loadFiles() {
+
         try {
-            final File[] extractorFile = new File(projectConfiguration.getDirectory()).listFiles();
+            final File[] extractorFile = new File(spanKeyExtractorConfig.getDirectory()).listFiles();
             if (extractorFile != null) {
                 final List<URL> urls = new ArrayList<>();
                 for (final File file : extractorFile) {
@@ -72,10 +74,10 @@ public class SpanKeyExtractorLoader {
         if (spanKeyExtractorList.isEmpty() && this.serviceLoader != null) {
             serviceLoader.forEach(spanKeyExtractor -> {
                 try {
-                    spanKeyExtractor.configure(projectConfiguration.getSpanExtractorConfigs()
+                    spanKeyExtractor.configure(spanKeyExtractorConfig.getExtractorConfig()
                             .getOrDefault(spanKeyExtractor.name(), null));
                     spanKeyExtractorList.add(spanKeyExtractor);
-                    logger.debug("Extractor class is loaded: {}, at path: {}", spanKeyExtractor.name(), projectConfiguration.getDirectory());
+                    logger.debug("Extractor class is loaded: {}, at path: {}", spanKeyExtractor.name(), spanKeyExtractorConfig.getDirectory());
                 } catch (Exception e) {
                     logger.error("Failed to load Span Extractor, Exception: {}", e.getMessage());
                 }

@@ -70,6 +70,11 @@
             <groupId>com.typesafe</groupId>
             <artifactId>config</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.expedia.www</groupId>
+            <artifactId>span-key-extractor</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
 
         <!-- Test dependencies -->
@@ -98,7 +103,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.expedia.www.haystack.pipes.kafkaProducer.KafkaProducerIsActiveController</mainClass>
+                    <mainClass>com.expedia.www.haystack.pipes.kafka.producer.KafkaProducerIsActiveController</mainClass>
                 </configuration>
             </plugin>
         </plugins>
