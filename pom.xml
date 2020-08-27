@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -16,7 +16,8 @@
         <url>http://github.com/ExpediaDotCom/haystack-pipes</url>
     </scm>
 
-    <description>Packages to send ("pipe") Haystack data to external sinks (like AWS Firehose or another Kafka queue)</description>
+    <description>Packages to send ("pipe") Haystack data to external sinks (like AWS Firehose or another Kafka queue)
+    </description>
     <url>https://github.com/ExpediaDotCom/haystack-pipes/tree/master</url>
 
     <licenses>
@@ -73,7 +74,7 @@
         <guava.version>19.0</guava.version>
         <jacoco-maven-plugin.version>0.8.0</jacoco-maven-plugin.version>
         <jacoco-percentage>1.0</jacoco-percentage>
-        <jackson.version>2.9.9</jackson.version>
+        <jackson.version>2.11.0</jackson.version>
         <java.version>1.8</java.version>
         <javax-mail.version>1.4.7</javax-mail.version>
         <javax-activation.version>1.1.1</javax-activation.version>
@@ -91,7 +92,7 @@
         <servo.version>0.12.17</servo.version>
         <slf4j.version>1.7.25</slf4j.version>
         <spring-boot-plugins.version>1.5.9.RELEASE</spring-boot-plugins.version>
-        <spring-context.version>4.3.13.RELEASE</spring-context.version>
+        <spring-context.version>5.2.6.RELEASE</spring-context.version>
         <zookeeper.version>3.4.9</zookeeper.version>
         <skipGpg>true</skipGpg>
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
@@ -99,11 +100,13 @@
 
     <modules>
         <module>commons</module>
+        <module>span-key-extractor</module>
         <module>firehose-writer</module>
         <module>http-poster</module>
         <module>json-transformer</module>
         <module>kafka-producer</module>
         <module>secret-detector</module>
+        <module>sample-key-extractor</module>
     </modules>
 
     <dependencyManagement>

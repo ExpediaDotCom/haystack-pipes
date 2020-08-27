@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- encoder default type is ch.qos.logback.classic.encoder.PatternLayoutEncoder-->
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %level [%thread] %X{requestid} %logger{10} "%msg" %replace(%ex){'[\n]+',
+                '\\n'}%nopex%n
+            </pattern>
+        </encoder>
+    </appender>
+    <appender name="EmitToGraphiteLogbackAppender"
+              class="com.expedia.www.haystack.metrics.appenders.logback.EmitToGraphiteLogbackAppender">
+        <host>${HAYSTACK_GRAPHITE_HOST}</host>
+        <subsystem>span-key-extractors</subsystem>
+    </appender>
+    <logger name="com.expedia.www.haystack.pipes.key.extractor.loader.SpanKeyExtractorLoader" additivity="false"
+            level="INFO">
+        <appender-ref ref="STDOUT"/><!-- Display start up message without flooding logs with other info messages -->
+    </logger>
+    <logger name="com.netflix.servo.publish.graphite.GraphiteMetricObserver" additivity="false" level="INFO">
+        <appender-ref ref="STDOUT"/><!-- Display start up message without flooding logs with other info messages -->
+    </logger>
+    <root level="HAYSTACK_LOG_LEVEL:-ERROR">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="EmitToGraphiteLogbackAppender"/>
+    </root>
+</configuration>
