@@ -19,7 +19,6 @@ package com.expedia.www.haystack.pipes.firehoseWriter;
 import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.kafka.SpanProcessor;
-import com.expedia.www.haystack.pipes.commons.kafka.config.FirehoseConfig;
 import com.netflix.servo.util.VisibleForTesting;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.TopicPartition;
@@ -48,27 +47,27 @@ public class FirehoseProcessor implements SpanProcessor {
     private final FirehoseTimersAndCounters firehoseTimersAndCounters;
     private final Batch batch;
     private final Factory factory;
-    private final FirehoseConfig firehoseConfig;
+    private final FirehoseConfigurationProvider firehoseConfigurationProvider;
     private final S3Sender s3Sender;
+    private TopicPartition topicPartition;
     private final List<BatchRecords> batchRecords;
     private final Semaphore semaphore;
-    private TopicPartition topicPartition;
 
     @Autowired
     FirehoseProcessor(Logger firehoseProcessorLogger,
                       FirehoseTimersAndCounters firehoseTimersAndCounters,
                       Supplier<Batch> batch,
                       Factory firehoseProcessorFactory,
-                      FirehoseConfig firehoseConfig,
+                      FirehoseConfigurationProvider firehoseConfigurationProvider,
                       S3Sender s3Sender) {
         this.firehoseTimersAndCounters = firehoseTimersAndCounters;
         this.batch = batch.get();
         this.factory = firehoseProcessorFactory;
-        this.firehoseConfig = firehoseConfig;
+        this.firehoseConfigurationProvider = firehoseConfigurationProvider;
         this.s3Sender = s3Sender;
-        firehoseProcessorLogger.info(String.format(STARTUP_MESSAGE, firehoseConfig.getStreamName()));
+        firehoseProcessorLogger.info(String.format(STARTUP_MESSAGE, firehoseConfigurationProvider.streamname()));
 
-        final int maxParallelism = firehoseConfig.getMaxParallelISMPerShard();
+        final int maxParallelism = firehoseConfigurationProvider.maxparallelismpershard();
         this.semaphore = factory.createSemaphore(maxParallelism);
         this.batchRecords = new ArrayList<>(maxParallelism);
     }
@@ -94,8 +93,8 @@ public class FirehoseProcessor implements SpanProcessor {
 
         final RetryCalculator retryCalculator =
                 factory.createRetryCalculator(
-                        firehoseConfig.getInitialRetrySleep(),
-                        firehoseConfig.getMaxRetrySleep());
+                        firehoseConfigurationProvider.initialretrysleep(),
+                        firehoseConfigurationProvider.maxretrysleep());
 
         final Sleeper sleeper = factory.createSleeper();
         final Callback callback = factory.createCallback(batch, semaphore);
@@ -187,7 +186,6 @@ public class FirehoseProcessor implements SpanProcessor {
         private final long offset;
         private final List<Record> records;
         private final AtomicBoolean isCompleted;
-
         BatchRecords(List<Record> records, long offset) {
             this.records = records;
             this.offset = offset;

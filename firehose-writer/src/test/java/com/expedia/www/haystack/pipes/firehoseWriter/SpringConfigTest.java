@@ -21,7 +21,6 @@ import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConsumerStarter;
-import com.expedia.www.haystack.pipes.commons.kafka.config.FirehoseConfig;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
 import org.junit.After;
@@ -52,7 +51,7 @@ public class SpringConfigTest {
     @Mock
     private MetricObjects mockMetricObjects;
     @Mock
-    private FirehoseConfig mockFirehoseConfig;
+    private FirehoseConfigurationProvider mockFirehoseConfigurationProvider;
     @Mock
     private Timer mockTimer;
     @Mock
@@ -69,7 +68,7 @@ public class SpringConfigTest {
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockMetricObjects, mockFirehoseConfig, mockTimer, mockCounter,
+        verifyNoMoreInteractions(mockMetricObjects, mockFirehoseConfigurationProvider, mockTimer, mockCounter,
                 mockHealthController);
     }
 
@@ -234,22 +233,22 @@ public class SpringConfigTest {
 
     @Test
     public void testUrl() {
-        when(mockFirehoseConfig.getUrl()).thenReturn(URL);
+        when(mockFirehoseConfigurationProvider.url()).thenReturn(URL);
 
-        final String url = springConfig.url(mockFirehoseConfig);
+        final String url = springConfig.url(mockFirehoseConfigurationProvider);
 
         assertEquals(URL, url);
-        verify(mockFirehoseConfig).getUrl();
+        verify(mockFirehoseConfigurationProvider).url();
     }
 
     @Test
     public void testSigningRegion() {
-        when(mockFirehoseConfig.getSigningRegion()).thenReturn(SIGNING_REGION);
+        when(mockFirehoseConfigurationProvider.signingregion()).thenReturn(SIGNING_REGION);
 
-        final String signingRegion = springConfig.signingregion(mockFirehoseConfig);
+        final String signingRegion = springConfig.signingregion(mockFirehoseConfigurationProvider);
 
         assertEquals(SIGNING_REGION, signingRegion);
-        verify(mockFirehoseConfig).getSigningRegion();
+        verify(mockFirehoseConfigurationProvider).signingregion();
     }
 
     @Test

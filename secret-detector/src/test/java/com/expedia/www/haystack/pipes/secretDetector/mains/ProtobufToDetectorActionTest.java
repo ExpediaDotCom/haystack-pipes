@@ -17,8 +17,8 @@
 package com.expedia.www.haystack.pipes.secretDetector.mains;
 
 import com.expedia.open.tracing.Span;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
-import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import com.expedia.www.haystack.pipes.secretDetector.DetectorAction;
 import org.apache.kafka.common.serialization.Serde;
@@ -35,8 +35,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATION;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProtobufToDetectorActionTest {
@@ -49,7 +53,7 @@ public class ProtobufToDetectorActionTest {
     @Mock
     private DetectorAction mockDetectorAction;
     @Mock
-    private KafkaConsumerConfig mockKafkaConsumerConfig;
+    private KafkaConfigurationProvider mockKafkaConfigurationProvider;
     @Mock
     private KStreamBuilder mockKStreamBuilder;
     @Mock
@@ -62,13 +66,13 @@ public class ProtobufToDetectorActionTest {
     @Before
     public void setUp() {
         protobufToDetectorAction = new ProtobufToDetectorAction(
-                mockKafkaStreamStarter, mockSerdeFactory, mockDetectorAction, mockKafkaConsumerConfig);
+                mockKafkaStreamStarter, mockSerdeFactory, mockDetectorAction, mockKafkaConfigurationProvider);
     }
 
     @After
     public void tearDown() {
         verifyNoMoreInteractions(mockKafkaStreamStarter, mockSerdeFactory, mockDetectorAction,
-                mockKafkaConsumerConfig, mockKStreamBuilder, mockKStream, mockSpanSerde);
+                mockKafkaConfigurationProvider, mockKStreamBuilder, mockKStream, mockSpanSerde);
     }
 
     @Test
@@ -82,14 +86,14 @@ public class ProtobufToDetectorActionTest {
     @Test
     public void testBuildStreamTopology() {
         when(mockSerdeFactory.createJsonProtoSpanSerde(anyString())).thenReturn(mockSpanSerde);
-        when(mockKafkaConsumerConfig.getFromTopic()).thenReturn(FROM_TOPIC);
+        when(mockKafkaConfigurationProvider.fromtopic()).thenReturn(FROM_TOPIC);
         when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
                 .thenReturn(mockKStream);
 
         protobufToDetectorAction.buildStreamTopology(mockKStreamBuilder);
 
         verify(mockSerdeFactory).createJsonProtoSpanSerde(APPLICATION);
-        verify(mockKafkaConsumerConfig).getFromTopic();
+        verify(mockKafkaConfigurationProvider).fromtopic();
         verify(mockKStreamBuilder).stream(any(Serdes.StringSerde.class), eq(mockSpanSerde), eq(FROM_TOPIC));
         verify(mockKStream).foreach(mockDetectorAction);
     }

@@ -18,7 +18,6 @@ package com.expedia.www.haystack.pipes.firehoseWriter;
 
 import com.amazonaws.services.kinesisfirehose.model.Record;
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.pipes.commons.kafka.config.FirehoseConfig;
 import com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.Factory;
 import com.netflix.servo.monitor.Stopwatch;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -39,7 +38,9 @@ import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommon
 import static com.expedia.www.haystack.pipes.firehoseWriter.FirehoseProcessor.STARTUP_MESSAGE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -56,7 +57,7 @@ public class FirehoseProcessorTest {
     @Mock
     private Factory mockFactory;
     @Mock
-    private FirehoseConfig mockFirehoseConfig;
+    private FirehoseConfigurationProvider mockFirehoseConfigurationProvider;
     @Mock
     private FirehoseTimersAndCounters mockFirehoseCountersAndTimer;
     @Mock
@@ -88,24 +89,24 @@ public class FirehoseProcessorTest {
 
     @Before
     public void setUp() {
-        when(mockFirehoseConfig.getStreamName()).thenReturn(STREAM_NAME);
-        when(mockFirehoseConfig.getMaxParallelISMPerShard()).thenReturn(MAX_PARALLELISM_PER_SHARD);
+        when(mockFirehoseConfigurationProvider.streamname()).thenReturn(STREAM_NAME);
+        when(mockFirehoseConfigurationProvider.maxparallelismpershard()).thenReturn(MAX_PARALLELISM_PER_SHARD);
         when(mockFactory.createSemaphore(anyInt())).thenReturn(mockSemaphore);
         firehoseProcessor = new FirehoseProcessor(mockLogger, mockFirehoseCountersAndTimer, () -> mockBatch,
-                mockFactory, mockFirehoseConfig, mockS3Sender);
+                mockFactory, mockFirehoseConfigurationProvider, mockS3Sender);
         factory = new Factory();
         sleeper = factory.createSleeper();
     }
 
     @After
     public void tearDown() {
-        verify(mockFirehoseConfig, times(wantedNumberOfInvocationsStreamName)).getStreamName();
-        verify(mockFirehoseConfig, times(numberOfTimesConstructorWasCalled)).getMaxParallelISMPerShard();
+        verify(mockFirehoseConfigurationProvider, times(wantedNumberOfInvocationsStreamName)).streamname();
+        verify(mockFirehoseConfigurationProvider, times(numberOfTimesConstructorWasCalled)).maxparallelismpershard();
         verify(mockFactory, times(numberOfTimesConstructorWasCalled)).createSemaphore(MAX_PARALLELISM_PER_SHARD);
         verify(mockLogger, times(numberOfTimesConstructorWasCalled)).info(String.format(STARTUP_MESSAGE, STREAM_NAME));
         verifyNoMoreInteractions(mockBatch);
         verifyNoMoreInteractions(mockFactory);
-        verifyNoMoreInteractions(mockFirehoseConfig);
+        verifyNoMoreInteractions(mockFirehoseConfigurationProvider);
         verifyNoMoreInteractions(mockFirehoseCountersAndTimer);
         verifyNoMoreInteractions(mockFirehoseProcessor);
         verifyNoMoreInteractions(mockRecordList);
@@ -153,7 +154,7 @@ public class FirehoseProcessorTest {
         when(mockFactory.createSemaphore(anyInt())).thenReturn(mockSemaphore);
         when(mockFactory.currentThread()).thenReturn(mockThread);
         firehoseProcessor = new FirehoseProcessor(mockLogger, mockFirehoseCountersAndTimer, () -> mockBatch,
-                mockFactory, mockFirehoseConfig, mockS3Sender);
+                mockFactory, mockFirehoseConfigurationProvider, mockS3Sender);
         commonWhensForTestApply();
         doThrow(INTERRUPTED_EXCEPTION).when(mockSemaphore).acquire();
 
@@ -180,8 +181,8 @@ public class FirehoseProcessorTest {
         when(mockRecordList.isEmpty()).thenReturn(false);
         when(mockFirehoseCountersAndTimer.startTimer()).thenReturn(mockStopwatch);
         when(mockFactory.createSleeper()).thenReturn(mockSleeper);
-        when(mockFirehoseConfig.getInitialRetrySleep()).thenReturn(INITIAL_RETRY_SLEEP);
-        when(mockFirehoseConfig.getMaxRetrySleep()).thenReturn(MAX_RETRY_SLEEP);
+        when(mockFirehoseConfigurationProvider.initialretrysleep()).thenReturn(INITIAL_RETRY_SLEEP);
+        when(mockFirehoseConfigurationProvider.maxretrysleep()).thenReturn(MAX_RETRY_SLEEP);
         when(mockFactory.createRetryCalculator(anyInt(), anyInt())).thenReturn(mockRetryCalculator);
     }
 
@@ -190,13 +191,13 @@ public class FirehoseProcessorTest {
         verify(mockBatch).getRecordList(FULLY_POPULATED_SPAN);
         //noinspection ResultOfMethodCallIgnored
         verify(mockRecordList).isEmpty();
-        verify(mockFirehoseConfig, times(configurationTimes)).getMaxRetrySleep();
+        verify(mockFirehoseConfigurationProvider, times(configurationTimes)).maxretrysleep();
         verify(mockFactory, times(configurationTimes)).createRetryCalculator(INITIAL_RETRY_SLEEP, MAX_RETRY_SLEEP);
     }
 
     private void commonVerifiesForTestApplyNotEmpty() {
         verify(mockFactory).createSleeper();
-        verify(mockFirehoseConfig).getInitialRetrySleep();
+        verify(mockFirehoseConfigurationProvider).initialretrysleep();
     }
 
     @Test
@@ -246,7 +247,7 @@ public class FirehoseProcessorTest {
     }
 
 
-    private ConsumerRecord<String, Span> consumerRecord(String key, Span fullyPopulatedSpan) {
+    private ConsumerRecord<String,Span> consumerRecord(String key, Span fullyPopulatedSpan) {
         return new ConsumerRecord<>("topic", 1, 1, key, fullyPopulatedSpan);
     }
 }

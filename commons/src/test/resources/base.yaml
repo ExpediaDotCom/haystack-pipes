@@ -1,0 +1,21 @@
+haystack:
+  kafka:
+     brokers: "localhost"
+     port: 65534
+     fromtopic: "haystack.kafka.fromtopic"
+     totopic: "haystack.kafka.totopic"
+     threadcount: 42
+     sessiontimeout: 15000
+     maxwakeups: 10
+     wakeuptimeoutms: 3000
+     polltimeoutms: 250
+     commitms: 3000
+  pipe:
+    streams:
+      replicationfactor: 2147483645
+  graphite:
+     prefix: "haystack.graphite.prefix"
+     host: "haystack.graphite.host"
+     port: 65535
+     pollintervalseconds: 2147483646
+     queuesize: 2147483647

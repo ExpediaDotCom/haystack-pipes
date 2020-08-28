@@ -17,11 +17,10 @@
 package com.expedia.www.haystack.pipes.jsonTransformer;
 
 import com.expedia.open.tracing.Span;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilder;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
-import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
-import com.expedia.www.haystack.pipes.commons.kafka.config.ProjectConfiguration;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.kstream.KStream;
@@ -35,7 +34,7 @@ import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.APPLICATI
 public class ProtobufToJsonTransformer implements KafkaStreamBuilder {
     private final KafkaStreamStarter kafkaStreamStarter;
     private final SerdeFactory serdeFactory;
-    private final KafkaConsumerConfig kafkaConsumerConfig = ProjectConfiguration.getInstance().getKafkaConsumerConfig();
+    private final KafkaConfigurationProvider kafkaConfigurationProvider = new KafkaConfigurationProvider();
 
     @Autowired
     ProtobufToJsonTransformer(KafkaStreamStarter kafkaStreamStarter,
@@ -57,8 +56,8 @@ public class ProtobufToJsonTransformer implements KafkaStreamBuilder {
         final Serde<Span> spanSerde = serdeFactory.createJsonProtoSpanSerde(APPLICATION);
         final Serde<String> stringSerde = Serdes.String();
         final KStream<String, Span> stream = kStreamBuilder.stream(
-                stringSerde, spanSerde, kafkaConsumerConfig.getFromTopic());
-        stream.mapValues(span -> span).to(stringSerde, spanSerde, kafkaConsumerConfig.getToTopic());
+                stringSerde, spanSerde, kafkaConfigurationProvider.fromtopic());
+        stream.mapValues(span->span).to(stringSerde, spanSerde, kafkaConfigurationProvider.totopic());
     }
 
 }

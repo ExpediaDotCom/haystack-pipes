@@ -17,12 +17,11 @@
 package com.expedia.www.haystack.pipes.secretDetector.mains;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.pipes.commons.kafka.config.ProjectConfiguration;
 import com.expedia.www.haystack.commons.secretDetector.span.SpanDetector;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilder;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.kafka.Main;
-import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -37,13 +36,13 @@ import static com.expedia.www.haystack.pipes.secretDetector.Constants.APPLICATIO
 public class ProtobufSpanToEmailInKafkaTransformer implements KafkaStreamBuilder, Main {
     private final KafkaStreamStarter kafkaStreamStarter;
     private final SerdeFactory serdeFactory;
-    private final KafkaConsumerConfig kafkaConsumerConfig = ProjectConfiguration.getInstance().getKafkaConsumerConfig();
+    private final KafkaConfigurationProvider kafkaConfigurationProvider = new KafkaConfigurationProvider();
     private final SpanDetector spanDetector;
 
     @Autowired
     public ProtobufSpanToEmailInKafkaTransformer(KafkaStreamStarter kafkaStreamStarter,
-                                                 SerdeFactory serdeFactory,
-                                                 SpanDetector springWiredDetector) {
+                                          SerdeFactory serdeFactory,
+                                          SpanDetector springWiredDetector) {
         this.kafkaStreamStarter = kafkaStreamStarter;
         this.serdeFactory = serdeFactory;
         this.spanDetector = springWiredDetector;
@@ -59,7 +58,7 @@ public class ProtobufSpanToEmailInKafkaTransformer implements KafkaStreamBuilder
         final Serde<Span> spanSerde = serdeFactory.createJsonProtoSpanSerde(APPLICATION);
         final Serde<String> stringSerde = Serdes.String();
         final KStream<String, Span> stream = kStreamBuilder.stream(
-                stringSerde, spanSerde, kafkaConsumerConfig.getFromTopic());
-        stream.flatMapValues(spanDetector::apply).to(stringSerde, stringSerde, kafkaConsumerConfig.getToTopic());
+                stringSerde, spanSerde, kafkaConfigurationProvider.fromtopic());
+        stream.flatMapValues(spanDetector::apply).to(stringSerde, stringSerde, kafkaConfigurationProvider.totopic());
     }
 }

@@ -16,11 +16,10 @@
  */
 package com.expedia.www.haystack.pipes.commons.kafka;
 
+import com.expedia.www.haystack.pipes.commons.Configuration;
 import com.expedia.www.haystack.pipes.commons.SystemExitUncaughtExceptionHandler;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.*;
-import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
-import com.expedia.www.haystack.pipes.commons.kafka.config.ProjectConfiguration;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.Factory;
 import com.netflix.servo.publish.PollScheduler;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.streams.KafkaStreams;
@@ -38,8 +37,11 @@ import org.slf4j.Logger;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import static com.expedia.www.haystack.pipes.commons.Configuration.HAYSTACK_KAFKA_CONFIG_PREFIX;
 import static com.expedia.www.haystack.pipes.commons.ConfigurationTest.THREAD_COUNT_CONFIGURATION_IN_TEST_BASE_DOT_YAML;
-import static com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.*;
+import static com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.STARTED_MSG;
+import static com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.STARTING_MSG_WITHOUT_TO_TOPIC;
+import static com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter.STARTING_MSG_WITH_TO_TOPIC;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -73,10 +75,7 @@ public class KafkaStreamStarterTest {
     @Mock
     private ConfigurationProvider mockConfigurationProvider;
     @Mock
-    private KafkaConsumerConfig mockKafkaConsumerConfig;
-
-    @Mock
-    ProjectConfiguration mockProjectConfiguration;
+    private KafkaConfig mockKafkaConfig;
 
     private KafkaStreamStarter kafkaStreamStarter;
 
@@ -98,7 +97,7 @@ public class KafkaStreamStarterTest {
             PollScheduler.getInstance().stop();
         }
         verifyNoMoreInteractions(mockFactory, mockLogger, mockKafkaStreamBuilder, mockKStreamBuilder,
-                mockKafkaStreams, mockSystemExitUncaughtExceptionHandler, mockConfigurationProvider, mockKafkaConsumerConfig);
+                mockKafkaStreams, mockSystemExitUncaughtExceptionHandler, mockConfigurationProvider, mockKafkaConfig);
     }
 
     @Test
@@ -114,23 +113,23 @@ public class KafkaStreamStarterTest {
     @Test
     public void testCreateAndStartStreamWithoutToTopic() {
         commonWhensForCreateAndStartStream();
-        when(mockKafkaConsumerConfig.getFromTopic()).thenReturn(KAFKA_FROM_TOPIC);
-        when(mockKafkaConsumerConfig.getBrokers()).thenReturn(BROKERS);
-        when(mockKafkaConsumerConfig.getPort()).thenReturn(PORT);
-        when(mockKafkaConsumerConfig.getToTopic()).thenReturn(null);
-        KafkaConsumerConfig savedKafkaConsumerConfig = kafkaConsumerconfig;
-        kafkaConsumerconfig = mockKafkaConsumerConfig;
+        when(mockConfigurationProvider.bind(HAYSTACK_KAFKA_CONFIG_PREFIX, KafkaConfig.class)).thenReturn(mockKafkaConfig);
+        when(mockKafkaConfig.fromtopic()).thenReturn(KAFKA_FROM_TOPIC);
+        when(mockKafkaConfig.brokers()).thenReturn(BROKERS);
+        when(mockKafkaConfig.port()).thenReturn(PORT);
+
+        final ConfigurationProvider savedConfigurationProvider = KafkaStreamStarter.CONFIGURATION_PROVIDER;
+        KafkaStreamStarter.CONFIGURATION_PROVIDER = mockConfigurationProvider;
         kafkaStreamStarter.createAndStartStream(mockKafkaStreamBuilder);
-        kafkaConsumerconfig = savedKafkaConsumerConfig;
+        KafkaStreamStarter.CONFIGURATION_PROVIDER = savedConfigurationProvider;
+
         commonVerifiesForCreateAndStartStream();
         verify(mockLogger).info(String.format(STARTING_MSG_WITHOUT_TO_TOPIC, KAFKA_IP_AND_PORT, KAFKA_FROM_TOPIC));
-
-        verify(mockProjectConfiguration, times(0)).getKafkaConsumerConfig();
-        verify(mockKafkaConsumerConfig).getFromTopic();
-        verify(mockKafkaConsumerConfig).getToTopic();
-        verify(mockKafkaConsumerConfig).getBrokers();
-        verify(mockKafkaConsumerConfig).getPort();
-
+        verify(mockConfigurationProvider, times(3)).bind(HAYSTACK_KAFKA_CONFIG_PREFIX, KafkaConfig.class);
+        verify(mockKafkaConfig).fromtopic();
+        verify(mockKafkaConfig).totopic();
+        verify(mockKafkaConfig).brokers();
+        verify(mockKafkaConfig).port();
     }
 
     private void commonWhensForCreateAndStartStream() {

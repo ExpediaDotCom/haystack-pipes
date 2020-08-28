@@ -1,0 +1,30 @@
+haystack:
+  kafka:
+     brokers: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
+     port: 9092 # default Kafka port, rarely overridden, but can be overridden by env variable
+     fromtopic: "proto-spans"
+     totopic: "" # not used but must be specified as empty for shared YAML parsing to work
+     threadcount: 1
+     sessiontimeout: 15000
+     maxwakeups: 10
+     wakeuptimeoutms: 3000
+     polltimeoutms: 250
+     commitms: 3000
+  pipe:
+    streams:
+      replicationfactor: 1
+  graphite:
+     prefix: "haystack"
+     host: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
+     port: 2003 # default Graphite port, rarely overridden, but can be overridden by env variable
+     pollintervalseconds: 300
+     queuesize: 10
+     sendasrate: false
+  httppost:
+    maxbytes: 1572864 # 1.5 MB
+    url: "http://localhost"
+    separator: "\n" # These values for separator, bodyprefix, and bodysuffix
+    bodyprefix: ""  # are appropriate for creating a POST body that consists of
+    bodysuffix: ""  # newline-delimited Span objects with each object in valid JSON
+    headers: "Content-Type=raw"
+    pollpercent: "100"

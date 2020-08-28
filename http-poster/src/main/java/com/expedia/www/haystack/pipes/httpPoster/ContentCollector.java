@@ -16,7 +16,6 @@
  */
 package com.expedia.www.haystack.pipes.httpPoster;
 
-import com.expedia.www.haystack.pipes.commons.kafka.config.HttpPostConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -30,12 +29,12 @@ class ContentCollector {
     private final String bodySuffix;
 
     @Autowired
-    ContentCollector(HttpPostConfig httpPostConfig) {
-        this.maxBytesInPost = Integer.parseInt(httpPostConfig.getMaxBytes());
+    ContentCollector(HttpPostConfigurationProvider httpPostConfigurationProvider) {
+        this.maxBytesInPost = Integer.parseInt(httpPostConfigurationProvider.maxbytes());
         postPayload = new StringBuilder(maxBytesInPost);
-        separator = httpPostConfig.getSeparator();
-        bodyPrefix = httpPostConfig.getBodyPrefix();
-        bodySuffix = httpPostConfig.getBodySuffix();
+        separator = httpPostConfigurationProvider.separator();
+        bodyPrefix = httpPostConfigurationProvider.bodyprefix();
+        bodySuffix = httpPostConfigurationProvider.bodysuffix();
         initialize();
     }
 

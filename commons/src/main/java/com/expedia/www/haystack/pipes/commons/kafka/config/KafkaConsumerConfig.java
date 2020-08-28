@@ -1,6 +1,8 @@
 package com.expedia.www.haystack.pipes.commons.kafka.config;
 
-public class KafkaConsumerConfig {
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfig;
+
+public class KafkaConsumerConfig implements KafkaConfig {
 
     private String brokers;
 
@@ -35,43 +37,54 @@ public class KafkaConsumerConfig {
         this.commitMs = commitMs;
     }
 
-    public String getBrokers() {
+    @Override
+    public String brokers() {
         return this.brokers;
     }
 
-    public int getPort() {
+    @Override
+    public int port() {
         return this.port;
     }
 
-    public String getFromTopic() {
+    @Override
+    public String fromtopic() {
         return this.fromTopic;
     }
 
-    public String getToTopic() {
+    @Override
+    public String totopic() {
         return this.toTopic;
     }
 
-    public int getThreadCount() {
+    @Override
+    public int threadcount() {
         return this.threadCount;
     }
 
-    public int getSessionTimeout() {
+    @Override
+    public int sessiontimeout() {
         return this.sessionTimeout;
     }
 
-    public int getMaxWakeUps() {
+    @Override
+    public int maxwakeups() {
         return this.maxWakeUps;
     }
 
-    public int getWakeUpTimeoutMs() {
+    @Override
+    public int wakeuptimeoutms() {
         return this.wakeUpTimeoutMs;
     }
 
-    public long getPollTimeoutMs() {
+    @Override
+    public long polltimeoutms() {
         return this.pollTimeoutMs;
     }
 
-    public long getCommitMs() {
+    @Override
+    public long commitms() {
         return this.commitMs;
     }
+
 }

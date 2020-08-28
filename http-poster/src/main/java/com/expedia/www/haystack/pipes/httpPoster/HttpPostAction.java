@@ -19,7 +19,6 @@ package com.expedia.www.haystack.pipes.httpPoster;
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
 import com.expedia.www.haystack.pipes.commons.kafka.TagFlattener;
-import com.expedia.www.haystack.pipes.commons.kafka.config.HttpPostConfig;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat.Printer;
 import com.netflix.servo.monitor.Stopwatch;
@@ -57,7 +56,7 @@ class HttpPostAction implements ForeachAction<String, Span> {
     private final ContentCollector contentCollector;
     private final TimersAndCounters timersAndCounters;
     private final Logger httpPostActionLogger;
-    private final HttpPostConfig httpPostConfig;
+    private final HttpPostConfigurationProvider httpPostConfigurationProvider;
     private final Factory factory;
     private final Random random;
     private final InvalidProtocolBufferExceptionLogger invalidProtocolBufferExceptionLogger;
@@ -67,7 +66,7 @@ class HttpPostAction implements ForeachAction<String, Span> {
                    ContentCollector contentCollector,
                    TimersAndCounters timersAndCounters,
                    Logger httpPostActionLogger,
-                   HttpPostConfig httpPostConfig,
+                   HttpPostConfigurationProvider httpPostConfigurationProvider,
                    Factory httpPostActionFactory,
                    Random random,
                    InvalidProtocolBufferExceptionLogger invalidProtocolBufferExceptionLogger) {
@@ -75,13 +74,13 @@ class HttpPostAction implements ForeachAction<String, Span> {
         this.contentCollector = contentCollector;
         this.timersAndCounters = timersAndCounters;
         this.httpPostActionLogger = httpPostActionLogger;
-        this.httpPostConfig = httpPostConfig;
+        this.httpPostConfigurationProvider = httpPostConfigurationProvider;
         this.factory = httpPostActionFactory;
         this.random = random;
         this.invalidProtocolBufferExceptionLogger = invalidProtocolBufferExceptionLogger;
 
         String msg = String.format(STARTUP_MESSAGE,
-                this.httpPostConfig.getUrl(), this.httpPostConfig.getPollPercent());
+                this.httpPostConfigurationProvider.url(), this.httpPostConfigurationProvider.pollpercent());
         this.httpPostActionLogger.info(msg);
     }
 
@@ -89,7 +88,7 @@ class HttpPostAction implements ForeachAction<String, Span> {
     public void apply(String key, Span span) {
         timersAndCounters.incrementRequestCounter();
         timersAndCounters.recordSpanArrivalDelta(span);
-        if(random.nextInt(ONE_HUNDRED_PERCENT) < Integer.parseInt(httpPostConfig.getPollPercent())) {
+        if(random.nextInt(ONE_HUNDRED_PERCENT) < Integer.parseInt(httpPostConfigurationProvider.pollpercent())) {
             timersAndCounters.incrementCounter(FILTERED_IN_COUNTER_INDEX);
             final String batch = getBatch(span);
             if (!StringUtils.isEmpty(batch)) {
@@ -124,7 +123,7 @@ class HttpPostAction implements ForeachAction<String, Span> {
     }
 
     private HttpURLConnection getUrlConnection() throws IOException {
-        final String url = httpPostConfig.getUrl();
+        final String url = httpPostConfigurationProvider.url();
         final URL factoryURL = factory.createURL(url);
         return factory.createConnection(factoryURL);
     }
@@ -139,7 +138,7 @@ class HttpPostAction implements ForeachAction<String, Span> {
 
     private void setHeaders(String batch, HttpURLConnection httpURLConnection) {
         httpURLConnection.setRequestProperty("Content-Length", Integer.toString(batch.length()));
-        for (Map.Entry<String, String> header : httpPostConfig.getHeaders().entrySet()) {
+        for (Map.Entry<String, String> header : httpPostConfigurationProvider.headers().entrySet()) {
             httpURLConnection.setRequestProperty(header.getKey(), header.getValue());
         }
     }

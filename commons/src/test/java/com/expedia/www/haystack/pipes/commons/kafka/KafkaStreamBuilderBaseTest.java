@@ -1,7 +1,6 @@
 package com.expedia.www.haystack.pipes.commons.kafka;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.kstream.ForeachAction;
@@ -19,7 +18,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class KafkaStreamBuilderBaseTest {
@@ -31,7 +32,7 @@ public class KafkaStreamBuilderBaseTest {
     @Mock
     private SerdeFactory mockSerdeFactory;
     @Mock
-    private KafkaConsumerConfig mockKafkaConsumerConfig;
+    private KafkaConfigurationProvider mockKafkaConfigurationProvider;
     @Mock
     private ForeachAction<String, Span> mockForeachAction;
     @Mock
@@ -42,6 +43,23 @@ public class KafkaStreamBuilderBaseTest {
     private Serde<Span> mockSerdeSpan;
     @Mock
     private KStream<String, Span> mockKStream;
+
+    class KafkaStreamBuilderBaseForeachActionImpl extends KafkaStreamBuilderBase {
+        @SuppressWarnings("WeakerAccess")
+        public KafkaStreamBuilderBaseForeachActionImpl() {
+            super(mockKafkaStreamStarter, mockSerdeFactory, APPLICATION, mockKafkaConfigurationProvider,
+                    mockForeachAction);
+        }
+    }
+
+    class KafkaStreamBuilderBaseProcessorSupplierImpl extends KafkaStreamBuilderBase {
+        @SuppressWarnings("WeakerAccess")
+        public KafkaStreamBuilderBaseProcessorSupplierImpl() {
+            super(mockKafkaStreamStarter, mockSerdeFactory, APPLICATION, mockKafkaConfigurationProvider,
+                    mockProcessorSupplier);
+        }
+    }
+
     private KafkaStreamBuilderBase kafkaStreamBuilderBaseForeachAction;
     private KafkaStreamBuilderBase kafkaStreamBuilderBaseProcessorSupplier;
 
@@ -53,7 +71,7 @@ public class KafkaStreamBuilderBaseTest {
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSerdeFactory, mockKafkaConsumerConfig,
+        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSerdeFactory, mockKafkaConfigurationProvider,
                 mockForeachAction, mockKStreamBuilder, mockSerdeSpan, mockKStream);
     }
 
@@ -79,14 +97,14 @@ public class KafkaStreamBuilderBaseTest {
 
     private void whensForBuildStreamTopology() {
         when(mockSerdeFactory.createJsonProtoSpanSerde(anyString())).thenReturn(mockSerdeSpan);
-        when(mockKafkaConsumerConfig.getFromTopic()).thenReturn(FROM_TOPIC);
+        when(mockKafkaConfigurationProvider.fromtopic()).thenReturn(FROM_TOPIC);
         when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
                 .thenReturn(mockKStream);
     }
 
     private void verifiesForBuildStreamTopology() {
         verify(mockSerdeFactory).createJsonProtoSpanSerde(APPLICATION);
-        verify(mockKafkaConsumerConfig).getFromTopic();
+        verify(mockKafkaConfigurationProvider).fromtopic();
         verify(mockKStreamBuilder).stream(Matchers.<Serde<String>>any(), Matchers.<Serde<String>>any(), eq(FROM_TOPIC));
     }
 
@@ -95,21 +113,5 @@ public class KafkaStreamBuilderBaseTest {
         kafkaStreamBuilderBaseForeachAction.main();
 
         verify(mockKafkaStreamStarter).createAndStartStream(kafkaStreamBuilderBaseForeachAction);
-    }
-
-    class KafkaStreamBuilderBaseForeachActionImpl extends KafkaStreamBuilderBase {
-        @SuppressWarnings("WeakerAccess")
-        public KafkaStreamBuilderBaseForeachActionImpl() {
-            super(mockKafkaStreamStarter, mockSerdeFactory, APPLICATION, mockKafkaConsumerConfig,
-                    mockForeachAction);
-        }
-    }
-
-    class KafkaStreamBuilderBaseProcessorSupplierImpl extends KafkaStreamBuilderBase {
-        @SuppressWarnings("WeakerAccess")
-        public KafkaStreamBuilderBaseProcessorSupplierImpl() {
-            super(mockKafkaStreamStarter, mockSerdeFactory, APPLICATION, mockKafkaConsumerConfig,
-                    mockProcessorSupplier);
-        }
     }
 }

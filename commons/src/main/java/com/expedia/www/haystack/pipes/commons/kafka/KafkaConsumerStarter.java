@@ -18,8 +18,6 @@
 package com.expedia.www.haystack.pipes.commons.kafka;
 
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
-import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
-import com.expedia.www.haystack.pipes.commons.kafka.config.ProjectConfiguration;
 import com.netflix.servo.util.VisibleForTesting;
 import org.cfg4j.provider.ConfigurationProvider;
 import org.slf4j.Logger;
@@ -29,17 +27,21 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.expedia.www.haystack.pipes.commons.Configuration.HAYSTACK_KAFKA_CONFIG_PREFIX;
+
 public class KafkaConsumerStarter {
-    static final String STARTED_MSG = "Now started Stream %s";
     @VisibleForTesting
     static Logger logger = LoggerFactory.getLogger(KafkaConsumerStarter.class);
     @VisibleForTesting
     static ConfigurationProvider CONFIGURATION_PROVIDER = new com.expedia.www.haystack.commons.config.Configuration().createMergeConfigurationProvider();
+
+    static final String STARTED_MSG = "Now started Stream %s";
+
+    private final HealthController healthController;
+
     public final Class<?> containingClass;
     public final String clientId;
-    private final HealthController healthController;
     private final List<ConsumerTask> tasks;
-    private static KafkaConsumerConfig kafkaConsumerConfig = ProjectConfiguration.getInstance().getKafkaConsumerConfig();
 
     public KafkaConsumerStarter(Class<?> containingClass,
                                 String clientId,
@@ -51,8 +53,8 @@ public class KafkaConsumerStarter {
     }
 
     public void createAndStartConsumer(SpanProcessorSupplier processorSupplier) {
-        for (int idx = 0; idx <= getThreadCount(); idx++) {
-            final ConsumerTask task = new ConsumerTask(kafkaConsumerConfig, containingClass, processorSupplier, healthController);
+        for(int idx = 0; idx <= getThreadCount(); idx++) {
+            final ConsumerTask task = new ConsumerTask(getKafkaConfig(), containingClass, processorSupplier, healthController);
             this.tasks.add(task);
             final Thread thread = new Thread(task);
             thread.setDaemon(true);
@@ -67,12 +69,16 @@ public class KafkaConsumerStarter {
         tasks.forEach(task -> {
             try {
                 task.close();
-            } catch (IOException ignored) {
-            }
+            } catch (IOException ignored) {}
         });
     }
 
     private int getThreadCount() {
-        return kafkaConsumerConfig.getThreadCount();
+        final KafkaConfig kafkaConfig = getKafkaConfig();
+        return kafkaConfig.threadcount();
+    }
+
+    private static KafkaConfig getKafkaConfig() {
+        return CONFIGURATION_PROVIDER.bind(HAYSTACK_KAFKA_CONFIG_PREFIX, KafkaConfig.class);
     }
 }

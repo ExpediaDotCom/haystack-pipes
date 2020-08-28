@@ -18,7 +18,6 @@ package com.expedia.www.haystack.pipes.firehoseWriter;
 
 import com.expedia.www.haystack.pipes.commons.kafka.SpanProcessor;
 import com.expedia.www.haystack.pipes.commons.kafka.SpanProcessorSupplier;
-import com.expedia.www.haystack.pipes.commons.kafka.config.FirehoseConfig;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -31,7 +30,7 @@ public class FirehoseProcessorSupplier implements SpanProcessorSupplier {
     private final FirehoseTimersAndCounters firehoseTimersAndCounters;
     private final Supplier<Batch> batch;
     private final FirehoseProcessor.Factory firehoseProcessorFactory;
-    private final FirehoseConfig firehoseConfig;
+    private final FirehoseConfigurationProvider firehoseConfigurationProvider;
     private final S3Sender s3Sender;
 
     @Autowired
@@ -39,18 +38,18 @@ public class FirehoseProcessorSupplier implements SpanProcessorSupplier {
                                      FirehoseTimersAndCounters firehoseTimersAndCounters,
                                      Supplier<Batch> batch,
                                      FirehoseProcessor.Factory firehoseProcessorFactory,
-                                     FirehoseConfig firehoseConfig, S3Sender s3Sender) {
+                                     FirehoseConfigurationProvider firehoseConfigurationProvider, S3Sender s3Sender) {
         this.firehoseProcessorLogger = firehoseProcessorLogger;
         this.firehoseTimersAndCounters = firehoseTimersAndCounters;
         this.batch = batch;
         this.firehoseProcessorFactory = firehoseProcessorFactory;
-        this.firehoseConfig = firehoseConfig;
+        this.firehoseConfigurationProvider = firehoseConfigurationProvider;
         this.s3Sender = s3Sender;
     }
 
     @Override
     public SpanProcessor get() {
         return new FirehoseProcessor(firehoseProcessorLogger, firehoseTimersAndCounters, batch,
-                firehoseProcessorFactory, firehoseConfig, s3Sender);
+                firehoseProcessorFactory, firehoseConfigurationProvider, s3Sender);
     }
 }

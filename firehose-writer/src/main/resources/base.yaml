@@ -1,0 +1,32 @@
+haystack:
+  kafka:
+    brokers: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
+    port: 9092 # default Kafka port, rarely overridden, but can be overridden by env variable
+    fromtopic: "proto-spans-scrubbed"
+    totopic: "" # not used but must be specified as empty for shared YAML parsing to work
+    threadcount: 1
+    sessiontimeout: 15000
+    maxwakeups: 10
+    wakeuptimeoutms: 3000
+    polltimeoutms: 250
+    commitms: 3000
+  pipe:
+    streams:
+      replicationfactor: 1
+  graphite:
+    prefix: "haystack"
+    host: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
+    port: 2003 # default Graphite port, rarely overridden, but can be overridden by env variable
+    pollintervalseconds: 60
+    queuesize: 10
+    sendasrate: false
+  firehose:
+    initialretrysleep: 42
+    maxretrysleep: 5000
+    url: "https://firehose.us-west-2.amazonaws.com"
+    streamname: "haystack-traces-test"
+    signingregion: "us-west-2"
+    usestringbuffering: true
+    maxbatchinterval: 0
+    maxparallelismpershard: 10
+

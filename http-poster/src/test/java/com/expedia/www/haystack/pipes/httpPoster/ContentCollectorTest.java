@@ -1,6 +1,5 @@
 package com.expedia.www.haystack.pipes.httpPoster;
 
-import com.expedia.www.haystack.pipes.commons.kafka.config.HttpPostConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -8,9 +7,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static com.expedia.www.haystack.pipes.httpPoster.HttpPostConfigTest.LARGEST_POSSIBLE_MAX_BYTES;
+import static com.expedia.www.haystack.pipes.httpPoster.HttpPostConfigurationProviderTest.LARGEST_POSSIBLE_MAX_BYTES;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContentCollectorTest {
@@ -24,34 +26,34 @@ public class ContentCollectorTest {
     private static final String SEPARATOR = ",";
 
     @Mock
-    private HttpPostConfig mockHttpPostConfig;
+    private HttpPostConfigurationProvider mockHttpPostConfigurationProvider;
 
     private ContentCollector contentCollector;
     private int timesConstructorCalled = 1;
 
     @Before
     public void setUp() {
-        when(mockHttpPostConfig.getMaxBytes()).thenReturn(LARGEST_POSSIBLE_MAX_BYTES);
-        when(mockHttpPostConfig.getSeparator()).thenReturn(SEPARATOR);
-        when(mockHttpPostConfig.getBodyPrefix()).thenReturn(BODY_PREFIX);
-        when(mockHttpPostConfig.getBodySuffix()).thenReturn(BODY_SUFFIX);
-        contentCollector = new ContentCollector(mockHttpPostConfig);
+        when(mockHttpPostConfigurationProvider.maxbytes()).thenReturn(LARGEST_POSSIBLE_MAX_BYTES);
+        when(mockHttpPostConfigurationProvider.separator()).thenReturn(SEPARATOR);
+        when(mockHttpPostConfigurationProvider.bodyprefix()).thenReturn(BODY_PREFIX);
+        when(mockHttpPostConfigurationProvider.bodysuffix()).thenReturn(BODY_SUFFIX);
+        contentCollector = new ContentCollector(mockHttpPostConfigurationProvider);
     }
 
     @After
     public void tearDown() {
-        verify(mockHttpPostConfig, times(timesConstructorCalled)).getMaxBytes();
-        verify(mockHttpPostConfig, times(timesConstructorCalled)).getSeparator();
-        verify(mockHttpPostConfig, times(timesConstructorCalled)).getBodyPrefix();
-        verify(mockHttpPostConfig, times(timesConstructorCalled)).getBodySuffix();
-        verifyNoMoreInteractions(mockHttpPostConfig);
+        verify(mockHttpPostConfigurationProvider, times(timesConstructorCalled)).maxbytes();
+        verify(mockHttpPostConfigurationProvider, times(timesConstructorCalled)).separator();
+        verify(mockHttpPostConfigurationProvider, times(timesConstructorCalled)).bodyprefix();
+        verify(mockHttpPostConfigurationProvider, times(timesConstructorCalled)).bodysuffix();
+        verifyNoMoreInteractions(mockHttpPostConfigurationProvider);
     }
 
     @Test
     public void testAddAndReturnBatchOneRecord() {
         timesConstructorCalled = 2;
-        when(mockHttpPostConfig.getMaxBytes()).thenReturn(Integer.toString(SMALLEST_POSSIBLE_MAX_BYTES));
-        contentCollector = new ContentCollector(mockHttpPostConfig);
+        when(mockHttpPostConfigurationProvider.maxbytes()).thenReturn(Integer.toString(SMALLEST_POSSIBLE_MAX_BYTES));
+        contentCollector = new ContentCollector(mockHttpPostConfigurationProvider);
 
         assertEquals("", contentCollector.addAndReturnBatch(SMALLEST_POSSIBLE_JSON));
         assertEquals('[' + SMALLEST_POSSIBLE_JSON + ']', contentCollector.addAndReturnBatch("."));
@@ -61,8 +63,8 @@ public class ContentCollectorTest {
     public void testAddAndReturnBatchTwoRecords() {
         timesConstructorCalled = 2;
         final String expected = '[' + SMALLEST_POSSIBLE_JSON + ',' + SMALLEST_POSSIBLE_JSON + ']';
-        when(mockHttpPostConfig.getMaxBytes()).thenReturn(Integer.toString(expected.length()));
-        contentCollector = new ContentCollector(mockHttpPostConfig);
+        when(mockHttpPostConfigurationProvider.maxbytes()).thenReturn(Integer.toString(expected.length()));
+        contentCollector = new ContentCollector(mockHttpPostConfigurationProvider);
 
         assertEquals("", contentCollector.addAndReturnBatch(SPACES));
         assertEquals("", contentCollector.addAndReturnBatch(NEW_LINE));
