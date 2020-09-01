@@ -16,54 +16,64 @@
  */
 package com.expedia.www.haystack.pipes.producer;
 
+import com.codahale.metrics.JmxReporter;
+import com.codahale.metrics.MetricRegistry;
+import com.expedia.www.haystack.commons.metrics.MetricsRegistries;
+import com.expedia.www.haystack.pipes.commons.health.HealthController;
+import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
+import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
+import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
+import com.expedia.www.haystack.pipes.key.extractor.loader.SpanKeyExtractorLoader;
+import com.expedia.www.haystack.pipes.producer.key.extractor.JsonExtractor;
 import com.netflix.servo.util.VisibleForTesting;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.stereotype.Component;
+import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.List;
 
-/**
- * A very simple Spring Boot application that is intended to support only a single REST endpoint (index.html)
- * to indicate that the JVM is running.
- */
-@SpringBootApplication
-@Component
-public class Service extends SpringBootServletInitializer {
-    // Singleton, initialized on first constructor call, so that future instances created by Spring during unit tests
-    // will not overwrite the initial INSTANCE (with mocks) created by the unit tests.
+import static com.expedia.www.haystack.pipes.producer.Constants.APPLICATION;
+
+
+public class Service {
+
     @VisibleForTesting
-    static final AtomicReference<Service> INSTANCE = new AtomicReference<>();
-    @VisibleForTesting static final String STARTUP_MSG = "Starting FirehoseIsActiveController";
-
-    private final ProtobufToKafkaProducer protobufToKafkaProducer;
-    private final Factory factory;
-    private final Logger logger;
-
-    @Autowired
-    Service(ProtobufToKafkaProducer protobufToKafkaProducer,
-            Factory kafkaProducerIsActiveControllerFactory,
-            Logger kafkaProducerIsActiveControllerLogger) {
-        this.protobufToKafkaProducer = protobufToKafkaProducer;
-        this.factory = kafkaProducerIsActiveControllerFactory;
-        this.logger = kafkaProducerIsActiveControllerLogger;
-        INSTANCE.compareAndSet(null, this);
-    }
+    static Logger logger = LoggerFactory.getLogger(Service.class);
+    private static final MetricRegistry metricRegistry = MetricsRegistries.metricRegistry();
 
     public static void main(String[] args) {
-        new AnnotationConfigApplicationContext(SpringConfig.class);
-        INSTANCE.get().logger.info(STARTUP_MSG);
-        INSTANCE.get().protobufToKafkaProducer.main();
-        INSTANCE.get().factory.createSpringApplication().run(args);
+        logger.info("Starting KafkaToKafka Producer Pipeline");
+        startService();
     }
 
-    static class Factory {
-        SpringApplication createSpringApplication() {
-            return new SpringApplication(Service.class);
-        }
+    private static void startService() {
+        SerdeFactory serdeFactory = new SerdeFactory();
+        ProjectConfiguration projectConfiguration = ProjectConfiguration.getInstance();
+        KafkaToKafkaPipeline kafkaToKafkaPipeline = prepareKafkaToKafkaPipeline(projectConfiguration);
+        final HealthController healthController = getHealthController();
+        startJmxReporter();
+        KafkaStreamStarter kafkaStreamStarter = new KafkaStreamStarter(ProtobufToKafkaProducer.class, APPLICATION, projectConfiguration.getKafkaConsumerConfig(), healthController);
+        ProtobufToKafkaProducer protobufToKafkaProducer = new ProtobufToKafkaProducer(
+                kafkaStreamStarter, serdeFactory, kafkaToKafkaPipeline, projectConfiguration.getKafkaConsumerConfig());
+        protobufToKafkaProducer.main();
     }
+
+    private static HealthController getHealthController() {
+        final HealthController healthController = new HealthController();
+        healthController.addListener(new UpdateHealthStatusFile("/app/isHealthy"));
+        return healthController;
+    }
+
+
+    private static KafkaToKafkaPipeline prepareKafkaToKafkaPipeline(ProjectConfiguration projectConfiguration) {
+        List<SpanKeyExtractor> spanKeyExtractors = SpanKeyExtractorLoader.getInstance(projectConfiguration.getSpanExtractorConfigs()).getSpanKeyExtractor();
+        spanKeyExtractors.add(new JsonExtractor());// adding default extractor for backward compatibility
+        return new KafkaToKafkaPipeline(metricRegistry, projectConfiguration, spanKeyExtractors);
+    }
+
+    private static void startJmxReporter() {
+        JmxReporter jmxReporter = JmxReporter.forRegistry(metricRegistry).build();
+        jmxReporter.start();
+    }
+
 }

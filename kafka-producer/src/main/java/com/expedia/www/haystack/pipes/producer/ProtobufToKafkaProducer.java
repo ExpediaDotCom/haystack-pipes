@@ -16,21 +16,18 @@
  */
 package com.expedia.www.haystack.pipes.producer;
 
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilderBase;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-@Component
+import static com.expedia.www.haystack.pipes.producer.Constants.APPLICATION;
+
 public class ProtobufToKafkaProducer extends KafkaStreamBuilderBase {
-    @Autowired
-    ProtobufToKafkaProducer(KafkaStreamStarter kafkaStreamStarter,
+    public ProtobufToKafkaProducer(KafkaStreamStarter kafkaStreamStarter,
                             SerdeFactory serdeFactory,
-                            ProduceIntoExternalKafkaAction produceIntoExternalKafkaAction,
+                            KafkaToKafkaPipeline kafkaToKafkaPipeline,
                             KafkaConsumerConfig kafkaConsumerConfig) {
-        super(kafkaStreamStarter, serdeFactory, Constants.APPLICATION, kafkaConsumerConfig, produceIntoExternalKafkaAction);
+        super(kafkaStreamStarter, serdeFactory, APPLICATION, kafkaConsumerConfig, kafkaToKafkaPipeline);
     }
 }

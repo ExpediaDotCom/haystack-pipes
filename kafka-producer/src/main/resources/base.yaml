@@ -1,30 +1,11 @@
 haystack:
-  kafka:
-     brokers: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
-     port: 9092 # default Kafka port, rarely overridden, but can be overridden by env variable
-     fromtopic: "proto-spans"
-     totopic: "" # not used but must be specified as empty for shared YAML parsing to work
-     threadcount: 1
-     sessiontimeout: 15000
-     maxwakeups: 10
-     wakeuptimeoutms: 3000
-     polltimeoutms: 250
-     commitms: 3000
   pipe:
     streams:
       replicationfactor: 1
   graphite:
-     prefix: "haystack"
-     host: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
-     port: 2003 # default Graphite port, rarely overridden, but can be overridden by env variable
-     pollintervalseconds: 300
-     queuesize: 10
-     sendasrate: false
-  externalkafka:
-    brokers: "haystack.local:9092" # will point to external Kafka in typical usage
-    port: 9092
-    totopic: "externalKafkaTopic"
-    acks: "0"
-    batchsize: 16384
-    lingerms: 5
-    buffermemory: 1048576 # 1 Megabyte
+    prefix: "haystack"
+    host: "haystack.local" # set in /etc/hosts per instructions in haystack-deployment package
+    port: 2003 # default Graphite port, rarely overridden, but can be overridden by env variable
+    pollintervalseconds: 300
+    queuesize: 10
+    sendasrate: false

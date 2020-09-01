@@ -33,13 +33,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
-import static com.expedia.www.haystack.pipes.producer.Constants.APPLICATION;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProtobufToKafkaProducerTest {
@@ -50,7 +45,7 @@ public class ProtobufToKafkaProducerTest {
     @Mock
     private SerdeFactory mockSerdeFactory;
     @Mock
-    private ProduceIntoExternalKafkaAction mockProduceIntoExternalKafkaAction;
+    private KafkaToKafkaPipeline mockKafkaToKafkaPipeline;
     @Mock
     private KafkaConsumerConfig mockKafkaConsumerConfig;
     @Mock
@@ -60,25 +55,25 @@ public class ProtobufToKafkaProducerTest {
     @Mock
     private Serde<Span> mockSpanSerde;
 
-    private ProtobufToKafkaProducer protobufToFirehoseProducer;
+    private ProtobufToKafkaProducer protobufToKafkaProducer;
 
     @Before
     public void setUp() {
-        protobufToFirehoseProducer = new ProtobufToKafkaProducer(
-                mockKafkaStreamStarter, mockSerdeFactory, mockProduceIntoExternalKafkaAction, mockKafkaConsumerConfig);
+        protobufToKafkaProducer = new ProtobufToKafkaProducer(
+                mockKafkaStreamStarter, mockSerdeFactory, mockKafkaToKafkaPipeline, mockKafkaConsumerConfig);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSerdeFactory, mockProduceIntoExternalKafkaAction,
+        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSerdeFactory, mockKafkaToKafkaPipeline,
                 mockKafkaConsumerConfig, mockKStreamBuilder, mockKStream, mockSpanSerde);
     }
 
     @Test
     public void testMain() {
-        protobufToFirehoseProducer.main();
+        protobufToKafkaProducer.main();
 
-        verify(mockKafkaStreamStarter).createAndStartStream(protobufToFirehoseProducer);
+        verify(mockKafkaStreamStarter).createAndStartStream(protobufToKafkaProducer);
     }
 
     @SuppressWarnings("Duplicates")
@@ -89,11 +84,11 @@ public class ProtobufToKafkaProducerTest {
         when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
                 .thenReturn(mockKStream);
 
-        protobufToFirehoseProducer.buildStreamTopology(mockKStreamBuilder);
+        protobufToKafkaProducer.buildStreamTopology(mockKStreamBuilder);
 
-        verify(mockSerdeFactory).createJsonProtoSpanSerde(APPLICATION);
+        verify(mockSerdeFactory).createJsonProtoSpanSerde(Constants.APPLICATION);
         verify(mockKafkaConsumerConfig).fromtopic();
         verify(mockKStreamBuilder).stream(any(Serdes.StringSerde.class), eq(mockSpanSerde), eq(FROM_TOPIC));
-        verify(mockKStream).foreach(mockProduceIntoExternalKafkaAction);
+        verify(mockKStream).foreach(mockKafkaToKafkaPipeline);
     }
 }

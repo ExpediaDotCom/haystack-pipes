@@ -6,11 +6,11 @@
             <pattern>%d{HH:mm:ss.SSS} %level [%thread] %X{requestid} %logger{10} "%msg" %replace(%ex){'[\n]+', '\\n'}%nopex%n</pattern>
         </encoder>
     </appender>
-    <appender name="EmitToGraphiteLogbackAppender"
-              class="com.expedia.www.haystack.metrics.appenders.logback.EmitToGraphiteLogbackAppender">
-        <host>${HAYSTACK_GRAPHITE_HOST}</host>
-        <subsystem>pipes-kafka-producer</subsystem>
-    </appender>
+<!--    <appender name="EmitToGraphiteLogbackAppender"-->
+<!--              class="com.expedia.www.haystack.metrics.appenders.logback.EmitToGraphiteLogbackAppender">-->
+<!--        <host>${HAYSTACK_GRAPHITE_HOST}</host>-->
+<!--        <subsystem>pipes-kafka-producer</subsystem>-->
+<!--    </appender>-->
     <logger name="com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter" additivity="false" level="INFO">
         <appender-ref ref="STDOUT" /><!-- Display start up message without flooding logs with other info messages -->
     </logger>
@@ -20,8 +20,8 @@
     <logger name="com.netflix.servo.publish.graphite.GraphiteMetricObserver" additivity="false" level="INFO">
         <appender-ref ref="STDOUT" /><!-- Display start up message without flooding logs with other info messages -->
     </logger>
-    <root level="WARN">
+    <root level="INFO">
         <appender-ref ref="STDOUT" />
-        <appender-ref ref="EmitToGraphiteLogbackAppender" />
+<!--        <appender-ref ref="EmitToGraphiteLogbackAppender" />-->
     </root>
 </configuration>

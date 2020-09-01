@@ -6,6 +6,7 @@ import com.expedia.www.haystack.pipes.commons.kafka.config.SpanKeyExtractorConfi
 import com.expedia.www.haystack.pipes.producer.config.KafkaProducerConfig;
 import com.typesafe.config.Config;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,8 @@ public class ProjectConfiguration {
 
     private static ProjectConfiguration projectConfiguration = null;
     private static KafkaConsumerConfig kafkaConsumerConfig = null;
-    private static KafkaProducerConfig kafkaProducerConfig = null;
+    private static List<KafkaProducerConfig> kafkaProducerConfigs = null;
+    private static List<SpanKeyExtractorConfig> spanKeyExtractorConfigs = null;
     private final Config haystackConfig;
 
     private ProjectConfiguration() {
@@ -43,24 +45,34 @@ public class ProjectConfiguration {
         return kafkaConsumerConfig;
     }
 
-    public KafkaProducerConfig getKafkaProducerConfig() {
-        if (null == kafkaProducerConfig) {
-            Config kafkaConfig = haystackConfig.getConfig("externalkafka");
-            Map<String, Config> extractorConfigMap = new HashMap<>();
-            List<Config> extractorConfigs = (List<Config>) kafkaConfig.getConfigList("extractors");
+    public List<KafkaProducerConfig> getKafkaProducerConfigList() {
+        if (null == kafkaProducerConfigs) {
+            kafkaProducerConfigs = new ArrayList<>();
+            List<Config> kafkaConfigs = (List<Config>) haystackConfig.getConfigList("externalKafkaList");
+            kafkaConfigs.forEach(kafkaConfig -> {
+                List<String> spanKeyExtractorStringList = kafkaConfig.getStringList("extractorList");
+                kafkaProducerConfigs.add(new KafkaProducerConfig(kafkaConfig.getString("brokers"),
+                        kafkaConfig.getInt("port"), kafkaConfig.getString("totopic"),
+                        kafkaConfig.getString("acks"), kafkaConfig.getInt("batchsize"),
+                        kafkaConfig.getInt("lingerms"), kafkaConfig.getInt("buffermemory"),
+                        spanKeyExtractorStringList));
+            });
+        }
+        return kafkaProducerConfigs;
+    }
+
+
+    public Map<String, Config> getSpanExtractorConfigs() {
+        Map<String, Config> extractorConfigMap = new HashMap<>();
+        if (haystackConfig != null) {
+            List<Config> extractorConfigs = (List<Config>) haystackConfig.getConfigList("extractors");
             extractorConfigs.forEach(extractorConfig -> {
                 String name = extractorConfig.getString("name");
                 Config config = extractorConfig.getConfig("config");
                 extractorConfigMap.put(name, config);
             });
-            SpanKeyExtractorConfig spanKeyExtractorConfig = new SpanKeyExtractorConfig(extractorConfigMap);
-            kafkaProducerConfig = new KafkaProducerConfig(kafkaConfig.getString("brokers"),
-                    kafkaConfig.getInt("port"), kafkaConfig.getString("totopic"),
-                    kafkaConfig.getString("acks"), kafkaConfig.getInt("batchsize"),
-                    kafkaConfig.getInt("lingerms"), kafkaConfig.getInt("buffermemory"),
-                    spanKeyExtractorConfig);
         }
-        return kafkaProducerConfig;
+        return extractorConfigMap;
     }
 
 

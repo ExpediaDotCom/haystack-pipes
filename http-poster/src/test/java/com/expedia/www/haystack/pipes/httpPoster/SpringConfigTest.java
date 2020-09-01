@@ -2,6 +2,7 @@ package com.expedia.www.haystack.pipes.httpPoster;
 
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import org.junit.After;
 import org.junit.Before;
@@ -29,6 +30,8 @@ public class SpringConfigTest {
     private MetricObjects mockMetricObjects;
     @Mock
     private HealthController mockHealthController;
+    @Mock
+    private KafkaConfigurationProvider mockKafkaConfigurationProvider;
 
     private SpringConfig springConfig;
 
@@ -76,7 +79,7 @@ public class SpringConfigTest {
 
     @Test
     public void testKafkaStreamStarter() {
-        final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter(mockHealthController);
+        final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter(mockHealthController,mockKafkaConfigurationProvider);
 
         assertSame(ProtobufToHttpPoster.class, kafkaStreamStarter.containingClass);
         assertSame(APPLICATION, kafkaStreamStarter.clientId);

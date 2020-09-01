@@ -2,6 +2,7 @@ package com.expedia.www.haystack.pipes.jsonTransformer;
 
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.HealthStatusListener;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import org.junit.After;
 import org.junit.Before;
@@ -24,6 +25,9 @@ public class SpringConfigTest {
     @Mock
     private HealthController mockHealthController;
 
+    @Mock
+    private KafkaConfigurationProvider mockKafkaConfigurationProvider;
+
     private SpringConfig springConfig;
 
     @Before
@@ -45,7 +49,7 @@ public class SpringConfigTest {
 
     @Test
     public void testKafkaStreamStarter() {
-        final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter(mockHealthController);
+        final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter(mockHealthController,mockKafkaConfigurationProvider);
 
         assertSame(ProtobufToJsonTransformer.class, kafkaStreamStarter.containingClass);
         assertSame(APPLICATION, kafkaStreamStarter.clientId);

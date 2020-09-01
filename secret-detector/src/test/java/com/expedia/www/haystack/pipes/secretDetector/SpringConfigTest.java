@@ -25,6 +25,7 @@ import com.expedia.www.haystack.pipes.commons.Timers;
 import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.HealthStatusListener;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.secretDetector.actions.EmailerDetectedAction;
 import com.expedia.www.haystack.pipes.secretDetector.actions.FromAddressExceptionLogger;
@@ -89,6 +90,8 @@ public class SpringConfigTest {
     private Clock mockClock;
     @Mock
     private Timer mockSpanArrivalTimer;
+    @Mock
+    private KafkaConfigurationProvider mockKafkaConfigurationProvider;
 
     private Timers timers;
     private SpringConfig springConfig;
@@ -175,7 +178,7 @@ public class SpringConfigTest {
 
     @Test
     public void testKafkaStreamStarter() {
-        final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter(mockHealthController);
+        final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter(mockHealthController,mockKafkaConfigurationProvider);
 
         assertSame(ProtobufToDetectorAction.class, kafkaStreamStarter.containingClass);
         assertSame(APPLICATION, kafkaStreamStarter.clientId);

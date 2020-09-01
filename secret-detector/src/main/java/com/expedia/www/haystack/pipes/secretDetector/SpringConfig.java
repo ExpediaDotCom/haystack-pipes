@@ -162,8 +162,8 @@ public class SpringConfig {
 
     @Bean
     @Autowired
-    KafkaStreamStarter kafkaStreamStarter(final HealthController healthController) {
-        return new KafkaStreamStarter(ProtobufToDetectorAction.class, APPLICATION, healthController);
+    KafkaStreamStarter kafkaStreamStarter(final HealthController healthController, KafkaConfigurationProvider kafkaConfigurationProvider) {
+        return new KafkaStreamStarter(ProtobufToDetectorAction.class, APPLICATION, kafkaConfigurationProvider, healthController);
     }
 
     @Bean

@@ -2,6 +2,7 @@ package com.expedia.www.haystack.pipes.jsonTransformer;
 
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
+import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import org.slf4j.Logger;
@@ -23,9 +24,14 @@ public class SpringConfig {
     }
 
     @Bean
+    KafkaConfigurationProvider kafkaConfigurationProvider(){
+        return new KafkaConfigurationProvider();
+    }
+
+    @Bean
     @Autowired
-    KafkaStreamStarter kafkaStreamStarter(final HealthController healthController) {
-        return new KafkaStreamStarter(ProtobufToJsonTransformer.class, APPLICATION, healthController);
+    KafkaStreamStarter kafkaStreamStarter(final HealthController healthController, KafkaConfigurationProvider kafkaConfigurationProvider) {
+        return new KafkaStreamStarter(ProtobufToJsonTransformer.class, APPLICATION,kafkaConfigurationProvider, healthController);
     }
 
     @Bean

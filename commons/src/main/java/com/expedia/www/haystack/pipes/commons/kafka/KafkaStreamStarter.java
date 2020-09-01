@@ -58,13 +58,17 @@ public class KafkaStreamStarter {
     public final Class<? extends KafkaStreamBuilder> containingClass;
     public final String clientId;
     private final StreamsConfig streamsConfig;
+    @VisibleForTesting
+    static KafkaConfig kafkaConfig;
 
     public KafkaStreamStarter(Class<? extends KafkaStreamBuilder> containingClass,
                               String clientId,
+                              KafkaConfig kafkaConfig,
                               HealthController healthController) {
         this.containingClass = containingClass;
         this.clientId = clientId;
         this.healthController = healthController;
+        this.kafkaConfig = kafkaConfig;
         this.streamsConfig = new StreamsConfig(getProperties());
     }
 
@@ -104,22 +108,18 @@ public class KafkaStreamStarter {
     }
 
     private String getIpAnPort() {
-        final KafkaConfig kafkaConfig = getKafkaConfig();
         return kafkaConfig.brokers() + ":" + kafkaConfig.port();
     }
 
     private String getFromTopic() {
-        final KafkaConfig kafkaConfig = getKafkaConfig();
         return kafkaConfig.fromtopic();
     }
 
     private String getToTopic() {
-        final KafkaConfig kafkaConfig = getKafkaConfig();
         return kafkaConfig.totopic();
     }
 
     private int getThreadCount() {
-        final KafkaConfig kafkaConfig = getKafkaConfig();
         return kafkaConfig.threadcount();
     }
 
@@ -130,12 +130,7 @@ public class KafkaStreamStarter {
     }
 
     private int getConsumerSessionTimeout() {
-        final KafkaConfig kafkaConfig = getKafkaConfig();
         return kafkaConfig.sessiontimeout();
-    }
-
-    private static KafkaConfig getKafkaConfig() {
-        return CONFIGURATION_PROVIDER.bind(HAYSTACK_KAFKA_CONFIG_PREFIX, KafkaConfig.class);
     }
 
     static class Factory {

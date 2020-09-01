@@ -71,6 +71,11 @@
             <groupId>com.typesafe</groupId>
             <artifactId>config</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.expedia.www</groupId>
+            <artifactId>span-key-extractor</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <!-- Test dependencies -->
         <dependency>
