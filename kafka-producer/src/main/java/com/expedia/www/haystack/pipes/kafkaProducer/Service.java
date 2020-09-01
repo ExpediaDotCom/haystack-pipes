@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Expedia, Inc.
+ * Copyright 2020 Expedia, Inc.
  *
  *       Licensed under the Apache License, Version 2.0 (the "License");
  *       you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
+import com.expedia.www.haystack.pipes.kafkaProducer.key.extractor.JsonExtractor;
 import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
 import com.expedia.www.haystack.pipes.key.extractor.loader.SpanKeyExtractorLoader;
-import com.expedia.www.haystack.pipes.kafkaProducer.key.extractor.JsonExtractor;
 import com.netflix.servo.util.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,23 +37,36 @@ import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION
 
 public class Service {
 
+    private static final MetricRegistry metricRegistry = MetricsRegistries.metricRegistry();
     @VisibleForTesting
     static Logger logger = LoggerFactory.getLogger(Service.class);
-    private static final MetricRegistry metricRegistry = MetricsRegistries.metricRegistry();
+    @VisibleForTesting
+    static KafkaStreamStarter kafkaStreamStarter;
+    @VisibleForTesting
+    static ProtobufToKafkaProducer protobufToKafkaProducer;
+    private static SerdeFactory serdeFactory;
+    private static ProjectConfiguration projectConfiguration;
+    private static KafkaToKafkaPipeline kafkaToKafkaPipeline;
+    private static HealthController healthController;
 
     public static void main(String[] args) {
         logger.info("Starting KafkaToKafka Producer Pipeline");
+        initialize();
+        startJmxReporter();
         startService();
     }
 
+    private static void initialize() {
+        serdeFactory = new SerdeFactory();
+        projectConfiguration = ProjectConfiguration.getInstance();
+        kafkaToKafkaPipeline = prepareKafkaToKafkaPipeline();
+        healthController = getHealthController();
+    }
+
+
     private static void startService() {
-        SerdeFactory serdeFactory = new SerdeFactory();
-        ProjectConfiguration projectConfiguration = ProjectConfiguration.getInstance();
-        KafkaToKafkaPipeline kafkaToKafkaPipeline = prepareKafkaToKafkaPipeline(projectConfiguration);
-        final HealthController healthController = getHealthController();
-        startJmxReporter();
-        KafkaStreamStarter kafkaStreamStarter = new KafkaStreamStarter(ProtobufToKafkaProducer.class, APPLICATION, projectConfiguration.getKafkaConsumerConfig(), healthController);
-        ProtobufToKafkaProducer protobufToKafkaProducer = new ProtobufToKafkaProducer(
+        kafkaStreamStarter = new KafkaStreamStarter(ProtobufToKafkaProducer.class, APPLICATION, projectConfiguration.getKafkaConsumerConfig(), healthController);
+        protobufToKafkaProducer = new ProtobufToKafkaProducer(
                 kafkaStreamStarter, serdeFactory, kafkaToKafkaPipeline, projectConfiguration.getKafkaConsumerConfig());
         protobufToKafkaProducer.main();
     }
@@ -65,7 +78,7 @@ public class Service {
     }
 
 
-    private static KafkaToKafkaPipeline prepareKafkaToKafkaPipeline(ProjectConfiguration projectConfiguration) {
+    private static KafkaToKafkaPipeline prepareKafkaToKafkaPipeline() {
         List<SpanKeyExtractor> spanKeyExtractors = SpanKeyExtractorLoader.getInstance(projectConfiguration.getSpanExtractorConfigs()).getSpanKeyExtractor();
         spanKeyExtractors.add(new JsonExtractor());// adding default extractor for backward compatibility
         return new KafkaToKafkaPipeline(metricRegistry, projectConfiguration, spanKeyExtractors);

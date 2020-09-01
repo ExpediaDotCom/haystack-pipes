@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Expedia, Inc.
+ * Copyright 2020 Expedia, Inc.
  *
  *       Licensed under the Apache License, Version 2.0 (the "License");
  *       you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@
  */
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
-import com.expedia.www.haystack.pipes.commons.Timers;
-import com.netflix.servo.monitor.Counter;
+import com.codahale.metrics.Counter;
 import com.netflix.servo.monitor.Timer;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -62,9 +61,6 @@ public class KafkaCallbackTest {
     private ObjectPool<KafkaCallback> realObjectPool;
 
     @Mock
-    private Counter mockRequestCounter;
-
-    @Mock
     private Counter mockPostsInFlightCounter;
 
     @Mock
@@ -81,14 +77,13 @@ public class KafkaCallbackTest {
 
     @Before
     public void setUp() {
-        Timers timers = new Timers(mockTimer, mockSpanArrivalTimer);
         injectMockAndSaveRealObjects();
         //noinspection deprecation
         recordMetadata = new RecordMetadata(TOPIC_PARTITION, BASE_OFFSET, RELATIVE_OFFSET, TIMESTAMP, CHECKSUM,
                 SERIALIZED_KEY_SIZE, SERIALIZED_VALUE_SIZE);
         kafkaCallback = new KafkaCallback();
         KafkaCallback.logger = mockLogger;
-
+        KafkaToKafkaPipeline.kafkaProducerCounter = mockPostsInFlightCounter;
     }
 
     private void injectMockAndSaveRealObjects() {
@@ -103,8 +98,6 @@ public class KafkaCallbackTest {
     @After
     public void tearDown() {
         restoreRealObjects();
-//        verifyNoMoreInteractions(mockLogger, mockException, mockObjectPool, mockRequestCounter,
-//                mockTimer, mockClock, mockSpanArrivalTimer);
     }
 
     private void restoreRealObjects() {
@@ -117,15 +110,15 @@ public class KafkaCallbackTest {
         commonVerifiesForOnCompletion();
     }
 
-//    @Test
-//    public void testOnCompletionBothNullReturnToObjectPoolSuccess() throws Exception {
-//        final Exception testException = new Exception("Exception Message");
-//        doThrow(testException).when(mockObjectPool).returnObject(any(KafkaCallback.class));
-//
-//        kafkaCallback.onCompletion(null, null);
-//        verify(mockLogger).error(String.format(KafkaCallback.POOL_ERROR_MSG_TEMPLATE, testException.getMessage()), testException);
-//        commonVerifiesForOnCompletion();
-//    }
+    @Test
+    public void testOnCompletionBothNullReturnToObjectPoolSuccess() throws Exception {
+        final Exception testException = new Exception("Exception Message");
+        doThrow(testException).when(mockObjectPool).returnObject(any(KafkaCallback.class));
+
+        kafkaCallback.onCompletion(null, null);
+        verify(mockLogger).error(String.format(KafkaCallback.POOL_ERROR_MSG_TEMPLATE, testException.getMessage()), testException);
+        commonVerifiesForOnCompletion();
+    }
 
     @Test
     public void testOnCompletionRuntimeExceptionReturnToObjectPoolSuccess() throws Exception {
@@ -175,7 +168,8 @@ public class KafkaCallbackTest {
     }
 
     private void commonVerifiesForOnCompletion() throws Exception {
-//        verify(mockObjectPool).returnObject(kafkaCallback);
+        verify(mockObjectPool).returnObject(kafkaCallback);
+        verify(mockPostsInFlightCounter).inc();
     }
 
 }

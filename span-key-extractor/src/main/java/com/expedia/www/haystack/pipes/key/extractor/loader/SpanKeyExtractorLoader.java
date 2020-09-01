@@ -32,8 +32,8 @@ import java.util.ServiceLoader;
 
 public class SpanKeyExtractorLoader {
 
-    private static SpanKeyExtractorLoader spanKeyExtractorLoader = null;
     private static final Logger logger = LoggerFactory.getLogger("SpanKeyExtractorLoader");
+    private static SpanKeyExtractorLoader spanKeyExtractorLoader = null;
     private Map<String, Config> extractorConfigMap;
     private List<SpanKeyExtractor> spanKeyExtractorList;
     private ServiceLoader<SpanKeyExtractor> serviceLoader;

@@ -25,9 +25,9 @@ import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION
 
 public class ProtobufToKafkaProducer extends KafkaStreamBuilderBase {
     public ProtobufToKafkaProducer(KafkaStreamStarter kafkaStreamStarter,
-                            SerdeFactory serdeFactory,
-                            KafkaToKafkaPipeline kafkaToKafkaPipeline,
-                            KafkaConsumerConfig kafkaConsumerConfig) {
+                                   SerdeFactory serdeFactory,
+                                   KafkaToKafkaPipeline kafkaToKafkaPipeline,
+                                   KafkaConsumerConfig kafkaConsumerConfig) {
         super(kafkaStreamStarter, serdeFactory, APPLICATION, kafkaConsumerConfig, kafkaToKafkaPipeline);
     }
 }

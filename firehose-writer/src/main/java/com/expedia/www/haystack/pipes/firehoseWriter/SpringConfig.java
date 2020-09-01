@@ -123,13 +123,6 @@ class SpringConfig {
                 FirehoseProcessor.class.getName(), SPAN_ARRIVAL_TIMER_NAME, TimeUnit.MILLISECONDS);
     }
 
-
-    @Bean
-    KafkaConfigurationProvider kafkaConfigurationProvider() {
-        return new KafkaConfigurationProvider();
-    }
-
-
     @Bean
     @Autowired
     KafkaConsumerStarter kafkaConsumerStarter(final HealthController healthController, KafkaConfigurationProvider kafkaConfigurationProvider) {
@@ -315,6 +308,11 @@ class SpringConfig {
                                                         S3Sender s3Sender) {
         return new FirehoseProcessorSupplier(firehoseProcessorLogger, firehoseTimersAndCounters, batch,
                 firehoseProcessorFactory, firehoseConfigurationProvider, s3Sender);
+    }
+
+    @Bean
+    KafkaConfigurationProvider kafkaConfigurationProvider() {
+        return new KafkaConfigurationProvider();
     }
 
     @Bean

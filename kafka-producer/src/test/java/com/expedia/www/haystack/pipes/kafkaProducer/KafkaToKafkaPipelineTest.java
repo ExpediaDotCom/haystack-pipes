@@ -1,10 +1,26 @@
-package com.expedia.www.haystack.pipes.producer;
+/*
+ * Copyright 2020 Expedia, Inc.
+ *
+ *       Licensed under the Apache License, Version 2.0 (the "License");
+ *       you may not use this file except in compliance with the License.
+ *       You may obtain a copy of the License at
+ *
+ *           http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *       Unless required by applicable law or agreed to in writing, software
+ *       distributed under the License is distributed on an "AS IS" BASIS,
+ *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *       See the License for the specific language governing permissions and
+ *       limitations under the License.
+ *
+ */
+package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.expedia.www.haystack.pipes.kafkaProducer.key.extractor.JsonExtractor;
 import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
-import com.expedia.www.haystack.pipes.producer.key.extractor.JsonExtractor;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,11 +39,12 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class KafkaToKafkaPipelineTest {
 
-    private KafkaToKafkaPipeline kafkaToKafkaPipeline;
     private static final String TOPIC = RANDOM.nextLong() + "TOPIC";
     private static final String KEY = RANDOM.nextLong() + "KEY";
     private static final String VALUE = RANDOM.nextLong() + "VALUE";
-
+    @Mock
+    Timer.Context mockTimer;
+    private KafkaToKafkaPipeline kafkaToKafkaPipeline;
     @Mock
     private MetricRegistry mockMetricRegistry;
     @Mock
@@ -36,9 +53,6 @@ public class KafkaToKafkaPipelineTest {
     private Logger mockLogger;
     @Mock
     private Timer mockKafkaProducerTimer;
-    @Mock
-    Timer.Context mockTimer;
-
 
     @Before
     public void setUp() throws Exception {

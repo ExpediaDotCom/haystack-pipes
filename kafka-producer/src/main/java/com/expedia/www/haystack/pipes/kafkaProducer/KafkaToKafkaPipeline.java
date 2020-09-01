@@ -21,8 +21,8 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.kafka.TagFlattener;
-import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
 import com.expedia.www.haystack.pipes.kafkaProducer.config.KafkaProducerConfig;
+import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
 import com.netflix.servo.util.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.ObjectPool;
@@ -49,15 +49,15 @@ public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
     static Logger logger = LoggerFactory.getLogger(KafkaToKafkaPipeline.class);
     @VisibleForTesting
     static Factory factory = new KafkaToKafkaPipeline.Factory();
-    private final TagFlattener tagFlattener = new TagFlattener();
-    private final Counter requestCounter;
     @VisibleForTesting
     static Counter kafkaProducerCounter;
+    @VisibleForTesting
+    static Map<KafkaProducer<String, String>, List<SpanKeyExtractor>> kafkaProducerSpanExtractorMap = new HashMap<>();
+    private final TagFlattener tagFlattener = new TagFlattener();
+    private final Counter requestCounter;
     private final Timer kafkaProducerTimer;
     private List<KafkaProducerConfig> kafkaProducerConfigMaps;
     private List<SpanKeyExtractor> spanKeyExtractors;
-    @VisibleForTesting
-    static Map<KafkaProducer<String, String>, List<SpanKeyExtractor>> kafkaProducerSpanExtractorMap = new HashMap<>();
 
     public KafkaToKafkaPipeline(MetricRegistry metricRegistry,
                                 ProjectConfiguration projectConfiguration,
@@ -66,7 +66,7 @@ public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
         this.spanKeyExtractors = spanKeyExtractors;
         this.requestCounter = metricRegistry.counter("REQUEST");
         this.kafkaProducerTimer = metricRegistry.timer("KAFKA_PRODUCER_POST_TIMER");
-        this.kafkaProducerCounter = metricRegistry.counter("KAFKA_PRODUCER_POST_COUNTER");
+        kafkaProducerCounter = metricRegistry.counter("KAFKA_PRODUCER_POST_COUNTER");
     }
 
     @Override
