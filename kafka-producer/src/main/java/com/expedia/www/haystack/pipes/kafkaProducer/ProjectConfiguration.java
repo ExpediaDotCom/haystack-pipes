@@ -1,9 +1,9 @@
-package com.expedia.www.haystack.pipes.producer;
+package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.expedia.www.haystack.commons.config.ConfigurationLoader;
 import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
 import com.expedia.www.haystack.pipes.commons.kafka.config.SpanKeyExtractorConfig;
-import com.expedia.www.haystack.pipes.producer.config.KafkaProducerConfig;
+import com.expedia.www.haystack.pipes.kafkaProducer.config.KafkaProducerConfig;
 import com.typesafe.config.Config;
 
 import java.util.ArrayList;

@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.producer;
+package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.netflix.servo.util.VisibleForTesting;
 import org.apache.kafka.clients.producer.Callback;
@@ -51,7 +51,6 @@ public class KafkaCallback implements Callback {
 
     private void returnObjectToPoolButLogExceptionIfReturnFails() {
         try {
-            //TODO
             KafkaToKafkaPipeline.kafkaProducerCounter.inc();
             KafkaToKafkaPipeline.OBJECT_POOL.returnObject(this);
         } catch (Exception exception) {

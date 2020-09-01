@@ -1,4 +1,4 @@
-package com.expedia.www.haystack.pipes.producer;
+package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;

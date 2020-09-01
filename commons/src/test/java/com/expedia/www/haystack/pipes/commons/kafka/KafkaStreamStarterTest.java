@@ -112,7 +112,6 @@ public class KafkaStreamStarterTest {
     @Test
     public void testCreateAndStartStreamWithoutToTopic() {
         commonWhensForCreateAndStartStream();
-        //when(mockConfigurationProvider.bind(HAYSTACK_KAFKA_CONFIG_PREFIX, KafkaConfig.class)).thenReturn(mockKafkaConfig);
         when(mockKafkaConfig.fromtopic()).thenReturn(KAFKA_FROM_TOPIC);
         when(mockKafkaConfig.brokers()).thenReturn(BROKERS);
         when(mockKafkaConfig.port()).thenReturn(PORT);

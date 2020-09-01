@@ -1,4 +1,4 @@
-package com.expedia.www.haystack.pipes.producer.config;
+package com.expedia.www.haystack.pipes.kafkaProducer.config;
 
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.ProducerConfig;

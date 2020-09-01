@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.producer;
+package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
@@ -22,7 +22,7 @@ import com.codahale.metrics.Timer;
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.kafka.TagFlattener;
 import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
-import com.expedia.www.haystack.pipes.producer.config.KafkaProducerConfig;
+import com.expedia.www.haystack.pipes.kafkaProducer.config.KafkaProducerConfig;
 import com.netflix.servo.util.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.ObjectPool;
@@ -73,7 +73,6 @@ public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
     public void apply(String key, Span value) {
         requestCounter.inc();
         Timer.Context time = kafkaProducerTimer.time();
-        //kafkaProducers = getKafkaProducers(kafkaProducerConfigMaps);
         createKafkaProducersExtractorMap(kafkaProducerConfigMaps);
         kafkaProducerSpanExtractorMap.forEach((kafkaProducer, spanKeyExtractors) -> {
             spanKeyExtractors.forEach(spanKeyExtractor -> {
@@ -90,22 +89,6 @@ public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
                 produceToKafkaTopics(kafkaProducer, kafkaTopics, kafkaKey, msgWithFlattenedTags);
             });
         });
-//        kafkaProducers.stream().forEach(kafkaProducer -> {
-//            kafkaProducerSpanExtractorMap.get(kafkaProducer).forEach(spanKeyExtractor -> {
-//                List<String> kafkaTopics = new ArrayList<>();
-//                final String kafkaKey = getKafkaMessageKey(key, spanKeyExtractor);
-//                String kafkaMsg = getKafkaMessage(value, spanKeyExtractor);
-//                if (StringUtils.isEmpty(kafkaKey)) {
-//                    return;
-//                }
-//                if (spanKeyExtractor != null && spanKeyExtractor.getTopics() != null)
-//                    kafkaTopics.addAll(spanKeyExtractor.getTopics());
-//                logger.info("KafkaProducer sending message: {},with key: {}  ", kafkaMsg, kafkaKey);
-//                String jsonWithFlattenedTags = tagFlattener.flattenTags(kafkaMsg);
-//                produceToKafkaTopics(kafkaProducer, kafkaTopics, kafkaKey, jsonWithFlattenedTags);
-//            });
-//
-//        });
         time.stop();
     }
 
@@ -128,28 +111,6 @@ public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
             }
         });
     }
-
-//    private String getKafkaMessage(Span value, SpanKeyExtractor spanKeyExtractor) {
-//        return spanKeyExtractor.extract(value).get();
-//    }
-//
-//    private String getKafkaMessageKey(String key, SpanKeyExtractor spanKeyExtractor) {
-//        return spanKeyExtractor.getKey();
-//    }
-
-//    private List<KafkaProducer<String, String>> getKafkaProducers(List<KafkaProducerConfig> kafkaProducerConfigMaps) {
-//        List<KafkaProducer<String, String>> kafkaProducerList = new ArrayList<>();
-//        kafkaProducerConfigMaps.forEach(kafkaProducerConfigMap -> {
-//            final KafkaProducer<String, String> kafkaProducer = factory.createKafkaProducer(kafkaProducerConfigMap.getConfigurationMap());
-//            kafkaProducerList.add(kafkaProducer);
-//            List<String> spanExtractorStringList = kafkaProducerConfigMap.getSpanKeyExtractorStringList();
-//            List<SpanKeyExtractor> spanKeyExtractorList = spanKeyExtractors.stream()
-//                    .filter(spanKeyExtractor -> spanExtractorStringList.contains(spanKeyExtractor.name()))
-//                    .collect(Collectors.toList());
-//            kafkaProducerSpanExtractorMap.put(kafkaProducer, spanKeyExtractorList);
-//        });
-//        return kafkaProducerList;
-//    }
 
     private Map<KafkaProducer<String, String>, List<SpanKeyExtractor>> createKafkaProducersExtractorMap(List<KafkaProducerConfig> kafkaProducerConfigMaps) {
         kafkaProducerConfigMaps.forEach(kafkaProducerConfigMap -> {

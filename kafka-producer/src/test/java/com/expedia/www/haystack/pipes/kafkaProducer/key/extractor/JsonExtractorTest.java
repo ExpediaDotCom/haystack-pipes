@@ -1,11 +1,10 @@
-package com.expedia.www.haystack.pipes.producer.key.extractor;
+package com.expedia.www.haystack.pipes.kafkaProducer.key.extractor;
 
 import com.typesafe.config.Config;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 

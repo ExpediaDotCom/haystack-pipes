@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.producer;
+package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
@@ -25,14 +25,14 @@ import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
 import com.expedia.www.haystack.pipes.key.extractor.loader.SpanKeyExtractorLoader;
-import com.expedia.www.haystack.pipes.producer.key.extractor.JsonExtractor;
+import com.expedia.www.haystack.pipes.kafkaProducer.key.extractor.JsonExtractor;
 import com.netflix.servo.util.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-import static com.expedia.www.haystack.pipes.producer.Constants.APPLICATION;
+import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
 
 
 public class Service {

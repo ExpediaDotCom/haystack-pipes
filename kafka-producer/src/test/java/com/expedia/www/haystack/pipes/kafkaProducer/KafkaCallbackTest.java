@@ -14,11 +14,9 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.producer;
+package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.expedia.www.haystack.pipes.commons.Timers;
-import com.expedia.www.haystack.pipes.commons.TimersAndCounters;
-import com.expedia.www.haystack.pipes.producer.KafkaCallback;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Timer;
 import org.apache.commons.pool2.ObjectPool;

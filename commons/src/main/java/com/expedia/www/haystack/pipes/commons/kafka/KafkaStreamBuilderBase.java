@@ -13,7 +13,6 @@ public abstract class KafkaStreamBuilderBase implements KafkaStreamBuilder, Main
     private final KafkaStreamStarter kafkaStreamStarter;
     private final SerdeFactory serdeFactory;
     private final String application;
-//    private final KafkaConfigurationProvider kafkaConfigurationProvider;
     private final KafkaConfig kafkaConfig;
     private final ForeachAction<String, Span> foreachAction;
     private final ProcessorSupplier<String, Span> processorSupplier;

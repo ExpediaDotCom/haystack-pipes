@@ -103,7 +103,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.expedia.www.haystack.pipes.producer.Service</mainClass>
+                    <mainClass>com.expedia.www.haystack.pipes.kafkaProducer.Service</mainClass>
                 </configuration>
             </plugin>
         </plugins>

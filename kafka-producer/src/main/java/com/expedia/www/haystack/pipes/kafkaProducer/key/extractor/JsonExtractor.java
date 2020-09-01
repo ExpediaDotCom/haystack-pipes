@@ -1,4 +1,4 @@
-package com.expedia.www.haystack.pipes.producer.key.extractor;
+package com.expedia.www.haystack.pipes.kafkaProducer.key.extractor;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
