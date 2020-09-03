@@ -21,7 +21,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.kafka.TagFlattener;
-import com.expedia.www.haystack.pipes.kafkaProducer.config.KafkaProducerConfig;
 import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
 import com.netflix.servo.util.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
@@ -34,10 +33,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
     @VisibleForTesting
@@ -51,21 +48,16 @@ public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
     static Factory factory = new KafkaToKafkaPipeline.Factory();
     @VisibleForTesting
     static Counter kafkaProducerCounter;
-    @VisibleForTesting
-    static Map<KafkaProducer<String, String>, List<SpanKeyExtractor>> kafkaProducerSpanExtractorMap = new HashMap<>();
+    static Counter requestCounter;
+    static Timer kafkaProducerTimer;
     private final TagFlattener tagFlattener = new TagFlattener();
-    private final Counter requestCounter;
-    private final Timer kafkaProducerTimer;
-    private List<KafkaProducerConfig> kafkaProducerConfigMaps;
-    private List<SpanKeyExtractor> spanKeyExtractors;
+    private final Map<SpanKeyExtractor, List<KafkaProducer<String, String>>> kafkaProducerMap;
 
     public KafkaToKafkaPipeline(MetricRegistry metricRegistry,
-                                ProjectConfiguration projectConfiguration,
-                                List<SpanKeyExtractor> spanKeyExtractors) {
-        this.kafkaProducerConfigMaps = projectConfiguration.getKafkaProducerConfigList();
-        this.spanKeyExtractors = spanKeyExtractors;
-        this.requestCounter = metricRegistry.counter("REQUEST");
-        this.kafkaProducerTimer = metricRegistry.timer("KAFKA_PRODUCER_POST_TIMER");
+                                Map<SpanKeyExtractor, List<KafkaProducer<String, String>>> kafkaProducerMap) {
+        this.kafkaProducerMap = kafkaProducerMap;
+        requestCounter = metricRegistry.counter("REQUEST");
+        kafkaProducerTimer = metricRegistry.timer("KAFKA_PRODUCER_POST_TIMER");
         kafkaProducerCounter = metricRegistry.counter("KAFKA_PRODUCER_POST_COUNTER");
     }
 
@@ -73,26 +65,25 @@ public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
     public void apply(String key, Span value) {
         requestCounter.inc();
         Timer.Context time = kafkaProducerTimer.time();
-        createKafkaProducersExtractorMap(kafkaProducerConfigMaps);
-        kafkaProducerSpanExtractorMap.forEach((kafkaProducer, spanKeyExtractors) -> {
-            spanKeyExtractors.forEach(spanKeyExtractor -> {
-                List<String> kafkaTopics = new ArrayList<>();
-                final String kafkaKey = spanKeyExtractor.getKey();
-                String kafkaMsg = spanKeyExtractor.extract(value).get();
-                if (StringUtils.isEmpty(kafkaKey)) {
-                    return;
-                }
-                if (spanKeyExtractor != null && spanKeyExtractor.getTopics() != null)
-                    kafkaTopics.addAll(spanKeyExtractor.getTopics());
-                String msgWithFlattenedTags = tagFlattener.flattenTags(kafkaMsg);
-                logger.info("KafkaProducer sending message: {},with key: {}  ", msgWithFlattenedTags, kafkaKey);
-                produceToKafkaTopics(kafkaProducer, kafkaTopics, kafkaKey, msgWithFlattenedTags);
-            });
+        kafkaProducerMap.forEach((spanKeyExtractor, kafkaProducers) -> {
+            List<String> kafkaTopics = new ArrayList<>();
+            final String kafkaKey = spanKeyExtractor.getKey();
+            String kafkaMsg = spanKeyExtractor.extract(value).orElse(null);
+            if (StringUtils.isEmpty(kafkaMsg)) {
+                logger.info("Extractor skipped the span: {}", value);
+                return;
+            }
+
+            kafkaTopics.addAll(spanKeyExtractor.getTopics());
+            String msgWithFlattenedTags = tagFlattener.flattenTags(kafkaMsg);
+            logger.info("KafkaProducer sending message: {},with key: {}  ", msgWithFlattenedTags, kafkaKey);
+            kafkaProducers.forEach(kafkaProducer -> produceToKafkaTopics(kafkaProducer, kafkaTopics, kafkaKey, msgWithFlattenedTags));
+
         });
         time.stop();
     }
 
-    private void produceToKafkaTopics(KafkaProducer<String, String> kafkaProducer, List<String> kafkaTopics, String kafkaKey, String jsonWithFlattenedTags) {
+    public void produceToKafkaTopics(KafkaProducer<String, String> kafkaProducer, List<String> kafkaTopics, String kafkaKey, String jsonWithFlattenedTags) {
         kafkaTopics.forEach(topic -> {
             final ProducerRecord<String, String> producerRecord =
                     factory.createProducerRecord(topic, kafkaKey, jsonWithFlattenedTags);
@@ -112,17 +103,6 @@ public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
         });
     }
 
-    private Map<KafkaProducer<String, String>, List<SpanKeyExtractor>> createKafkaProducersExtractorMap(List<KafkaProducerConfig> kafkaProducerConfigMaps) {
-        kafkaProducerConfigMaps.forEach(kafkaProducerConfigMap -> {
-            final KafkaProducer<String, String> kafkaProducer = factory.createKafkaProducer(kafkaProducerConfigMap.getConfigurationMap());
-            List<String> spanExtractorStringList = kafkaProducerConfigMap.getSpanKeyExtractorStringList();
-            List<SpanKeyExtractor> spanKeyExtractorList = spanKeyExtractors.stream()
-                    .filter(spanKeyExtractor -> spanExtractorStringList.contains(spanKeyExtractor.name()))
-                    .collect(Collectors.toList());
-            kafkaProducerSpanExtractorMap.put(kafkaProducer, spanKeyExtractorList);
-        });
-        return kafkaProducerSpanExtractorMap;
-    }
 
     static class Factory {
         ProducerRecord<String, String> createProducerRecord(String topic, String key, String value) {

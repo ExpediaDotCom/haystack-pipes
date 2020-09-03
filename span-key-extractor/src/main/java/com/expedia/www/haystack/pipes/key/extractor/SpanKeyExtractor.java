@@ -26,12 +26,14 @@ public interface SpanKeyExtractor {
 
     String name();
 
-    public void configure(Config config);
+    public void configure(Config config); // sets up the extractor with configuration
 
-    public Optional<String> extract(Span span);
+    public Optional<String> extract(Span span); // extract the span to string message
 
-    public String getKey();
+    public String getKey(); // get the key required for message as value to be published
 
-    public List<String> getTopics();
+    public List<String> getTopics(); // to get topics/streams to publish messages to
+
+    public List<String> getProducers();
 
 }

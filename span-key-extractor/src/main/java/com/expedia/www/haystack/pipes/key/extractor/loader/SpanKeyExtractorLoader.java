@@ -34,18 +34,16 @@ public class SpanKeyExtractorLoader {
 
     private static final Logger logger = LoggerFactory.getLogger("SpanKeyExtractorLoader");
     private static SpanKeyExtractorLoader spanKeyExtractorLoader = null;
-    private Map<String, Config> extractorConfigMap;
     private List<SpanKeyExtractor> spanKeyExtractorList;
     private ServiceLoader<SpanKeyExtractor> serviceLoader;
 
-    private SpanKeyExtractorLoader(Map<String, Config> extractorConfigMap) {
-        this.extractorConfigMap = extractorConfigMap;
+    private SpanKeyExtractorLoader() {
         spanKeyExtractorList = new ArrayList<>();
     }
 
-    public static synchronized SpanKeyExtractorLoader getInstance(Map<String, Config> extractorConfigMap) {
+    public static synchronized SpanKeyExtractorLoader getInstance() {
         if (spanKeyExtractorLoader == null) {
-            spanKeyExtractorLoader = new SpanKeyExtractorLoader(extractorConfigMap);
+            spanKeyExtractorLoader = new SpanKeyExtractorLoader();
             spanKeyExtractorLoader.loadFiles();
         }
         return spanKeyExtractorLoader;
@@ -69,11 +67,11 @@ public class SpanKeyExtractorLoader {
         }
     }
 
-    public List<SpanKeyExtractor> getSpanKeyExtractor() {
+    public List<SpanKeyExtractor> getSpanKeyExtractor(Map<String,Config> spanKeyExtractorConfigs) {
         if (spanKeyExtractorList.isEmpty() && this.serviceLoader != null) {
             serviceLoader.forEach(spanKeyExtractor -> {
                 try {
-                    spanKeyExtractor.configure(extractorConfigMap.getOrDefault(spanKeyExtractor.name(), null));
+                    spanKeyExtractor.configure(spanKeyExtractorConfigs.getOrDefault(spanKeyExtractor.name(),null));
                     spanKeyExtractorList.add(spanKeyExtractor);
                     logger.debug("Extractor class is loaded: {}, at path: {}", spanKeyExtractor.name(), "extractors/");
                 } catch (Exception e) {

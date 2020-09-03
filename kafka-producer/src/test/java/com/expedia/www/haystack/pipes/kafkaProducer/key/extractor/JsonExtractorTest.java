@@ -16,6 +16,8 @@
  */
 package com.expedia.www.haystack.pipes.kafkaProducer.key.extractor;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
 import com.typesafe.config.Config;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,10 +26,15 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
+import java.lang.reflect.InvocationHandler;
+import java.util.Optional;
+
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.JSON_SPAN_STRING;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JsonExtractorTest {
@@ -36,6 +43,8 @@ public class JsonExtractorTest {
     Logger mockLogger;
     @Mock
     Config mockConfig;
+    @Mock
+    JsonFormat.Printer mockJsonPrinter;
 
     private JsonExtractor jsonExtractor;
 
@@ -54,16 +63,26 @@ public class JsonExtractorTest {
         Logger realLogger = JsonExtractor.logger;
         JsonExtractor.logger = mockLogger;
         jsonExtractor.configure(mockConfig);
+        JsonExtractor.logger = realLogger;
         verify(mockLogger).info("{} class loaded with config: {}", JsonExtractor.class.getSimpleName(), mockConfig);
     }
 
     @Test
-    public void extract() {
+    public void testExtract() {
         assertEquals(JSON_SPAN_STRING, jsonExtractor.extract(FULLY_POPULATED_SPAN).get());
     }
 
     @Test
+    public void testExtractWithException() throws InvalidProtocolBufferException {
+        JsonFormat.Printer realPrinter = jsonExtractor.jsonPrinter;
+        jsonExtractor.jsonPrinter = mockJsonPrinter;
+        when(mockJsonPrinter.print(any())).thenThrow(new InvalidProtocolBufferException("mock Exception"));
+        assertEquals(Optional.empty(), jsonExtractor.extract(FULLY_POPULATED_SPAN));
+        jsonExtractor.jsonPrinter = realPrinter;
+    }
+
+    @Test
     public void getKey() {
-        assertEquals("externalKafkaTopic", jsonExtractor.getKey());
+        assertEquals("externalKafkaKey", jsonExtractor.getKey());
     }
 }

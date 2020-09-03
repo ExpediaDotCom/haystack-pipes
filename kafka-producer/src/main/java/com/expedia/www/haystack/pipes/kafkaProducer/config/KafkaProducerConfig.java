@@ -21,10 +21,12 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class KafkaProducerConfig {
+
+    private String name;
+
     private String brokers;
 
     private int port;
@@ -39,11 +41,10 @@ public class KafkaProducerConfig {
 
     private int bufferMemory;
 
-    private List<String> spanKeyExtractorStringList;
-
-    public KafkaProducerConfig(final String brokers, final int port, final String toTopic,
+    public KafkaProducerConfig(final String name, final String brokers, final int port, final String toTopic,
                                final String acks, final int batchSize, final int lingerMs,
-                               final int bufferMemory, List<String> spanKeyExtractorStringList) {
+                               final int bufferMemory) {
+        this.name = name;
         this.brokers = brokers;
         this.port = port;
         this.toTopic = toTopic;
@@ -51,7 +52,10 @@ public class KafkaProducerConfig {
         this.batchSize = batchSize;
         this.lingerMs = lingerMs;
         this.bufferMemory = bufferMemory;
-        this.spanKeyExtractorStringList = spanKeyExtractorStringList;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public String getBrokers() {
@@ -80,10 +84,6 @@ public class KafkaProducerConfig {
 
     public int getBufferMemory() {
         return this.bufferMemory;
-    }
-
-    public List<String> getSpanKeyExtractorStringList() {
-        return spanKeyExtractorStringList;
     }
 
     public Map<String, Object> getConfigurationMap() {

@@ -58,10 +58,11 @@ public class ProjectConfigurationTest {
 
     @Test
     public void getKafkaProducerConfigList() {
-        List<KafkaProducerConfig> kafkaProducerConfigs = projectConfiguration.getKafkaProducerConfigList();
+        List<KafkaProducerConfig> kafkaProducerConfigs = projectConfiguration.getKafkaProducerConfigs();
         assertEquals(1, kafkaProducerConfigs.size());
         KafkaProducerConfig kafkaProducerConfig = kafkaProducerConfigs.get(0);
         assertEquals("localhost:9092", kafkaProducerConfig.getBrokers());
+        assertEquals(9093, kafkaProducerConfig.getPort());
         assertEquals("externalKafkaTopic", kafkaProducerConfig.getToTopic());
         assertEquals("0", kafkaProducerConfig.getAcks());
         assertEquals(8192, kafkaProducerConfig.getBatchSize());
@@ -72,7 +73,7 @@ public class ProjectConfigurationTest {
 
     @Test
     public void testGetSpanExtractorConfigs() {
-        Map<String, Config> spanKeyExtractorConfigMap = projectConfiguration.getSpanExtractorConfigs();
+        Map<String,Config> spanKeyExtractorConfigMap = projectConfiguration.getSpanExtractorConfigs();
         assertEquals(1, spanKeyExtractorConfigMap.size());
     }
 }

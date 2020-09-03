@@ -22,6 +22,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.netflix.servo.util.VisibleForTesting;
 import com.typesafe.config.Config;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +34,10 @@ public class JsonExtractor implements SpanKeyExtractor {
 
     @VisibleForTesting
     static Logger logger = LoggerFactory.getLogger(JsonExtractor.class);
-    private final JsonFormat.Printer jsonPrinter = JsonFormat.printer().omittingInsignificantWhitespace();
+    @VisibleForTesting
+    static JsonFormat.Printer jsonPrinter = JsonFormat.printer().omittingInsignificantWhitespace();
+
+    private List<String> producers;
 
     @Override
     public String name() {
@@ -43,25 +47,32 @@ public class JsonExtractor implements SpanKeyExtractor {
     @Override
     public void configure(Config config) {
         logger.info("{} class loaded with config: {}", JsonExtractor.class.getSimpleName(), config);
+        producers = config.getStringList("producers");
     }
 
     @Override
     public Optional<String> extract(Span span) {
+        String message = null;
         try {
-            return Optional.of(jsonPrinter.print(span));
+            message = jsonPrinter.print(span);
         } catch (InvalidProtocolBufferException e) {
             logger.error("Exception occurred while extracting span: " + e.getMessage());
         }
-        return Optional.empty();
+        return StringUtils.isEmpty(message) ? Optional.empty() : Optional.of(message);
     }
 
     @Override
     public String getKey() {
-        return "externalKafkaTopic";
+        return "externalKafkaKey";
     }
 
     @Override
     public List<String> getTopics() {
         return new ArrayList<>();
+    }
+
+    @Override
+    public List<String> getProducers() {
+        return producers;
     }
 }
