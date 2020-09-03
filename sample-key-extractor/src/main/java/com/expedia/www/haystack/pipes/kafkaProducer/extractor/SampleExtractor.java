@@ -63,4 +63,9 @@ public class SampleExtractor implements SpanKeyExtractor {
         return new ArrayList<>();
     }
 
+    @Override
+    public List<String> getProducers() {
+        return new ArrayList<>();
+    }
+
 }

@@ -73,7 +73,6 @@ public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
                 logger.info("Extractor skipped the span: {}", value);
                 return;
             }
-
             kafkaTopics.addAll(spanKeyExtractor.getTopics());
             String msgWithFlattenedTags = tagFlattener.flattenTags(kafkaMsg);
             logger.info("KafkaProducer sending message: {},with key: {}  ", msgWithFlattenedTags, kafkaKey);
