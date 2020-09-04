@@ -1,8 +1,12 @@
 package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.codahale.metrics.JmxReporter;
+import com.codahale.metrics.MetricRegistry;
+import com.expedia.www.haystack.pipes.commons.health.HealthController;
+import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
 import org.apache.kafka.clients.producer.KafkaProducer;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -12,23 +16,56 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ServiceTest {
 
     @Mock
-    private ProtobufToKafkaProducer mockProtobufToKafkaProducer;
+    private SerdeFactory mockSerdeFactory;
     @Mock
-    private JmxReporter mockJmxReporter;
+    private MetricRegistry mockMetricRegistry;
+    @Mock
+    private ProjectConfiguration mockProjectConfiguration;
+    @Mock
+    private HealthController mockHealthController;
 
     private Service service;
 
+    @Before
+    public void setUp(){
+        service = new Service(mockSerdeFactory,mockMetricRegistry,
+                ProjectConfiguration.getInstance(),mockHealthController);
+    }
+
     @Test
-    public void testStartService() {
-        ProtobufToKafkaProducer realProtobufToKafkaProducer = Service.protobufToKafkaProducer;
-        Service.startService(mockProtobufToKafkaProducer);
-        verify(mockProtobufToKafkaProducer).main();
+    public void main() {
+    }
+
+    @Test
+    public void getProtobufToKafkaProducer() {
+    }
+
+    @Test
+    public void getKafkaStreamStarter() {
+    }
+
+    @Test
+    public void testGetKafkaToKafkaPipeline() {
+        assertEquals(KafkaToKafkaPipeline.class, service.getKafkaToKafkaPipeline().getClass());
+    }
+
+    @Test
+    public void testInPlaceHealthCheck() {
+        service.inPlaceHealthCheck();
+        verify(mockHealthController).addListener(any());
+    }
+
+    @Test
+    public void testGetJmxReporter() {
+        assertEquals(JmxReporter.class, service.getJmxReporter().getClass());
     }
 
     @Test
@@ -45,3 +82,4 @@ public class ServiceTest {
         assertEquals(extractorProducerMap, Service.getExtractorKafkaProducerMap(projectConfiguration));
     }
 }
+

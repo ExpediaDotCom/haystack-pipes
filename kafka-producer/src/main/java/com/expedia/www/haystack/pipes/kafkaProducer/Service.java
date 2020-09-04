@@ -18,7 +18,6 @@ package com.expedia.www.haystack.pipes.kafkaProducer;
 
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
-import com.expedia.www.haystack.commons.metrics.MetricsRegistries;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
@@ -43,50 +42,62 @@ import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION
 
 public class Service {
 
-    private static final MetricRegistry metricRegistry = MetricsRegistries.metricRegistry();
+    // private static final MetricRegistry metricRegistry = MetricsRegistries.metricRegistry();
     @VisibleForTesting
     static Logger logger = LoggerFactory.getLogger(Service.class);
     @VisibleForTesting
-    static ProtobufToKafkaProducer protobufToKafkaProducer;
-    @VisibleForTesting
     static Map<SpanKeyExtractor, List<KafkaProducer<String, String>>> extractorListMap = null;
-    private static KafkaToKafkaPipeline kafkaToKafkaPipeline;
+    private final SerdeFactory serdeFactory;
+    private final MetricRegistry metricRegistry;
+    private final ProjectConfiguration projectConfiguration;
+    private final HealthController healthController;
+
 
     public static void main(String[] args) {
-        logger.info("Starting KafkaToKafka Producer Pipeline");
-        protobufToKafkaProducer = initializeService();
-        startJmxReporter();
-        startService(protobufToKafkaProducer);
-    }
-
-    private static ProtobufToKafkaProducer initializeService() {
         logger.info("Initializing Kafka Consumers");
-        SerdeFactory serdeFactory = new SerdeFactory();
-        ProjectConfiguration projectConfiguration = ProjectConfiguration.getInstance();
-        kafkaToKafkaPipeline = prepareKafkaToKafkaPipeline(projectConfiguration);
-        final HealthController healthController = getHealthController();
-        KafkaStreamStarter kafkaStreamStarter = new KafkaStreamStarter(ProtobufToKafkaProducer.class, APPLICATION, projectConfiguration.getKafkaConsumerConfig(), healthController);
-        return protobufToKafkaProducer = new ProtobufToKafkaProducer(
-                kafkaStreamStarter, serdeFactory, kafkaToKafkaPipeline, projectConfiguration.getKafkaConsumerConfig());
-    }
-
-    public static void startService(ProtobufToKafkaProducer protobufToKafkaProducer) {
+        Service service = new Service(new SerdeFactory(), new MetricRegistry(),
+                ProjectConfiguration.getInstance(), new HealthController());
+        service.inPlaceHealthCheck();
+        JmxReporter jmxReporter = service.getJmxReporter();
+        jmxReporter.start();
+        ProtobufToKafkaProducer protobufToKafkaProducer = service.getProtobufToKafkaProducer(service.getKafkaStreamStarter());
         protobufToKafkaProducer.main();
     }
 
-    private static HealthController getHealthController() {
-        final HealthController healthController = new HealthController();
+    public ProtobufToKafkaProducer getProtobufToKafkaProducer(KafkaStreamStarter kafkaStreamStarter) {
+        return new ProtobufToKafkaProducer(kafkaStreamStarter,
+                serdeFactory, getKafkaToKafkaPipeline(),
+                projectConfiguration.getKafkaConsumerConfig());
+    }
+
+    public KafkaStreamStarter getKafkaStreamStarter() {
+        return new KafkaStreamStarter(ProtobufToKafkaProducer.class,
+                APPLICATION, projectConfiguration.getKafkaConsumerConfig(),
+                healthController);
+    }
+
+
+    public Service(SerdeFactory serdeFactory, MetricRegistry metricRegistry,
+                   ProjectConfiguration projectConfiguration, HealthController healthController) {
+        this.serdeFactory = serdeFactory;
+        this.metricRegistry = metricRegistry;
+        this.projectConfiguration = projectConfiguration;
+        this.healthController = healthController;
+    }
+
+
+    public KafkaToKafkaPipeline getKafkaToKafkaPipeline() {
+        return new KafkaToKafkaPipeline(metricRegistry,
+                getExtractorKafkaProducerMap(projectConfiguration));
+    }
+
+    public void inPlaceHealthCheck() {
         healthController.addListener(new UpdateHealthStatusFile("/app/isHealthy"));
-        return healthController;
     }
 
-    private static KafkaToKafkaPipeline prepareKafkaToKafkaPipeline(ProjectConfiguration projectConfiguration) {
-        return new KafkaToKafkaPipeline(metricRegistry, getExtractorKafkaProducerMap(projectConfiguration));
-    }
 
-    public static void startJmxReporter() {
-        JmxReporter jmxReporter = JmxReporter.forRegistry(metricRegistry).build();
-        jmxReporter.start();
+    public JmxReporter getJmxReporter() {
+        return JmxReporter.forRegistry(metricRegistry).build();
     }
 
     public static Map<SpanKeyExtractor, List<KafkaProducer<String, String>>> getExtractorKafkaProducerMap(ProjectConfiguration projectConfiguration) {
@@ -114,8 +125,6 @@ public class Service {
                                 return list;
                             }
                     ));
-
-
         }
         return extractorListMap;
     }

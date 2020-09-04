@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public class ProjectConfigurationTest {
 
@@ -40,6 +41,8 @@ public class ProjectConfigurationTest {
     public void testGetInstance() {
         ProjectConfiguration newProjectConfiguration = ProjectConfiguration.getInstance();
         assertEquals(projectConfiguration, newProjectConfiguration);
+        ProjectConfiguration.projectConfiguration = null;
+        assertNotEquals(ProjectConfiguration.getInstance(),null);
     }
 
     @Test
@@ -75,5 +78,18 @@ public class ProjectConfigurationTest {
     public void testGetSpanExtractorConfigs() {
         Map<String,Config> spanKeyExtractorConfigMap = projectConfiguration.getSpanExtractorConfigs();
         assertEquals(1, spanKeyExtractorConfigMap.size());
+    }
+
+    @Test
+    public void testKafkaConsumerConfigIdempotent() {
+        assertEquals(projectConfiguration.getKafkaConsumerConfig(), projectConfiguration.getKafkaConsumerConfig());
+    }
+    @Test
+    public void testKafkaProducerConfigsIdempotent() {
+        assertEquals(projectConfiguration.getKafkaProducerConfigs(), projectConfiguration.getKafkaProducerConfigs());
+    }
+    @Test
+    public void testSpanKeyExtractorConfigsIdempotent() {
+        assertEquals(projectConfiguration.getSpanExtractorConfigs(), projectConfiguration.getSpanExtractorConfigs());
     }
 }

@@ -19,6 +19,7 @@ package com.expedia.www.haystack.pipes.kafkaProducer;
 import com.expedia.www.haystack.commons.config.ConfigurationLoader;
 import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
 import com.expedia.www.haystack.pipes.kafkaProducer.config.KafkaProducerConfig;
+import com.netflix.servo.util.VisibleForTesting;
 import com.typesafe.config.Config;
 
 import java.util.ArrayList;
@@ -28,7 +29,8 @@ import java.util.Map;
 
 public class ProjectConfiguration {
 
-    private static ProjectConfiguration projectConfiguration = null;
+    @VisibleForTesting
+    static ProjectConfiguration projectConfiguration = null;
     private static KafkaConsumerConfig kafkaConsumerConfig = null;
     private static List<KafkaProducerConfig> kafkaProducerConfigs = null;
     private static Map<String, Config> spanKeyExtractorConfigs = null;
@@ -76,15 +78,13 @@ public class ProjectConfiguration {
 
     public Map<String, Config> getSpanExtractorConfigs() {
         if (null == spanKeyExtractorConfigs) {
-            if (haystackConfig != null) {
-                spanKeyExtractorConfigs = new HashMap<>();
-                List<Config> extractorConfigs = (List<Config>) haystackConfig.getConfigList("extractors");
-                extractorConfigs.forEach(extractorConfig -> {
-                    String name = extractorConfig.getString("name");
-                    Config config = extractorConfig.getConfig("config");
-                    spanKeyExtractorConfigs.put(name, config);
-                });
-            }
+            spanKeyExtractorConfigs = new HashMap<>();
+            List<Config> extractorConfigs = (List<Config>) haystackConfig.getConfigList("extractors");
+            extractorConfigs.forEach(extractorConfig -> {
+                String name = extractorConfig.getString("name");
+                Config config = extractorConfig.getConfig("config");
+                spanKeyExtractorConfigs.put(name, config);
+            });
         }
         return spanKeyExtractorConfigs;
     }
