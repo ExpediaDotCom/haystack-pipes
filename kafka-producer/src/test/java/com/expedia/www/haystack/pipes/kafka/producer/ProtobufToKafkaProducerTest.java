@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.kafka.producer;
 
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;

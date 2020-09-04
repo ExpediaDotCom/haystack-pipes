@@ -14,20 +14,18 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.kafka.producer;
 
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilderBase;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 
-import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
-
 public class ProtobufToKafkaProducer extends KafkaStreamBuilderBase {
     public ProtobufToKafkaProducer(KafkaStreamStarter kafkaStreamStarter,
                                    SerdeFactory serdeFactory,
                                    KafkaToKafkaPipeline kafkaToKafkaPipeline,
                                    KafkaConsumerConfig kafkaConsumerConfig) {
-        super(kafkaStreamStarter, serdeFactory, APPLICATION, kafkaConsumerConfig, kafkaToKafkaPipeline);
+        super(kafkaStreamStarter, serdeFactory, Constants.APPLICATION, kafkaConsumerConfig, kafkaToKafkaPipeline);
     }
 }

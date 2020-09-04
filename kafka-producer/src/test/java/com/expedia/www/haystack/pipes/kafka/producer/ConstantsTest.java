@@ -1,4 +1,4 @@
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.kafka.producer;
 
 import org.junit.Test;
 

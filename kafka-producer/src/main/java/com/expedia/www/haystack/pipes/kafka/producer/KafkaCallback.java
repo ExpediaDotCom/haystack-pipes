@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.kafka.producer;
 
 import com.netflix.servo.util.VisibleForTesting;
 import org.apache.kafka.clients.producer.Callback;

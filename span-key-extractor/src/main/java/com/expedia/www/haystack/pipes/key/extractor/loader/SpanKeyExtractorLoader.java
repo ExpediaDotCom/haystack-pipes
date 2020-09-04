@@ -67,11 +67,11 @@ public class SpanKeyExtractorLoader {
         }
     }
 
-    public List<SpanKeyExtractor> getSpanKeyExtractor(Map<String,Config> spanKeyExtractorConfigs) {
+    public List<SpanKeyExtractor> getSpanKeyExtractor(Map<String, Config> spanKeyExtractorConfigs) {
         if (spanKeyExtractorList.isEmpty() && this.serviceLoader != null) {
             serviceLoader.forEach(spanKeyExtractor -> {
                 try {
-                    spanKeyExtractor.configure(spanKeyExtractorConfigs.getOrDefault(spanKeyExtractor.name(),null));
+                    spanKeyExtractor.configure(spanKeyExtractorConfigs.getOrDefault(spanKeyExtractor.name(), null));
                     spanKeyExtractorList.add(spanKeyExtractor);
                     logger.debug("Extractor class is loaded: {}, at path: {}", spanKeyExtractor.name(), "extractors/");
                 } catch (Exception e) {

@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.kafka.producer;
 
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
@@ -22,8 +22,8 @@ import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
-import com.expedia.www.haystack.pipes.kafkaProducer.config.KafkaProducerConfig;
-import com.expedia.www.haystack.pipes.kafkaProducer.key.extractor.JsonExtractor;
+import com.expedia.www.haystack.pipes.kafka.producer.config.KafkaProducerConfig;
+import com.expedia.www.haystack.pipes.kafka.producer.key.extractor.JsonExtractor;
 import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
 import com.expedia.www.haystack.pipes.key.extractor.loader.SpanKeyExtractorLoader;
 import com.netflix.servo.util.VisibleForTesting;
@@ -37,12 +37,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
-
 
 public class Service {
 
-    // private static final MetricRegistry metricRegistry = MetricsRegistries.metricRegistry();
     @VisibleForTesting
     static Logger logger = LoggerFactory.getLogger(Service.class);
     @VisibleForTesting
@@ -72,7 +69,7 @@ public class Service {
 
     public KafkaStreamStarter getKafkaStreamStarter() {
         return new KafkaStreamStarter(ProtobufToKafkaProducer.class,
-                APPLICATION, projectConfiguration.getKafkaConsumerConfig(),
+                Constants.APPLICATION, projectConfiguration.getKafkaConsumerConfig(),
                 healthController);
     }
 

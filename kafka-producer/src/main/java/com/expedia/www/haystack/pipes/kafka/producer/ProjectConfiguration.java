@@ -14,11 +14,11 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.kafka.producer;
 
 import com.expedia.www.haystack.commons.config.ConfigurationLoader;
 import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
-import com.expedia.www.haystack.pipes.kafkaProducer.config.KafkaProducerConfig;
+import com.expedia.www.haystack.pipes.kafka.producer.config.KafkaProducerConfig;
 import com.netflix.servo.util.VisibleForTesting;
 import com.typesafe.config.Config;
 

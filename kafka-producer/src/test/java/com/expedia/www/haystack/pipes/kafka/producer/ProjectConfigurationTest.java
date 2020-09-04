@@ -14,10 +14,10 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.kafka.producer;
 
 import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
-import com.expedia.www.haystack.pipes.kafkaProducer.config.KafkaProducerConfig;
+import com.expedia.www.haystack.pipes.kafka.producer.config.KafkaProducerConfig;
 import com.typesafe.config.Config;
 import org.junit.Before;
 import org.junit.Test;
