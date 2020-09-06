@@ -39,6 +39,8 @@ public class ServiceTest {
     private Service mockService;
     @Mock
     private JmxReporter mockJmxReporter;
+    @Mock
+    private KafkaToKafkaPipeline mockKafkaToKafkaPipeline;
 
     private Service service;
 
@@ -102,5 +104,16 @@ public class ServiceTest {
         Map<SpanKeyExtractor, List<KafkaProducer<String, String>>> extractorProducerMap = Service.getExtractorKafkaProducerMap(projectConfiguration);
         assertEquals(extractorProducerMap, Service.getExtractorKafkaProducerMap(projectConfiguration));
     }
+
+    @Test
+    public void testGetKafkaToKafkaPipeline() {
+        assertEquals(KafkaToKafkaPipeline.class, service.getKafkaToKafkaPipeline().getClass());
+    }
+
+    @Test
+    public void testGetProtobufToKafkaProducer() {
+        assertEquals(ProtobufToKafkaProducer.class, service.getProtobufToKafkaProducer(service.getKafkaStreamStarter()).getClass());
+    }
+
 }
 

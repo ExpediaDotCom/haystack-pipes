@@ -115,7 +115,7 @@ public class Service {
                 healthController);
     }
 
-    private KafkaToKafkaPipeline getKafkaToKafkaPipeline() {
+    KafkaToKafkaPipeline getKafkaToKafkaPipeline() {
         return new KafkaToKafkaPipeline(metricRegistry,
                 getExtractorKafkaProducerMap(projectConfiguration));
     }
