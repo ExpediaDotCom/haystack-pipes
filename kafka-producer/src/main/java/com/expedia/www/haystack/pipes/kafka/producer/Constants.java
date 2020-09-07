@@ -16,6 +16,6 @@
  */
 package com.expedia.www.haystack.pipes.kafka.producer;
 
-public interface Constants {
-    String APPLICATION = "haystack-pipes-kafka-producer";
+public final class Constants {
+    static String APPLICATION = "haystack-pipes-kafka-producer";
 }

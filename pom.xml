@@ -390,6 +390,7 @@
                             <exclude>**/com/expedia/open/tracing/**</exclude>
                             <exclude>**/com/expedia/www/haystack/pipes/commons/test/*</exclude>
                             <exclude>**/com/expedia/www/haystack/pipes/secretDetector/actions/SenderImpl*</exclude>
+                            <exclude>**/com/expedia/www/haystack/pipes/kafka/producer/Constants*</exclude>
                         </excludes>
                     </configuration>
                     <executions>
