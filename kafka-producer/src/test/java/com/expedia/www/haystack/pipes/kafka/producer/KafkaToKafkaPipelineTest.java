@@ -34,7 +34,6 @@ import java.util.*;
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class KafkaToKafkaPipelineTest {
@@ -56,7 +55,7 @@ public class KafkaToKafkaPipelineTest {
     @Mock
     private Counter mockKafkaProducerCounter;
     @Mock
-    private KafkaProducer<String,String> mockKafkaProducer;
+    private KafkaProducer<String, String> mockKafkaProducer;
     @Mock
     private SpanKeyExtractor mockSpanKeyExtractor;
 
@@ -76,7 +75,7 @@ public class KafkaToKafkaPipelineTest {
     @Test
     public void testProduceToKafkaTopics() {
         KafkaToKafkaPipeline.logger = mockLogger;
-        kafkaToKafkaPipeline.produceToKafkaTopics(mockKafkaProducer,Arrays.asList("mock-Topic"),"mock-key", JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
+        kafkaToKafkaPipeline.produceToKafkaTopics(mockKafkaProducer, Arrays.asList("mock-Topic"), "mock-key", JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
         verify(mockLogger).info("Kafka message sent on topic: {}", "mock-Topic");
         verify(mockKafkaProducerCounter).inc();
         KafkaToKafkaPipeline.logger = realLogger;
@@ -84,7 +83,7 @@ public class KafkaToKafkaPipelineTest {
 
     @Test
     public void testApplyWithNullMessage() {
-        Map<SpanKeyExtractor, List<KafkaProducer<String,String>>> keyExtractorMap = new HashMap<>();
+        Map<SpanKeyExtractor, List<KafkaProducer<String, String>>> keyExtractorMap = new HashMap<>();
         keyExtractorMap.put(mockSpanKeyExtractor, Arrays.asList(mockKafkaProducer));
         KafkaToKafkaPipeline mockKafkaToKafkaPipeline = new KafkaToKafkaPipeline(mockMetricRegistry,
                 keyExtractorMap);
@@ -101,8 +100,8 @@ public class KafkaToKafkaPipelineTest {
     public void testProduceToKafkaTopicsWithException() {
         KafkaToKafkaPipeline.logger = mockLogger;
         Exception exception = new RuntimeException();
-        when(mockKafkaProducer.send(any(),any())).thenThrow(exception);
-        kafkaToKafkaPipeline.produceToKafkaTopics(mockKafkaProducer,Arrays.asList("mock-Topic"),"mock-key", JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
+        when(mockKafkaProducer.send(any(), any())).thenThrow(exception);
+        kafkaToKafkaPipeline.produceToKafkaTopics(mockKafkaProducer, Arrays.asList("mock-Topic"), "mock-key", JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
         verify(mockLogger).error(String.format(KafkaToKafkaPipeline.ERROR_MSG, JSON_SPAN_STRING_WITH_FLATTENED_TAGS, null), exception);
         KafkaToKafkaPipeline.logger = realLogger;
     }

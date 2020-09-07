@@ -37,7 +37,7 @@ public class ProjectConfiguration {
     private final Config haystackConfig;
 
     private ProjectConfiguration() {
-        String resourceName = System.getenv("configFilePath") == null ? "config/base.conf" : System.getenv("configFilePath");
+        String resourceName = getResourceName();
         Config config = ConfigurationLoader.loadConfigFileWithEnvOverrides(resourceName, "HAYSTACK_PROP_");
         haystackConfig = config.getConfig("haystack");
     }
@@ -47,6 +47,10 @@ public class ProjectConfiguration {
             projectConfiguration = new ProjectConfiguration();
         }
         return projectConfiguration;
+    }
+
+    public String getResourceName() {
+        return System.getenv("configFilePath") == null ? "config/base.conf" : System.getenv("configFilePath");
     }
 
     public KafkaConsumerConfig getKafkaConsumerConfig() {

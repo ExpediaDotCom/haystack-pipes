@@ -3,8 +3,8 @@ haystack:
     streams:
       replicationfactor: 1
   graphite:
-     prefix: "haystack"
-     host: "localhost"
-     port: 2003
-     pollintervalseconds: 300
-     queuesize: 10
+    prefix: "haystack"
+    host: "localhost"
+    port: 2003
+    pollintervalseconds: 300
+    queuesize: 10

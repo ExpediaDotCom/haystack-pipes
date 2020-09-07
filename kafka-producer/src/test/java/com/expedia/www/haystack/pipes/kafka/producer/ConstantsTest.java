@@ -2,13 +2,13 @@ package com.expedia.www.haystack.pipes.kafka.producer;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class ConstantsTest {
 
     @Test
-    public void testConstants(){
-        assertEquals("haystack-pipes-kafka-producer",Constants.APPLICATION);
+    public void testConstants() {
+        assertEquals("haystack-pipes-kafka-producer", Constants.APPLICATION);
     }
 
 }
