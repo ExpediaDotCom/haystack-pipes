@@ -20,7 +20,6 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfig;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConsumerStarter;
 import com.netflix.servo.monitor.Counter;
@@ -166,7 +165,7 @@ public class SpringConfigTest {
 
     @Test
     public void testKafkaStreamStarter() {
-        final KafkaConsumerStarter kafkaStreamStarter = springConfig.kafkaConsumerStarter(mockHealthController,mockKafkaConfigurationProvider);
+        final KafkaConsumerStarter kafkaStreamStarter = springConfig.kafkaConsumerStarter(mockHealthController, mockKafkaConfigurationProvider);
         assertSame(ProtobufToFirehoseProducer.class, kafkaStreamStarter.containingClass);
         assertSame(APPLICATION, kafkaStreamStarter.clientId);
     }

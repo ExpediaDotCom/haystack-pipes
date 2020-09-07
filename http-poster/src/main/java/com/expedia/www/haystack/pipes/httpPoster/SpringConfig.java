@@ -93,7 +93,7 @@ public class SpringConfig {
     @Bean
     @Autowired
     KafkaStreamStarter kafkaStreamStarter(final HealthController healthController, KafkaConfigurationProvider kafkaConfigurationProvider) {
-        return new KafkaStreamStarter(ProtobufToHttpPoster.class, APPLICATION,kafkaConfigurationProvider, healthController);
+        return new KafkaStreamStarter(ProtobufToHttpPoster.class, APPLICATION, kafkaConfigurationProvider, healthController);
     }
 
     @Bean

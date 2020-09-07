@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
     @VisibleForTesting
@@ -68,11 +69,12 @@ public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
         kafkaProducerMap.forEach((spanKeyExtractor, kafkaProducers) -> {
             List<String> kafkaTopics = new ArrayList<>();
             final String kafkaKey = spanKeyExtractor.getKey();
-            String kafkaMsg = spanKeyExtractor.extract(value).orElse(null);
-            if (StringUtils.isEmpty(kafkaMsg)) {
-                logger.info("Extractor skipped the span: {}", value);
+            Optional<String> optionalMsg = spanKeyExtractor.extract(value);
+            if (!optionalMsg.isPresent()) {
+                logger.debug("Extractor skipped the span: {}", value);
                 return;
             }
+            String kafkaMsg = optionalMsg.get();
             kafkaTopics.addAll(spanKeyExtractor.getTopics());
             String msgWithFlattenedTags = tagFlattener.flattenTags(kafkaMsg);
             logger.info("KafkaProducer sending message: {},with key: {}  ", msgWithFlattenedTags, kafkaKey);

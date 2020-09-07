@@ -1,7 +1,6 @@
 package com.expedia.www.haystack.pipes.jsonTransformer;
 
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
-import com.expedia.www.haystack.pipes.commons.health.HealthStatusListener;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import org.junit.After;
@@ -15,9 +14,7 @@ import org.slf4j.Logger;
 import static com.expedia.www.haystack.pipes.jsonTransformer.Constants.APPLICATION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SpringConfigTest {
@@ -49,7 +46,7 @@ public class SpringConfigTest {
 
     @Test
     public void testKafkaStreamStarter() {
-        final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter(mockHealthController,mockKafkaConfigurationProvider);
+        final KafkaStreamStarter kafkaStreamStarter = springConfig.kafkaStreamStarter(mockHealthController, mockKafkaConfigurationProvider);
 
         assertSame(ProtobufToJsonTransformer.class, kafkaStreamStarter.containingClass);
         assertSame(APPLICATION, kafkaStreamStarter.clientId);

@@ -92,7 +92,7 @@ public class KafkaToKafkaPipelineTest {
         KafkaToKafkaPipeline.logger = mockLogger;
 
         mockKafkaToKafkaPipeline.apply(null, FULLY_POPULATED_SPAN);
-        verify(mockLogger).info("Extractor skipped the span: {}", FULLY_POPULATED_SPAN);
+        verify(mockLogger).debug("Extractor skipped the span: {}", FULLY_POPULATED_SPAN);
         KafkaToKafkaPipeline.logger = realLogger;
     }
 

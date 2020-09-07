@@ -24,14 +24,14 @@ public class SpringConfig {
     }
 
     @Bean
-    KafkaConfigurationProvider kafkaConfigurationProvider(){
+    KafkaConfigurationProvider kafkaConfigurationProvider() {
         return new KafkaConfigurationProvider();
     }
 
     @Bean
     @Autowired
     KafkaStreamStarter kafkaStreamStarter(final HealthController healthController, KafkaConfigurationProvider kafkaConfigurationProvider) {
-        return new KafkaStreamStarter(ProtobufToJsonTransformer.class, APPLICATION,kafkaConfigurationProvider, healthController);
+        return new KafkaStreamStarter(ProtobufToJsonTransformer.class, APPLICATION, kafkaConfigurationProvider, healthController);
     }
 
     @Bean
