@@ -31,10 +31,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -50,8 +47,7 @@ public class Service {
     @VisibleForTesting
     static Service service = null;
     @VisibleForTesting
-    private static Map<SpanKeyExtractor, List<KafkaProducer<String, String>>> extractorListMap = null;
-
+    private static List<KafkaProducerExtractorMapping> extractorListMap = null;
 
     private Service() {
     }
@@ -73,31 +69,33 @@ public class Service {
         return service;
     }
 
-    public static Map<SpanKeyExtractor, List<KafkaProducer<String, String>>> getExtractorKafkaProducerMap(ProjectConfiguration projectConfiguration) {
+    public static List<KafkaProducerExtractorMapping> getExtractorKafkaProducerMap(ProjectConfiguration projectConfiguration) {
 
         if (null == extractorListMap) {
             List<KafkaProducerConfig> kafkaProducerConfigs = projectConfiguration.getKafkaProducerConfigs();
             KafkaToKafkaPipeline.Factory factory = new KafkaToKafkaPipeline.Factory();
-            Map<String, KafkaProducer<String, String>> kafkaProducerNameMap = new HashMap<>();
-            kafkaProducerConfigs.forEach(kafkaProducerConfig -> {
-                kafkaProducerNameMap.put(kafkaProducerConfig.getName(), factory.createKafkaProducer(kafkaProducerConfig.getConfigurationMap()));
-            });
+
+            Map<String, KafkaProducerWrapper> kafkaProducerNameMap = kafkaProducerConfigs.stream()
+                    .collect(Collectors.toMap(kafkaProducerConfig -> kafkaProducerConfig.getName(),
+                            kafkaProducerConfig->{
+                                KafkaProducer<String,String> kafkaProducer = factory.createKafkaProducer(kafkaProducerConfig.getConfigurationMap());
+                                KafkaProducerMetrics kafkaProducerMetrics = new KafkaProducerMetrics(kafkaProducerConfig.getName(),metricRegistry);
+                                return new KafkaProducerWrapper(kafkaProducer,kafkaProducerConfig.getDefaultTopic(),kafkaProducerMetrics);
+                            }));
+
             List<SpanKeyExtractor> spanKeyExtractors = SpanKeyExtractorLoader.getInstance().getSpanKeyExtractor(projectConfiguration.getSpanExtractorConfigs());
             SpanKeyExtractor defaultExtractor = new JsonExtractor();// default extractor for backward compatibility
             defaultExtractor.configure(projectConfiguration.getSpanExtractorConfigs().get(defaultExtractor.name()));
             spanKeyExtractors.add(defaultExtractor);// adding default extractor for backward compatibility
 
-            extractorListMap = spanKeyExtractors.stream()
-                    .collect(Collectors.toMap(
-                            spanKeyExtractor -> spanKeyExtractor,
-                            spanKeyExtractor -> {
-                                List<KafkaProducer<String, String>> list = new ArrayList<>();
-                                spanKeyExtractor.getProducers().forEach(producerStr -> {
-                                    list.add(kafkaProducerNameMap.get(producerStr));
-                                });
-                                return list;
-                            }
-                    ));
+
+            extractorListMap = spanKeyExtractors.stream().map(spanKeyExtractor -> {
+                List<KafkaProducerWrapper> kafkaProducers = new ArrayList<>();
+                spanKeyExtractor.getProducers().forEach(producerStr -> {
+                    kafkaProducers.add(kafkaProducerNameMap.get(producerStr));
+                });
+                return new KafkaProducerExtractorMapping(spanKeyExtractor, kafkaProducers);
+            }).collect(Collectors.toList());
         }
 
         return extractorListMap;
@@ -116,8 +114,7 @@ public class Service {
     }
 
     KafkaToKafkaPipeline getKafkaToKafkaPipeline() {
-        return new KafkaToKafkaPipeline(metricRegistry,
-                getExtractorKafkaProducerMap(projectConfiguration));
+        return new KafkaToKafkaPipeline(getExtractorKafkaProducerMap(projectConfiguration));
     }
 
     public void inPlaceHealthCheck() {

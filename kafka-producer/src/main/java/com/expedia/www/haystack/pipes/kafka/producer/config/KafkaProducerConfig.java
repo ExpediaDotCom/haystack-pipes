@@ -31,8 +31,6 @@ public class KafkaProducerConfig {
 
     private int port;
 
-    private String toTopic;
-
     private String acks;
 
     private int batchSize;
@@ -41,17 +39,19 @@ public class KafkaProducerConfig {
 
     private int bufferMemory;
 
-    public KafkaProducerConfig(final String name, final String brokers, final int port, final String toTopic,
-                               final String acks, final int batchSize, final int lingerMs,
-                               final int bufferMemory) {
+    private String defaultTopic;
+
+    public KafkaProducerConfig(String name,String brokers,int port,
+                               String acks,int batchSize,int lingerMs,
+                               int bufferMemory,String defaultTopic ) {
         this.name = name;
         this.brokers = brokers;
         this.port = port;
-        this.toTopic = toTopic;
         this.acks = acks;
         this.batchSize = batchSize;
         this.lingerMs = lingerMs;
         this.bufferMemory = bufferMemory;
+        this.defaultTopic = defaultTopic;
     }
 
     public String getName() {
@@ -64,10 +64,6 @@ public class KafkaProducerConfig {
 
     public int getPort() {
         return this.port;
-    }
-
-    public String getToTopic() {
-        return this.toTopic;
     }
 
     public String getAcks() {
@@ -84,6 +80,10 @@ public class KafkaProducerConfig {
 
     public int getBufferMemory() {
         return this.bufferMemory;
+    }
+
+    public String getDefaultTopic() {
+        return defaultTopic;
     }
 
     public Map<String, Object> getConfigurationMap() {

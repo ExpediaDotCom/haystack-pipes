@@ -25,7 +25,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
@@ -100,7 +99,7 @@ public class ProjectConfigurationTest {
         when(System.getenv("configFilePath")).thenReturn("config/test.conf");
         assertEquals("config/test.conf", projectConfiguration.getResourceName());
         unSetEnvironmentVariable("configFilePath");
-        ProjectConfiguration.projectConfiguration = null;
+        ProjectConfiguration.projectConfiguration = realProjectConfiguration;
     }
 
     @Test
@@ -112,7 +111,7 @@ public class ProjectConfigurationTest {
     }
 
     @Test
-    public void testWithEnvVariable() throws IOException {
+    public void testWithEnvVariable() {
         when(mockProjectConfiguration.getResourceName()).thenReturn("config/test.conf");
         ProjectConfiguration realProjectConfiguration = ProjectConfiguration.projectConfiguration;
         ProjectConfiguration.projectConfiguration = mockProjectConfiguration;
@@ -136,13 +135,13 @@ public class ProjectConfigurationTest {
     }
 
     @Test
-    public void getKafkaProducerConfigList() {
+    public void testGetKafkaProducerConfigList() {
         List<KafkaProducerConfig> kafkaProducerConfigs = projectConfiguration.getKafkaProducerConfigs();
         assertEquals(1, kafkaProducerConfigs.size());
         KafkaProducerConfig kafkaProducerConfig = kafkaProducerConfigs.get(0);
         assertEquals("localhost:9092", kafkaProducerConfig.getBrokers());
         assertEquals(9093, kafkaProducerConfig.getPort());
-        assertEquals("externalKafkaTopic", kafkaProducerConfig.getToTopic());
+        assertEquals("externalKafkaTopic", kafkaProducerConfig.getDefaultTopic());
         assertEquals("0", kafkaProducerConfig.getAcks());
         assertEquals(8192, kafkaProducerConfig.getBatchSize());
         assertEquals(4, kafkaProducerConfig.getLingerMs());

@@ -16,8 +16,6 @@
  */
 package com.expedia.www.haystack.pipes.kafka.producer;
 
-import com.codahale.metrics.Counter;
-import com.netflix.servo.monitor.Timer;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
@@ -28,8 +26,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
-
-import java.time.Clock;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
 import static org.junit.Assert.assertSame;
@@ -60,18 +56,6 @@ public class KafkaCallbackTest {
     private ObjectPool<KafkaCallback> mockObjectPool;
     private ObjectPool<KafkaCallback> realObjectPool;
 
-    @Mock
-    private Counter mockPostsInFlightCounter;
-
-    @Mock
-    private Timer mockTimer;
-
-    @Mock
-    private Clock mockClock;
-
-    @Mock
-    private Timer mockSpanArrivalTimer;
-
     private RecordMetadata recordMetadata;
     private KafkaCallback kafkaCallback;
 
@@ -83,7 +67,6 @@ public class KafkaCallbackTest {
                 SERIALIZED_KEY_SIZE, SERIALIZED_VALUE_SIZE);
         kafkaCallback = new KafkaCallback();
         KafkaCallback.logger = mockLogger;
-        KafkaToKafkaPipeline.kafkaProducerCounter = mockPostsInFlightCounter;
     }
 
     private void injectMockAndSaveRealObjects() {
@@ -169,7 +152,6 @@ public class KafkaCallbackTest {
 
     private void commonVerifiesForOnCompletion() throws Exception {
         verify(mockObjectPool).returnObject(kafkaCallback);
-        verify(mockPostsInFlightCounter).inc();
     }
 
 }

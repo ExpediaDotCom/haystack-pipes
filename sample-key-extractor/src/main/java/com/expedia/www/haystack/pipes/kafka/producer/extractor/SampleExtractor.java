@@ -48,7 +48,7 @@ public class SampleExtractor implements SpanKeyExtractor {
         try {
             return Optional.of(jsonPrinter.print(span));
         } catch (InvalidProtocolBufferException e) {
-            logger.error("Exception occurred while extracting span: " + e.getMessage());
+            logger.error("Exception occurred while extracting span:{}  with exception: {}", span.getTraceId(), e.getMessage());
         }
         return Optional.empty();
     }

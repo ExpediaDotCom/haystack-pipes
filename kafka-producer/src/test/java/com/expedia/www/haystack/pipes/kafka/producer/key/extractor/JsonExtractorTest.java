@@ -26,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
@@ -81,7 +82,12 @@ public class JsonExtractorTest {
     }
 
     @Test
-    public void getKey() {
+    public void testGetKey() {
         assertEquals("externalKafkaKey", jsonExtractor.getKey());
+    }
+
+    @Test
+    public void testGetTopics() {
+        assertEquals(Collections.singletonList("extractedTopic"), jsonExtractor.getTopics());
     }
 }

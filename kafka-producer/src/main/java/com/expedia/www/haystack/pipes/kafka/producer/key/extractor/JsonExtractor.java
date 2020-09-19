@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,7 +69,7 @@ public class JsonExtractor implements SpanKeyExtractor {
 
     @Override
     public List<String> getTopics() {
-        return new ArrayList<>();
+        return Collections.singletonList("extractedTopic");
     }
 
     @Override

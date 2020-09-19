@@ -16,7 +16,6 @@
  */
 package com.expedia.www.haystack.pipes.kafka.producer;
 
-import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
@@ -29,9 +28,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.*;
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -47,46 +48,48 @@ public class KafkaToKafkaPipelineTest {
     @Mock
     private MetricRegistry mockMetricRegistry;
     @Mock
-    private Counter mockRequestCounter;
-    @Mock
     private Logger mockLogger;
     @Mock
     private Timer mockKafkaProducerTimer;
     @Mock
-    private Counter mockKafkaProducerCounter;
-    @Mock
     private KafkaProducer<String, String> mockKafkaProducer;
     @Mock
     private SpanKeyExtractor mockSpanKeyExtractor;
+    @Mock
+    private KafkaProducerMetrics mockKafkaProducerMetrics;
 
     private Logger realLogger;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         realLogger = KafkaToKafkaPipeline.logger;
-        when(mockMetricRegistry.counter("REQUEST")).thenReturn(mockRequestCounter);
-        when(mockMetricRegistry.counter("KAFKA_PRODUCER_POST_COUNTER")).thenReturn(mockKafkaProducerCounter);
+        whenForConstructor();
+        List<KafkaProducerExtractorMapping> kafkaProducerExtractorMappings = singletonList(new KafkaProducerExtractorMapping(mockSpanKeyExtractor,
+                singletonList(new KafkaProducerWrapper(mockKafkaProducer, "mock-Topic", mockKafkaProducerMetrics))));
+        kafkaToKafkaPipeline = new KafkaToKafkaPipeline(kafkaProducerExtractorMappings);
+    }
+
+    private void whenForConstructor() {
+        when(mockSpanKeyExtractor.extract(any())).thenReturn(Optional.empty());
         when(mockMetricRegistry.timer(anyString())).thenReturn(mockKafkaProducerTimer);
         when(mockKafkaProducerTimer.time()).thenReturn(mockTimer);
-        kafkaToKafkaPipeline = new KafkaToKafkaPipeline(mockMetricRegistry,
-                Service.getExtractorKafkaProducerMap(ProjectConfiguration.getInstance()));
+        when(mockKafkaProducerMetrics.getTimer()).thenReturn(mockKafkaProducerTimer);
+        when(mockSpanKeyExtractor.getKey()).thenReturn("externalKafkaKey");
     }
 
     @Test
     public void testProduceToKafkaTopics() {
         KafkaToKafkaPipeline.logger = mockLogger;
-        kafkaToKafkaPipeline.produceToKafkaTopics(mockKafkaProducer, Arrays.asList("mock-Topic"), "mock-key", JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
-        verify(mockLogger).info("Kafka message sent on topic: {}", "mock-Topic");
-        verify(mockKafkaProducerCounter).inc();
+        kafkaToKafkaPipeline.produceToKafkaTopics(mockKafkaProducer, singletonList("mock-Topic"), "mock-key", JSON_SPAN_STRING_WITH_FLATTENED_TAGS, mockKafkaProducerMetrics);
+        verify(mockLogger).debug(KafkaToKafkaPipeline.kafkaProducerMsg, "mock-Topic");
         KafkaToKafkaPipeline.logger = realLogger;
     }
 
     @Test
     public void testApplyWithNullMessage() {
-        Map<SpanKeyExtractor, List<KafkaProducer<String, String>>> keyExtractorMap = new HashMap<>();
-        keyExtractorMap.put(mockSpanKeyExtractor, Arrays.asList(mockKafkaProducer));
-        KafkaToKafkaPipeline mockKafkaToKafkaPipeline = new KafkaToKafkaPipeline(mockMetricRegistry,
-                keyExtractorMap);
+        List<KafkaProducerExtractorMapping> kafkaProducerExtractorMappings = singletonList(new KafkaProducerExtractorMapping(mockSpanKeyExtractor,
+                singletonList(new KafkaProducerWrapper(mockKafkaProducer, "defaultTopic", mockKafkaProducerMetrics))));
+        KafkaToKafkaPipeline mockKafkaToKafkaPipeline = new KafkaToKafkaPipeline(kafkaProducerExtractorMappings);
         when(mockSpanKeyExtractor.getKey()).thenReturn("mock-Key");
         when(mockSpanKeyExtractor.extract(FULLY_POPULATED_SPAN)).thenReturn(Optional.empty());
         KafkaToKafkaPipeline.logger = mockLogger;
@@ -101,33 +104,41 @@ public class KafkaToKafkaPipelineTest {
         KafkaToKafkaPipeline.logger = mockLogger;
         Exception exception = new RuntimeException();
         when(mockKafkaProducer.send(any(), any())).thenThrow(exception);
-        kafkaToKafkaPipeline.produceToKafkaTopics(mockKafkaProducer, Arrays.asList("mock-Topic"), "mock-key", JSON_SPAN_STRING_WITH_FLATTENED_TAGS);
+        kafkaToKafkaPipeline.produceToKafkaTopics(mockKafkaProducer, singletonList("mock-Topic"), "mock-key", JSON_SPAN_STRING_WITH_FLATTENED_TAGS, mockKafkaProducerMetrics);
         verify(mockLogger).error(String.format(KafkaToKafkaPipeline.ERROR_MSG, JSON_SPAN_STRING_WITH_FLATTENED_TAGS, null), exception);
+        KafkaToKafkaPipeline.logger = realLogger;
+    }
+
+    @Test
+    public void testProduceToKafkaTopicsForCallback() {
+        KafkaToKafkaPipeline.logger = mockLogger;
+        Exception exception = new RuntimeException();
+
+        when(mockKafkaProducer.send(any(), any())).thenThrow(exception);
+        kafkaToKafkaPipeline.produceToKafkaTopics(mockKafkaProducer, singletonList("mock-Topic"), "mock-key", JSON_SPAN_STRING_WITH_FLATTENED_TAGS, mockKafkaProducerMetrics);
+
+        verify(mockLogger, times(1)).error(String.format(KafkaToKafkaPipeline.ERROR_MSG, JSON_SPAN_STRING_WITH_FLATTENED_TAGS, null), exception);
         KafkaToKafkaPipeline.logger = realLogger;
     }
 
     @Test
     public void testApplyWithTags() {
         Logger realLogger = KafkaToKafkaPipeline.logger;
+        when(mockSpanKeyExtractor.extract(any())).thenReturn(Optional.of(JSON_SPAN_STRING));
         KafkaToKafkaPipeline.logger = mockLogger;
         kafkaToKafkaPipeline.apply(null, FULLY_POPULATED_SPAN);
         KafkaToKafkaPipeline.logger = realLogger;
-        verify(mockRequestCounter).inc();
-        verify(mockKafkaProducerTimer).time();
-        verify(mockRequestCounter).inc();
-        verify(mockLogger).info("KafkaProducer sending message: {},with key: {}  ", JSON_SPAN_STRING_WITH_FLATTENED_TAGS, "externalKafkaKey");
+        verify(mockLogger).debug("KafkaProducer sending message: {},with key: {}  ", JSON_SPAN_STRING_WITH_FLATTENED_TAGS, "externalKafkaKey");
     }
 
     @Test
     public void testApplyWithoutTags() {
         Logger realLogger = KafkaToKafkaPipeline.logger;
         KafkaToKafkaPipeline.logger = mockLogger;
+        when(mockSpanKeyExtractor.extract(any())).thenReturn(Optional.of(JSON_SPAN_STRING_WITH_NO_TAGS));
         kafkaToKafkaPipeline.apply(null, NO_TAGS_SPAN);
         KafkaToKafkaPipeline.logger = realLogger;
-        verify(mockRequestCounter).inc();
-        verify(mockKafkaProducerTimer).time();
-        verify(mockRequestCounter).inc();
-        verify(mockLogger).info("KafkaProducer sending message: {},with key: {}  ", JSON_SPAN_STRING_WITH_NO_TAGS, "externalKafkaKey");
+        verify(mockLogger).debug("KafkaProducer sending message: {},with key: {}  ", JSON_SPAN_STRING_WITH_NO_TAGS, "externalKafkaKey");
     }
 
     @Test

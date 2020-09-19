@@ -51,7 +51,6 @@ public class KafkaCallback implements Callback {
 
     private void returnObjectToPoolButLogExceptionIfReturnFails() {
         try {
-            KafkaToKafkaPipeline.kafkaProducerCounter.inc();
             KafkaToKafkaPipeline.OBJECT_POOL.returnObject(this);
         } catch (Exception exception) {
             logError(exception, POOL_ERROR_MSG_TEMPLATE);

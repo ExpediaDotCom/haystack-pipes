@@ -16,14 +16,11 @@
  */
 package com.expedia.www.haystack.pipes.kafka.producer;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.kafka.TagFlattener;
 import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
 import com.netflix.servo.util.VisibleForTesting;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -32,7 +29,6 @@ import org.apache.kafka.streams.kstream.ForeachAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,27 +43,19 @@ public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
     static Logger logger = LoggerFactory.getLogger(KafkaToKafkaPipeline.class);
     @VisibleForTesting
     static Factory factory = new KafkaToKafkaPipeline.Factory();
-    @VisibleForTesting
-    static Counter kafkaProducerCounter;
-    static Counter requestCounter;
-    static Timer kafkaProducerTimer;
+    static String kafkaProducerMsg = "Kafka message sent on topic: {}";
     private final TagFlattener tagFlattener = new TagFlattener();
-    private final Map<SpanKeyExtractor, List<KafkaProducer<String, String>>> kafkaProducerMap;
+    private List<KafkaProducerExtractorMapping> kafkaProducerExtractorMappings;
 
-    public KafkaToKafkaPipeline(MetricRegistry metricRegistry,
-                                Map<SpanKeyExtractor, List<KafkaProducer<String, String>>> kafkaProducerMap) {
-        this.kafkaProducerMap = kafkaProducerMap;
-        requestCounter = metricRegistry.counter("REQUEST");
-        kafkaProducerTimer = metricRegistry.timer("KAFKA_PRODUCER_POST_TIMER");
-        kafkaProducerCounter = metricRegistry.counter("KAFKA_PRODUCER_POST_COUNTER");
+    public KafkaToKafkaPipeline(List<KafkaProducerExtractorMapping> kafkaProducerExtractorMappings) {
+        this.kafkaProducerExtractorMappings = kafkaProducerExtractorMappings;
     }
 
     @Override
     public void apply(String key, Span value) {
-        requestCounter.inc();
-        Timer.Context time = kafkaProducerTimer.time();
-        kafkaProducerMap.forEach((spanKeyExtractor, kafkaProducers) -> {
-            List<String> kafkaTopics = new ArrayList<>();
+
+        kafkaProducerExtractorMappings.forEach(kafkaProducerExtractorMapping -> {
+            SpanKeyExtractor spanKeyExtractor = kafkaProducerExtractorMapping.getSpanKeyExtractor();
             final String kafkaKey = spanKeyExtractor.getKey();
             Optional<String> optionalMsg = spanKeyExtractor.extract(value);
             if (!optionalMsg.isPresent()) {
@@ -75,16 +63,22 @@ public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
                 return;
             }
             String kafkaMsg = optionalMsg.get();
-            kafkaTopics.addAll(spanKeyExtractor.getTopics());
+            List<String> kafkaTopics = spanKeyExtractor.getTopics();
             String msgWithFlattenedTags = tagFlattener.flattenTags(kafkaMsg);
-            logger.info("KafkaProducer sending message: {},with key: {}  ", msgWithFlattenedTags, kafkaKey);
-            kafkaProducers.forEach(kafkaProducer -> produceToKafkaTopics(kafkaProducer, kafkaTopics, kafkaKey, msgWithFlattenedTags));
-
+            logger.debug("KafkaProducer sending message: {},with key: {}  ", msgWithFlattenedTags, kafkaKey);
+            kafkaProducerExtractorMapping.getKafkaProducerWrappers().forEach(kafkaProducerWrapper -> {
+                kafkaProducerWrapper.getKafkaProducerMetrics().incRequestCounter();
+                kafkaTopics.add(kafkaProducerWrapper.getDefaultTopic());
+                produceToKafkaTopics(kafkaProducerWrapper.getKafkaProducer(), kafkaTopics, kafkaKey, msgWithFlattenedTags,
+                        kafkaProducerWrapper.getKafkaProducerMetrics());
+            });
         });
-        time.stop();
+
     }
 
-    public void produceToKafkaTopics(KafkaProducer<String, String> kafkaProducer, List<String> kafkaTopics, String kafkaKey, String jsonWithFlattenedTags) {
+    public void produceToKafkaTopics(KafkaProducer<String, String> kafkaProducer, List<String> kafkaTopics, String kafkaKey,
+                                     String jsonWithFlattenedTags, KafkaProducerMetrics kafkaProducerMetrics) {
+        Timer.Context time = kafkaProducerMetrics.getTimer().time();
         kafkaTopics.forEach(topic -> {
             final ProducerRecord<String, String> producerRecord =
                     factory.createProducerRecord(topic, kafkaKey, jsonWithFlattenedTags);
@@ -92,16 +86,18 @@ public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
             final KafkaCallback callback; // callback must returnObject()
             try {
                 callback = OBJECT_POOL.borrowObject();
-                kafkaProducerCounter.inc();
+                kafkaProducerMetrics.incSuccessCounter();
                 // TODO Put the Span value into the callback so that it can write it to Kafka for retry
                 kafkaProducer.send(producerRecord, callback);
-                logger.info("Kafka message sent on topic: {}", topic);
+                logger.debug(kafkaProducerMsg, topic);
             } catch (Exception exception) {
+                kafkaProducerMetrics.incFailureCounter();
                 // Must format below because log4j2 underneath slf4j doesn't handle .error(varargs) properly
                 final String message = String.format(ERROR_MSG, jsonWithFlattenedTags, exception.getMessage());
                 logger.error(message, exception);
             }
         });
+        time.stop();
     }
 
 
