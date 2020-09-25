@@ -55,7 +55,7 @@ public class SampleExtractor implements SpanKeyExtractor {
                     producerTopicsMapping);
             return Arrays.asList(record);
         } catch (InvalidProtocolBufferException e) {
-            logger.error("Exception occurred while extracting span: " + e.getMessage());
+            logger.error("Exception occurred while extracting span with traceId:{} {}", span.getTraceId(), e.getMessage());
         }
         return Collections.emptyList();
     }
