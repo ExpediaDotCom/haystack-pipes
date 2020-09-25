@@ -83,15 +83,15 @@ public class ServiceTest {
     @Test
     public void testGetExtractorKafkaProducerMap() {
         ProjectConfiguration projectConfiguration = ProjectConfiguration.getInstance();
-        List<KafkaProducerExtractorMapping> extractorProducerMap = Service.getExtractorKafkaProducerMap(projectConfiguration);
+        List<KafkaProducerExtractorMapping> extractorProducerMap = Service.getKafkaProducerExtractorMapping(projectConfiguration);
         assertEquals(extractorProducerMap.size(), 1);
     }
 
     @Test
     public void testGetExtractorKafkaProducerMapForIdempotent() {
         ProjectConfiguration projectConfiguration = ProjectConfiguration.getInstance();
-        List<KafkaProducerExtractorMapping> extractorProducerMap = Service.getExtractorKafkaProducerMap(projectConfiguration);
-        assertEquals(extractorProducerMap, Service.getExtractorKafkaProducerMap(projectConfiguration));
+        List<KafkaProducerExtractorMapping> extractorProducerMap = Service.getKafkaProducerExtractorMapping(projectConfiguration);
+        assertEquals(extractorProducerMap, Service.getKafkaProducerExtractorMapping(projectConfiguration));
     }
 
     @Test

@@ -10,9 +10,6 @@ haystack:
      wakeuptimeoutms: 3000
      polltimeoutms: 250
      commitms: 3000
-  pipe:
-    streams:
-      replicationfactor: 2147483645
   graphite:
      prefix: "haystack.graphite.prefix"
      host: "haystack.graphite.host"

@@ -22,7 +22,10 @@ import com.expedia.www.haystack.pipes.kafka.producer.config.KafkaProducerConfig;
 import com.netflix.servo.util.VisibleForTesting;
 import com.typesafe.config.Config;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ProjectConfiguration {
 
@@ -66,11 +69,11 @@ public class ProjectConfiguration {
     public List<KafkaProducerConfig> getKafkaProducerConfigs() {
         if (null == kafkaProducerConfigs) {
             kafkaProducerConfigs = new ArrayList<>();
-            List<Config> kafkaConfigs = (List<Config>) haystackConfig.getConfigList("kafka_sinks");
+            List<Config> kafkaConfigs = (List<Config>) haystackConfig.getConfigList("kafka.sinks");
             kafkaConfigs.forEach(kafkaConfig -> {
                 kafkaProducerConfigs.add(new KafkaProducerConfig(kafkaConfig.getString("name"), kafkaConfig.getString("brokers"),
                         kafkaConfig.getInt("port"), kafkaConfig.getString("acks"), kafkaConfig.getInt("batchsize"),
-                        kafkaConfig.getInt("lingerms"), kafkaConfig.getInt("buffermemory"),kafkaConfig.getString("defaultTopic") ));
+                        kafkaConfig.getInt("lingerms"), kafkaConfig.getInt("buffermemory"), kafkaConfig.getString("defaultTopic")));
             });
         }
         return kafkaProducerConfigs;

@@ -391,6 +391,7 @@
                             <exclude>**/com/expedia/www/haystack/pipes/commons/test/*</exclude>
                             <exclude>**/com/expedia/www/haystack/pipes/secretDetector/actions/SenderImpl*</exclude>
                             <exclude>**/com/expedia/www/haystack/pipes/kafka/producer/Constants*</exclude>
+                            <exclude>**/com/expedia/www/haystack/pipes/kafka/producer/KafkaProducerWrapper*</exclude>
                         </excludes>
                     </configuration>
                     <executions>

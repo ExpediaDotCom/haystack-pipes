@@ -28,11 +28,7 @@ public interface SpanKeyExtractor {
 
     public void configure(Config config); // sets up the extractor with configuration
 
-    public Optional<String> extract(Span span); // extract the span to string message
-
-    public String getKey(); // get the key required for message as value to be published
-
-    public List<String> getTopics(); // to get topics/streams to publish messages to
+    public List<Record> getRecords(Span span); // returns list of records containing message, key and producer topic mapping
 
     public List<String> getProducers();
 

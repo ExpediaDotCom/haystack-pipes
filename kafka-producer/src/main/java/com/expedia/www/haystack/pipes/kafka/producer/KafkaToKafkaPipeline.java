@@ -19,6 +19,7 @@ package com.expedia.www.haystack.pipes.kafka.producer;
 import com.codahale.metrics.Timer;
 import com.expedia.open.tracing.Span;
 import com.expedia.www.haystack.pipes.commons.kafka.TagFlattener;
+import com.expedia.www.haystack.pipes.key.extractor.Record;
 import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
 import com.netflix.servo.util.VisibleForTesting;
 import org.apache.commons.pool2.ObjectPool;
@@ -28,10 +29,11 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.streams.kstream.ForeachAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
     @VisibleForTesting
@@ -53,24 +55,30 @@ public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
 
     @Override
     public void apply(String key, Span value) {
-
         kafkaProducerExtractorMappings.forEach(kafkaProducerExtractorMapping -> {
             SpanKeyExtractor spanKeyExtractor = kafkaProducerExtractorMapping.getSpanKeyExtractor();
-            final String kafkaKey = spanKeyExtractor.getKey();
-            Optional<String> optionalMsg = spanKeyExtractor.extract(value);
-            if (!optionalMsg.isPresent()) {
+
+            List<Record> records = spanKeyExtractor.getRecords(value);
+            if (CollectionUtils.isEmpty(records))
                 logger.debug("Extractor skipped the span: {}", value);
-                return;
-            }
-            String kafkaMsg = optionalMsg.get();
-            List<String> kafkaTopics = spanKeyExtractor.getTopics();
-            String msgWithFlattenedTags = tagFlattener.flattenTags(kafkaMsg);
-            logger.debug("KafkaProducer sending message: {},with key: {}  ", msgWithFlattenedTags, kafkaKey);
-            kafkaProducerExtractorMapping.getKafkaProducerWrappers().forEach(kafkaProducerWrapper -> {
-                kafkaProducerWrapper.getKafkaProducerMetrics().incRequestCounter();
-                kafkaTopics.add(kafkaProducerWrapper.getDefaultTopic());
-                produceToKafkaTopics(kafkaProducerWrapper.getKafkaProducer(), kafkaTopics, kafkaKey, msgWithFlattenedTags,
-                        kafkaProducerWrapper.getKafkaProducerMetrics());
+
+            records.forEach(record -> {
+                String message = record.getMessage();
+                final String kafkaKey = record.getKey();
+                String msgWithFlattenedTags = tagFlattener.flattenTags(message);
+                kafkaProducerExtractorMapping.getKafkaProducerWrappers().forEach(kafkaProducerWrapper -> {
+                    kafkaProducerWrapper.getKafkaProducerMetrics().incRequestCounter();
+                    List<String> kafkaTopics = new ArrayList<>();
+                    kafkaTopics.add(kafkaProducerWrapper.getDefaultTopic());
+                    if (record.getProducerTopicsMappings() == null || !record.getProducerTopicsMappings().containsKey(kafkaProducerWrapper.getName())) {
+                        logger.error("Extractor skipped the span: {}, as no topics found for producer: {}", value, kafkaProducerWrapper.getName());
+                        return;
+                    }
+                    logger.debug("Kafka Producer sending message: {},with key: {}  ", msgWithFlattenedTags, kafkaKey);
+                    kafkaTopics.addAll(record.getProducerTopicsMappings().get(kafkaProducerWrapper.getName()));
+                    produceToKafkaTopics(kafkaProducerWrapper.getKafkaProducer(), kafkaTopics, kafkaKey, msgWithFlattenedTags,
+                            kafkaProducerWrapper.getKafkaProducerMetrics());
+                });
             });
         });
 

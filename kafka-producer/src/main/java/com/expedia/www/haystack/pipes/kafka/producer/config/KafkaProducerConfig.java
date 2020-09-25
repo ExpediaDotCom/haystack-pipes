@@ -41,9 +41,9 @@ public class KafkaProducerConfig {
 
     private String defaultTopic;
 
-    public KafkaProducerConfig(String name,String brokers,int port,
-                               String acks,int batchSize,int lingerMs,
-                               int bufferMemory,String defaultTopic ) {
+    public KafkaProducerConfig(String name, String brokers, int port,
+                               String acks, int batchSize, int lingerMs,
+                               int bufferMemory, String defaultTopic) {
         this.name = name;
         this.brokers = brokers;
         this.port = port;

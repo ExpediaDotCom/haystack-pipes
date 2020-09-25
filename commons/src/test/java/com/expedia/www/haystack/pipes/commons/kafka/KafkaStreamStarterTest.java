@@ -154,7 +154,6 @@ public class KafkaStreamStarterTest {
         assertEquals(mockKafkaStreamBuilder.getClass().getName(), properties.remove(ConsumerConfig.GROUP_ID_CONFIG));
         assertEquals(mockKafkaStreamBuilder.getClass().getSimpleName(), properties.remove(StreamsConfig.APPLICATION_ID_CONFIG));
         assertEquals(KAFKA_IP_AND_PORT, properties.remove(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG));
-        assertEquals(2147483645, properties.remove(StreamsConfig.REPLICATION_FACTOR_CONFIG));
         assertEquals(THREAD_COUNT_CONFIGURATION_IN_TEST_BASE_DOT_YAML, properties.remove(StreamsConfig.NUM_STREAM_THREADS_CONFIG));
         assertEquals(15000, properties.remove(StreamsConfig.consumerPrefix(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG)));
         assertEquals("Properties should be empty but is: " + properties, 0, properties.size());

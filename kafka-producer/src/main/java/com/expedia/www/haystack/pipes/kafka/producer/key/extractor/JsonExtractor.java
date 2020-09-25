@@ -17,19 +17,16 @@
 package com.expedia.www.haystack.pipes.kafka.producer.key.extractor;
 
 import com.expedia.open.tracing.Span;
+import com.expedia.www.haystack.pipes.key.extractor.Record;
 import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.netflix.servo.util.VisibleForTesting;
 import com.typesafe.config.Config;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class JsonExtractor implements SpanKeyExtractor {
 
@@ -48,28 +45,26 @@ public class JsonExtractor implements SpanKeyExtractor {
     @Override
     public void configure(Config config) {
         logger.info("{} class loaded with config: {}", JsonExtractor.class.getSimpleName(), config);
-        producers = config.getStringList("producers");
+        List<Config> producerConf = (List<Config>)config.getConfigList("producers");
+        producers = new ArrayList<>();
+        producerConf.forEach(conf->producers.add(conf.getString("name")));
+
     }
 
     @Override
-    public Optional<String> extract(Span span) {
-        String message = null;
+    public List<Record> getRecords(Span span) {
         try {
-            message = jsonPrinter.print(span);
+            Map<String, List<String>> producerTopicsMapping = new HashMap<>();
+            producers.forEach(producer -> {
+                producerTopicsMapping.put(producer, Arrays.asList("extractedTopic"));
+            });
+            Record record = new Record(jsonPrinter.print(span), "externalKafkaKey",
+                    producerTopicsMapping);
+            return Arrays.asList(record);
         } catch (InvalidProtocolBufferException e) {
             logger.error("Exception occurred while extracting span: " + e.getMessage());
         }
-        return StringUtils.isEmpty(message) ? Optional.empty() : Optional.of(message);
-    }
-
-    @Override
-    public String getKey() {
-        return "externalKafkaKey";
-    }
-
-    @Override
-    public List<String> getTopics() {
-        return Collections.singletonList("extractedTopic");
+        return Collections.emptyList();
     }
 
     @Override
