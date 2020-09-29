@@ -23,7 +23,6 @@ import com.expedia.www.haystack.pipes.commons.health.UpdateHealthStatusFile;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import com.expedia.www.haystack.pipes.kafka.producer.config.KafkaProducerConfig;
-import com.expedia.www.haystack.pipes.kafka.producer.key.extractor.JsonExtractor;
 import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
 import com.expedia.www.haystack.pipes.key.extractor.loader.SpanKeyExtractorLoader;
 import com.netflix.servo.util.VisibleForTesting;
@@ -31,9 +30,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -49,7 +46,7 @@ public class Service {
     @VisibleForTesting
     static Service service = null;
     @VisibleForTesting
-    private static List<KafkaProducerExtractorMapping> extractorListMap = null;
+    private static List<KafkaProducerWrapper> kafkaProducerWrappers = null;
 
     private Service() {
     }
@@ -71,36 +68,21 @@ public class Service {
         return service;
     }
 
-    public static List<KafkaProducerExtractorMapping> getKafkaProducerExtractorMapping(ProjectConfiguration projectConfiguration) {
+    public static List<KafkaProducerWrapper> getKafkaProducerWrappers(ProjectConfiguration projectConfiguration) {
 
-        if (null == extractorListMap) {
+        if (null == kafkaProducerWrappers) {
             List<KafkaProducerConfig> kafkaProducerConfigs = projectConfiguration.getKafkaProducerConfigs();
             KafkaToKafkaPipeline.Factory factory = new KafkaToKafkaPipeline.Factory();
 
-            Map<String, KafkaProducerWrapper> kafkaProducerNameMap = kafkaProducerConfigs.stream()
-                    .collect(Collectors.toMap(kafkaProducerConfig -> kafkaProducerConfig.getName(),
-                            kafkaProducerConfig -> {
-                                KafkaProducer<String, String> kafkaProducer = factory.createKafkaProducer(kafkaProducerConfig.getConfigurationMap());
-                                KafkaProducerMetrics kafkaProducerMetrics = new KafkaProducerMetrics(kafkaProducerConfig.getName(), metricRegistry);
-                                return new KafkaProducerWrapper(kafkaProducerConfig.getDefaultTopic(), kafkaProducerConfig.getName(), kafkaProducer, kafkaProducerMetrics);
-                            }));
-
-            List<SpanKeyExtractor> spanKeyExtractors = SpanKeyExtractorLoader.getInstance().getSpanKeyExtractor(projectConfiguration.getSpanExtractorConfigs());
-            SpanKeyExtractor defaultExtractor = new JsonExtractor();// default extractor for backward compatibility
-            defaultExtractor.configure(projectConfiguration.getSpanExtractorConfigs().get(defaultExtractor.name()));
-            spanKeyExtractors.add(defaultExtractor);// adding default extractor for backward compatibility
-
-
-            extractorListMap = spanKeyExtractors.stream().map(spanKeyExtractor -> {
-                List<KafkaProducerWrapper> kafkaProducerWrappers = new ArrayList<>();
-                spanKeyExtractor.getProducers().forEach(producerStr -> {
-                    kafkaProducerWrappers.add(kafkaProducerNameMap.get(producerStr));
-                });
-                return new KafkaProducerExtractorMapping(spanKeyExtractor, kafkaProducerWrappers);
-            }).collect(Collectors.toList());
+            kafkaProducerWrappers = kafkaProducerConfigs.stream()
+                    .map(kafkaProducerConfig -> {
+                        KafkaProducer<String, String> kafkaProducer = factory.createKafkaProducer(kafkaProducerConfig.getConfigurationMap());
+                        KafkaProducerMetrics kafkaProducerMetrics = new KafkaProducerMetrics(kafkaProducerConfig.getName(), metricRegistry);
+                        return new KafkaProducerWrapper(kafkaProducerConfig.getDefaultTopic(), kafkaProducerConfig.getName(), kafkaProducer, kafkaProducerMetrics);
+                    }).collect(Collectors.toList());
         }
 
-        return extractorListMap;
+        return kafkaProducerWrappers;
     }
 
     public ProtobufToKafkaProducer getProtobufToKafkaProducer(KafkaStreamStarter kafkaStreamStarter) {
@@ -116,7 +98,8 @@ public class Service {
     }
 
     KafkaToKafkaPipeline getKafkaToKafkaPipeline() {
-        return new KafkaToKafkaPipeline(getKafkaProducerExtractorMapping(projectConfiguration));
+        List<SpanKeyExtractor> spanKeyExtractors = SpanKeyExtractorLoader.getInstance().getSpanKeyExtractor(projectConfiguration.getSpanExtractorConfigs());
+        return new KafkaToKafkaPipeline(spanKeyExtractors, getKafkaProducerWrappers(projectConfiguration));
     }
 
     public void inPlaceHealthCheck() {
@@ -126,6 +109,5 @@ public class Service {
     public JmxReporter getJmxReporter() {
         return JmxReporter.forRegistry(metricRegistry).build();
     }
-
 
 }

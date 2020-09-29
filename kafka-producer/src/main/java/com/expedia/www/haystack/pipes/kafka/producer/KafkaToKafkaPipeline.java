@@ -47,26 +47,27 @@ public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
     static Factory factory = new KafkaToKafkaPipeline.Factory();
     static String kafkaProducerMsg = "Kafka message sent on topic: {}";
     private final TagFlattener tagFlattener = new TagFlattener();
-    private List<KafkaProducerExtractorMapping> kafkaProducerExtractorMappings;
+    private final List<SpanKeyExtractor> spanKeyExtractors;
+    private final List<KafkaProducerWrapper> kafkaProducerWrappers;
 
-    public KafkaToKafkaPipeline(List<KafkaProducerExtractorMapping> kafkaProducerExtractorMappings) {
-        this.kafkaProducerExtractorMappings = kafkaProducerExtractorMappings;
+
+    public KafkaToKafkaPipeline(List<SpanKeyExtractor> spanKeyExtractors,
+                                List<KafkaProducerWrapper> kafkaProducerWrappers) {
+        this.spanKeyExtractors = spanKeyExtractors;
+        this.kafkaProducerWrappers = kafkaProducerWrappers;
     }
 
     @Override
     public void apply(String key, Span value) {
-        kafkaProducerExtractorMappings.forEach(kafkaProducerExtractorMapping -> {
-            SpanKeyExtractor spanKeyExtractor = kafkaProducerExtractorMapping.getSpanKeyExtractor();
-
+        spanKeyExtractors.forEach(spanKeyExtractor -> {
             List<Record> records = spanKeyExtractor.getRecords(value);
             if (CollectionUtils.isEmpty(records))
                 logger.debug("Extractor skipped the span: {}", value);
-
             records.forEach(record -> {
                 String message = record.getMessage();
                 final String kafkaKey = record.getKey();
                 String msgWithFlattenedTags = tagFlattener.flattenTags(message);
-                kafkaProducerExtractorMapping.getKafkaProducerWrappers().forEach(kafkaProducerWrapper -> {
+                kafkaProducerWrappers.forEach(kafkaProducerWrapper -> {
                     kafkaProducerWrapper.getKafkaProducerMetrics().incRequestCounter();
                     List<String> kafkaTopics = new ArrayList<>();
                     kafkaTopics.add(kafkaProducerWrapper.getDefaultTopic());
@@ -80,8 +81,8 @@ public class KafkaToKafkaPipeline implements ForeachAction<String, Span> {
                             kafkaProducerWrapper.getKafkaProducerMetrics());
                 });
             });
-        });
 
+        });
     }
 
     public void produceToKafkaTopics(KafkaProducer<String, String> kafkaProducer, List<String> kafkaTopics, String kafkaKey,

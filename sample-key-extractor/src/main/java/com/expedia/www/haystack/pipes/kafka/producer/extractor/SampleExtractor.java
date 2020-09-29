@@ -21,17 +21,26 @@ import com.expedia.www.haystack.pipes.key.extractor.Record;
 import com.expedia.www.haystack.pipes.key.extractor.SpanKeyExtractor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import com.netflix.servo.util.VisibleForTesting;
 import com.typesafe.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class SampleExtractor implements SpanKeyExtractor {
 
-    private static final Logger logger = LoggerFactory.getLogger("SampleExtractor");
-    private final JsonFormat.Printer jsonPrinter = JsonFormat.printer();
+    @VisibleForTesting
+    static Logger logger = LoggerFactory.getLogger(SampleExtractor.class);
+    @VisibleForTesting
+    static JsonFormat.Printer jsonPrinter = JsonFormat.printer().omittingInsignificantWhitespace();
+    private final String key = "sampleKafkaKey";
     private List<String> producers;
+    private Map<String, List<String>> producerTopicsMapping;
 
     @Override
     public String name() {
@@ -40,29 +49,23 @@ public class SampleExtractor implements SpanKeyExtractor {
 
     @Override
     public void configure(Config config) {
-        logger.debug("{} got config: {}", name(), config);
-        producers = config.getStringList("producers");
+        logger.info("{} class loaded with config: {}", SampleExtractor.class.getSimpleName(), config);
+        List<Config> producerConf = (List<Config>) config.getConfigList("producers");
+        // populating producer topic mapping from configuration
+        producerTopicsMapping = producerConf.stream().collect(Collectors.toMap(conf -> conf.getString("name"),
+                conf -> conf.getConfig("config").getStringList("topics")));
     }
 
     @Override
     public List<Record> getRecords(Span span) {
         try {
             Map<String, List<String>> producerTopicsMapping = new HashMap<>();
-            producers.forEach(producer -> {
-                producerTopicsMapping.put(producer, Arrays.asList("extractedTopic"));
-            });
-            Record record = new Record(jsonPrinter.print(span), "externalKafkaKey",
-                    producerTopicsMapping);
-            return Arrays.asList(record);
+            Record record = new Record(jsonPrinter.print(span), key, producerTopicsMapping);
+            return Collections.singletonList(record);
         } catch (InvalidProtocolBufferException e) {
             logger.error("Exception occurred while extracting span with traceId:{} {}", span.getTraceId(), e.getMessage());
         }
         return Collections.emptyList();
-    }
-
-    @Override
-    public List<String> getProducers() {
-        return new ArrayList<>();
     }
 
 }

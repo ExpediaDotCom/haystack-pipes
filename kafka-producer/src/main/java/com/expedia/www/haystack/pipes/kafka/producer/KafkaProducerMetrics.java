@@ -19,6 +19,7 @@ package com.expedia.www.haystack.pipes.kafka.producer;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+
 /*
  This class handles request, success and failure metrics for kafka producer
  */
