@@ -6,14 +6,14 @@
 
     <artifactId>haystack-pipes-secret-detector</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>2.0.0-SNAPSHOT</version>
 
     <name>haystack-pipes-secret-detector</name>
 
     <parent>
         <artifactId>haystack-pipes</artifactId>
         <groupId>com.expedia.www</groupId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>2.0.0-SNAPSHOT</version>
     </parent>
 
     <properties>
