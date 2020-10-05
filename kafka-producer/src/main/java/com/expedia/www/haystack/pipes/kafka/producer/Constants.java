@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Expedia, Inc.
+ * Copyright 2018 Expedia, Inc.
  *
  *       Licensed under the Apache License, Version 2.0 (the "License");
  *       you may not use this file except in compliance with the License.
@@ -14,12 +14,8 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.key.extractor;
+package com.expedia.www.haystack.pipes.kafka.producer;
 
-public interface Constants {
-    String HAYSTACK_KEY = "haystack";
-    String DIRECTORY_KEY = "directory";
-    String EXTRACTORS_KEY = "extractors";
-    String EXTRACTOR_NAME_KEY = "name";
-    String EXTRACTOR_CONFIG_KEY = "config";
+public final class Constants {
+    static String APPLICATION = "haystack-pipes-kafka-producer";
 }

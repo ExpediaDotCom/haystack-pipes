@@ -73,8 +73,6 @@ public class KafkaStreamStarterTest {
     @Mock
     private SystemExitUncaughtExceptionHandler mockSystemExitUncaughtExceptionHandler;
     @Mock
-    private ConfigurationProvider mockConfigurationProvider;
-    @Mock
     private KafkaConfig mockKafkaConfig;
 
     private KafkaStreamStarter kafkaStreamStarter;
@@ -86,7 +84,8 @@ public class KafkaStreamStarterTest {
         KafkaStreamStarter.factory = mockFactory;
         realLogger = KafkaStreamStarter.logger;
         KafkaStreamStarter.logger = mockLogger;
-        kafkaStreamStarter = new KafkaStreamStarter(mockKafkaStreamBuilder.getClass(), CLIENT_ID, healthController);
+        KafkaConfigurationProvider configurationProvider = new KafkaConfigurationProvider();
+        kafkaStreamStarter = new KafkaStreamStarter(mockKafkaStreamBuilder.getClass(), CLIENT_ID,configurationProvider,healthController);
     }
 
     @After
@@ -97,7 +96,7 @@ public class KafkaStreamStarterTest {
             PollScheduler.getInstance().stop();
         }
         verifyNoMoreInteractions(mockFactory, mockLogger, mockKafkaStreamBuilder, mockKStreamBuilder,
-                mockKafkaStreams, mockSystemExitUncaughtExceptionHandler, mockConfigurationProvider, mockKafkaConfig);
+                mockKafkaStreams, mockSystemExitUncaughtExceptionHandler, mockKafkaConfig);
     }
 
     @Test
@@ -113,19 +112,17 @@ public class KafkaStreamStarterTest {
     @Test
     public void testCreateAndStartStreamWithoutToTopic() {
         commonWhensForCreateAndStartStream();
-        when(mockConfigurationProvider.bind(HAYSTACK_KAFKA_CONFIG_PREFIX, KafkaConfig.class)).thenReturn(mockKafkaConfig);
         when(mockKafkaConfig.fromtopic()).thenReturn(KAFKA_FROM_TOPIC);
         when(mockKafkaConfig.brokers()).thenReturn(BROKERS);
         when(mockKafkaConfig.port()).thenReturn(PORT);
 
-        final ConfigurationProvider savedConfigurationProvider = KafkaStreamStarter.CONFIGURATION_PROVIDER;
-        KafkaStreamStarter.CONFIGURATION_PROVIDER = mockConfigurationProvider;
+        final KafkaConfig savedKafkaConfig = KafkaStreamStarter.kafkaConfig;
+        KafkaStreamStarter.kafkaConfig = mockKafkaConfig;
         kafkaStreamStarter.createAndStartStream(mockKafkaStreamBuilder);
-        KafkaStreamStarter.CONFIGURATION_PROVIDER = savedConfigurationProvider;
+        kafkaStreamStarter.kafkaConfig = savedKafkaConfig;
 
         commonVerifiesForCreateAndStartStream();
         verify(mockLogger).info(String.format(STARTING_MSG_WITHOUT_TO_TOPIC, KAFKA_IP_AND_PORT, KAFKA_FROM_TOPIC));
-        verify(mockConfigurationProvider, times(3)).bind(HAYSTACK_KAFKA_CONFIG_PREFIX, KafkaConfig.class);
         verify(mockKafkaConfig).fromtopic();
         verify(mockKafkaConfig).totopic();
         verify(mockKafkaConfig).brokers();
@@ -157,7 +154,6 @@ public class KafkaStreamStarterTest {
         assertEquals(mockKafkaStreamBuilder.getClass().getName(), properties.remove(ConsumerConfig.GROUP_ID_CONFIG));
         assertEquals(mockKafkaStreamBuilder.getClass().getSimpleName(), properties.remove(StreamsConfig.APPLICATION_ID_CONFIG));
         assertEquals(KAFKA_IP_AND_PORT, properties.remove(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG));
-        assertEquals(2147483645, properties.remove(StreamsConfig.REPLICATION_FACTOR_CONFIG));
         assertEquals(THREAD_COUNT_CONFIGURATION_IN_TEST_BASE_DOT_YAML, properties.remove(StreamsConfig.NUM_STREAM_THREADS_CONFIG));
         assertEquals(15000, properties.remove(StreamsConfig.consumerPrefix(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG)));
         assertEquals("Properties should be empty but is: " + properties, 0, properties.size());

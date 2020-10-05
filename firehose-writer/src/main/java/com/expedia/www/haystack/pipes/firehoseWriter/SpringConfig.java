@@ -55,13 +55,20 @@ import static com.expedia.www.haystack.pipes.firehoseWriter.Constants.APPLICATIO
 @Configuration
 @ComponentScan(basePackageClasses = SpringConfig.class)
 class SpringConfig {
-    @VisibleForTesting static final String SPAN_COUNTER_NAME = "REQUEST";
-    @VisibleForTesting static final String SUCCESS_COUNTER_NAME = "SUCCESS";
-    @VisibleForTesting static final String FAILURE_COUNTER_NAME = "FAILURE";
-    @VisibleForTesting static final String EXCEPTION_COUNTER_NAME = "EXCEPTION";
-    @VisibleForTesting static final String THROTTLED_COUNTER_NAME = "THROTTLED";
-    @VisibleForTesting static final String SOCKET_TIMEOUT_COUNTER_NAME = "SOCKET_TIMEOUT";
-    @VisibleForTesting static final String PUT_BATCH_REQUEST_TIMER_NAME = "PUT_BATCH_REQUEST";
+    @VisibleForTesting
+    static final String SPAN_COUNTER_NAME = "REQUEST";
+    @VisibleForTesting
+    static final String SUCCESS_COUNTER_NAME = "SUCCESS";
+    @VisibleForTesting
+    static final String FAILURE_COUNTER_NAME = "FAILURE";
+    @VisibleForTesting
+    static final String EXCEPTION_COUNTER_NAME = "EXCEPTION";
+    @VisibleForTesting
+    static final String THROTTLED_COUNTER_NAME = "THROTTLED";
+    @VisibleForTesting
+    static final String SOCKET_TIMEOUT_COUNTER_NAME = "SOCKET_TIMEOUT";
+    @VisibleForTesting
+    static final String PUT_BATCH_REQUEST_TIMER_NAME = "PUT_BATCH_REQUEST";
 
     private final MetricObjects metricObjects;
 
@@ -125,8 +132,8 @@ class SpringConfig {
 
     @Bean
     @Autowired
-    KafkaConsumerStarter kafkaConsumerStarter(final HealthController healthController) {
-        return new KafkaConsumerStarter(ProtobufToFirehoseProducer.class, APPLICATION, healthController);
+    KafkaConsumerStarter kafkaConsumerStarter(final HealthController healthController, KafkaConfigurationProvider kafkaConfigurationProvider) {
+        return new KafkaConsumerStarter(ProtobufToFirehoseProducer.class, APPLICATION, kafkaConfigurationProvider, healthController);
     }
 
     @Bean
@@ -266,7 +273,7 @@ class SpringConfig {
     }
 
     @Bean
-    Clock clock()  {
+    Clock clock() {
         return Clock.systemUTC();
     }
 
@@ -280,12 +287,12 @@ class SpringConfig {
     @Bean
     @Autowired
     FirehoseTimersAndCounters counters(Clock clock,
-                                      Timers timers,
-                                      Counter spanCounter,
-                                      Counter successCounter,
-                                      Counter failureCounter,
-                                      Counter exceptionCounter,
-                                      Counter socketTimeoutCounter) {
+                                       Timers timers,
+                                       Counter spanCounter,
+                                       Counter successCounter,
+                                       Counter failureCounter,
+                                       Counter exceptionCounter,
+                                       Counter socketTimeoutCounter) {
         return new FirehoseTimersAndCounters(clock, timers,
                 spanCounter, successCounter, failureCounter, exceptionCounter, socketTimeoutCounter);
     }

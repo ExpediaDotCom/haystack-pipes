@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Expedia, Inc.
+ * Copyright 2020 Expedia, Inc.
  *
  *       Licensed under the Apache License, Version 2.0 (the "License");
  *       you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.kafka.producer;
 
 import com.expedia.open.tracing.Span;
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
+import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -33,13 +33,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static com.expedia.www.haystack.pipes.commons.test.TestConstantsAndCommonCode.RANDOM;
-import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProtobufToKafkaProducerTest {
@@ -50,9 +45,9 @@ public class ProtobufToKafkaProducerTest {
     @Mock
     private SerdeFactory mockSerdeFactory;
     @Mock
-    private ProduceIntoExternalKafkaAction mockProduceIntoExternalKafkaAction;
+    private KafkaToKafkaPipeline mockKafkaToKafkaPipeline;
     @Mock
-    private KafkaConfigurationProvider mockKafkaConfigurationProvider;
+    private KafkaConsumerConfig mockKafkaConsumerConfig;
     @Mock
     private KStreamBuilder mockKStreamBuilder;
     @Mock
@@ -60,40 +55,40 @@ public class ProtobufToKafkaProducerTest {
     @Mock
     private Serde<Span> mockSpanSerde;
 
-    private ProtobufToKafkaProducer protobufToFirehoseProducer;
+    private ProtobufToKafkaProducer protobufToKafkaProducer;
 
     @Before
     public void setUp() {
-        protobufToFirehoseProducer = new ProtobufToKafkaProducer(
-                mockKafkaStreamStarter, mockSerdeFactory, mockProduceIntoExternalKafkaAction, mockKafkaConfigurationProvider);
+        protobufToKafkaProducer = new ProtobufToKafkaProducer(
+                mockKafkaStreamStarter, mockSerdeFactory, mockKafkaToKafkaPipeline, mockKafkaConsumerConfig);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSerdeFactory, mockProduceIntoExternalKafkaAction,
-                mockKafkaConfigurationProvider, mockKStreamBuilder, mockKStream, mockSpanSerde);
+        verifyNoMoreInteractions(mockKafkaStreamStarter, mockSerdeFactory, mockKafkaToKafkaPipeline,
+                mockKafkaConsumerConfig, mockKStreamBuilder, mockKStream, mockSpanSerde);
     }
 
     @Test
     public void testMain() {
-        protobufToFirehoseProducer.main();
+        protobufToKafkaProducer.main();
 
-        verify(mockKafkaStreamStarter).createAndStartStream(protobufToFirehoseProducer);
+        verify(mockKafkaStreamStarter).createAndStartStream(protobufToKafkaProducer);
     }
 
     @SuppressWarnings("Duplicates")
     @Test
     public void testBuildStreamTopology() {
         when(mockSerdeFactory.createJsonProtoSpanSerde(anyString())).thenReturn(mockSpanSerde);
-        when(mockKafkaConfigurationProvider.fromtopic()).thenReturn(FROM_TOPIC);
+        when(mockKafkaConsumerConfig.fromtopic()).thenReturn(FROM_TOPIC);
         when(mockKStreamBuilder.stream(Matchers.<Serde<String>>any(), Matchers.<Serde<Span>>any(), anyString()))
                 .thenReturn(mockKStream);
 
-        protobufToFirehoseProducer.buildStreamTopology(mockKStreamBuilder);
+        protobufToKafkaProducer.buildStreamTopology(mockKStreamBuilder);
 
-        verify(mockSerdeFactory).createJsonProtoSpanSerde(APPLICATION);
-        verify(mockKafkaConfigurationProvider).fromtopic();
+        verify(mockSerdeFactory).createJsonProtoSpanSerde(Constants.APPLICATION);
+        verify(mockKafkaConsumerConfig).fromtopic();
         verify(mockKStreamBuilder).stream(any(Serdes.StringSerde.class), eq(mockSpanSerde), eq(FROM_TOPIC));
-        verify(mockKStream).foreach(mockProduceIntoExternalKafkaAction);
+        verify(mockKStream).foreach(mockKafkaToKafkaPipeline);
     }
 }

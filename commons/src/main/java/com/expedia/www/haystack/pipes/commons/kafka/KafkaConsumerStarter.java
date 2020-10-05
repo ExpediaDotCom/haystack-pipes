@@ -42,19 +42,22 @@ public class KafkaConsumerStarter {
     public final Class<?> containingClass;
     public final String clientId;
     private final List<ConsumerTask> tasks;
+    private final KafkaConfig kafkaConfig;
 
     public KafkaConsumerStarter(Class<?> containingClass,
                                 String clientId,
+                                KafkaConfig kafkaConfig,
                                 HealthController healthController) {
         this.containingClass = containingClass;
         this.clientId = clientId;
+        this.kafkaConfig = kafkaConfig;
         this.healthController = healthController;
         this.tasks = new ArrayList<>();
     }
 
     public void createAndStartConsumer(SpanProcessorSupplier processorSupplier) {
         for(int idx = 0; idx <= getThreadCount(); idx++) {
-            final ConsumerTask task = new ConsumerTask(getKafkaConfig(), containingClass, processorSupplier, healthController);
+            final ConsumerTask task = new ConsumerTask(kafkaConfig, containingClass, processorSupplier, healthController);
             this.tasks.add(task);
             final Thread thread = new Thread(task);
             thread.setDaemon(true);
@@ -74,11 +77,6 @@ public class KafkaConsumerStarter {
     }
 
     private int getThreadCount() {
-        final KafkaConfig kafkaConfig = getKafkaConfig();
         return kafkaConfig.threadcount();
-    }
-
-    private static KafkaConfig getKafkaConfig() {
-        return CONFIGURATION_PROVIDER.bind(HAYSTACK_KAFKA_CONFIG_PREFIX, KafkaConfig.class);
     }
 }

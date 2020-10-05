@@ -17,7 +17,6 @@
 package com.expedia.www.haystack.pipes.commons.kafka;
 
 import com.expedia.www.haystack.commons.config.Configuration;
-import com.expedia.www.haystack.pipes.commons.IntermediateStreamsConfig;
 import com.expedia.www.haystack.pipes.commons.SystemExitUncaughtExceptionHandler;
 import com.expedia.www.haystack.pipes.commons.health.HealthController;
 import com.netflix.servo.util.VisibleForTesting;
@@ -32,8 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
-import static com.expedia.www.haystack.pipes.commons.Configuration.HAYSTACK_KAFKA_CONFIG_PREFIX;
-import static com.expedia.www.haystack.pipes.commons.Configuration.HAYSTACK_PIPE_STREAMS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class KafkaStreamStarter {
@@ -58,13 +55,17 @@ public class KafkaStreamStarter {
     public final Class<? extends KafkaStreamBuilder> containingClass;
     public final String clientId;
     private final StreamsConfig streamsConfig;
+    @VisibleForTesting
+    static KafkaConfig kafkaConfig;
 
     public KafkaStreamStarter(Class<? extends KafkaStreamBuilder> containingClass,
                               String clientId,
+                              KafkaConfig kafkaConfig,
                               HealthController healthController) {
         this.containingClass = containingClass;
         this.clientId = clientId;
         this.healthController = healthController;
+        this.kafkaConfig = kafkaConfig;
         this.streamsConfig = new StreamsConfig(getProperties());
     }
 
@@ -97,45 +98,29 @@ public class KafkaStreamStarter {
         props.put(ConsumerConfig.GROUP_ID_CONFIG, containingClass.getName());
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, containingClass.getSimpleName());
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, getIpAnPort());
-        props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, getReplicationFactor());
         props.put(StreamsConfig.consumerPrefix(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG), getConsumerSessionTimeout());
         props.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, getThreadCount());
         return props;
     }
 
     private String getIpAnPort() {
-        final KafkaConfig kafkaConfig = getKafkaConfig();
         return kafkaConfig.brokers() + ":" + kafkaConfig.port();
     }
 
     private String getFromTopic() {
-        final KafkaConfig kafkaConfig = getKafkaConfig();
         return kafkaConfig.fromtopic();
     }
 
     private String getToTopic() {
-        final KafkaConfig kafkaConfig = getKafkaConfig();
         return kafkaConfig.totopic();
     }
 
     private int getThreadCount() {
-        final KafkaConfig kafkaConfig = getKafkaConfig();
         return kafkaConfig.threadcount();
     }
 
-    private int getReplicationFactor() {
-        final IntermediateStreamsConfig intermediateStreamsConfig = CONFIGURATION_PROVIDER.bind(
-                HAYSTACK_PIPE_STREAMS, IntermediateStreamsConfig.class);
-        return intermediateStreamsConfig.replicationfactor();
-    }
-
     private int getConsumerSessionTimeout() {
-        final KafkaConfig kafkaConfig = getKafkaConfig();
         return kafkaConfig.sessiontimeout();
-    }
-
-    private static KafkaConfig getKafkaConfig() {
-        return CONFIGURATION_PROVIDER.bind(HAYSTACK_KAFKA_CONFIG_PREFIX, KafkaConfig.class);
     }
 
     static class Factory {

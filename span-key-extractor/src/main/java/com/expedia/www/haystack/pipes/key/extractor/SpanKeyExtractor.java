@@ -20,18 +20,13 @@ import com.expedia.open.tracing.Span;
 import com.typesafe.config.Config;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface SpanKeyExtractor {
 
     String name();
 
-    public void configure(Config config);
+    public void configure(Config config); // sets up the extractor with configuration
 
-    public Optional<String> extract(Span span);
-
-    public String getKey();
-
-    public List<String> getTopics();
+    public List<Record> getRecords(Span span); // returns list of records containing message, key and producer topic mapping
 
 }

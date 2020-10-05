@@ -14,24 +14,18 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.pipes.kafkaProducer;
+package com.expedia.www.haystack.pipes.kafka.producer;
 
-import com.expedia.www.haystack.pipes.commons.kafka.KafkaConfigurationProvider;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamBuilderBase;
 import com.expedia.www.haystack.pipes.commons.kafka.KafkaStreamStarter;
+import com.expedia.www.haystack.pipes.commons.kafka.config.KafkaConsumerConfig;
 import com.expedia.www.haystack.pipes.commons.serialization.SerdeFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-import static com.expedia.www.haystack.pipes.kafkaProducer.Constants.APPLICATION;
-
-@Component
 public class ProtobufToKafkaProducer extends KafkaStreamBuilderBase {
-    @Autowired
-    ProtobufToKafkaProducer(KafkaStreamStarter kafkaStreamStarter,
-                            SerdeFactory serdeFactory,
-                            ProduceIntoExternalKafkaAction produceIntoExternalKafkaAction,
-                            KafkaConfigurationProvider kafkaConfigurationProvider) {
-        super(kafkaStreamStarter, serdeFactory, APPLICATION, kafkaConfigurationProvider, produceIntoExternalKafkaAction);
+    public ProtobufToKafkaProducer(KafkaStreamStarter kafkaStreamStarter,
+                                   SerdeFactory serdeFactory,
+                                   KafkaToKafkaPipeline kafkaToKafkaPipeline,
+                                   KafkaConsumerConfig kafkaConsumerConfig) {
+        super(kafkaStreamStarter, serdeFactory, Constants.APPLICATION, kafkaConsumerConfig, kafkaToKafkaPipeline);
     }
 }

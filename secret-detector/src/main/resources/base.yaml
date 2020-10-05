@@ -10,9 +10,6 @@ haystack:
     wakeuptimeoutms: -1
     polltimeoutms: -1
     commitms: -1
-  pipe:
-    streams:
-      replicationfactor: 1
   graphite:
     prefix: "haystack"
     host: "localhost"
