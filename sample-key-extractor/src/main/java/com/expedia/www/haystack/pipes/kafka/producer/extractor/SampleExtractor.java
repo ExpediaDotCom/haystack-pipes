@@ -59,7 +59,6 @@ public class SampleExtractor implements SpanKeyExtractor {
     @Override
     public List<Record> getRecords(Span span) {
         try {
-            Map<String, List<String>> producerTopicsMapping = new HashMap<>();
             Record record = new Record(jsonPrinter.print(span), key, producerTopicsMapping);
             return Collections.singletonList(record);
         } catch (InvalidProtocolBufferException e) {
