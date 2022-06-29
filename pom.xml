@@ -89,7 +89,7 @@
         <protobuf-java-util.version>3.3.1</protobuf-java-util.version>
         <protoc-jar-maven.version>3.3.0.1</protoc-jar-maven.version>
         <servo.version>0.12.17</servo.version>
-        <slf4j.version>1.7.25</slf4j.version>
+        <slf4j.version>1.7.26</slf4j.version>
         <spring-boot-plugins.version>1.5.9.RELEASE</spring-boot-plugins.version>
         <spring-context.version>5.2.6.RELEASE</spring-context.version>
         <zookeeper.version>3.4.9</zookeeper.version>
