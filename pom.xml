@@ -59,7 +59,7 @@
     <properties>
         <encoding>UTF-8</encoding>
         <!-- Versions -->
-        <aws-java-sdk.version>1.11.337</aws-java-sdk.version>
+        <aws-java-sdk.version>1.12.261</aws-java-sdk.version>
         <cfg4j-core.version>4.4.1</cfg4j-core.version>
         <chlorine-finder.version>1.1.5</chlorine-finder.version>
         <commons-lang3.version>3.7</commons-lang3.version>
